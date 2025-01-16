@@ -12,7 +12,9 @@ import scr.presentation.presentation;
 public class CustClrTool {
     public static void main(String[] args) {
         // Define Presentation
-        String source = System.getProperty("user.dir") + "/test.pptx";
+        String sourcePath = System.getProperty("user.dir") + "/src/main/resources";
+        String source = sourcePath + "/test.pptx";
+        System.out.println(source);
         Path filePath = Paths.get(source);
 
         File presentationFile = new File(filePath.toString());
@@ -37,19 +39,21 @@ public class CustClrTool {
         System.out.printf("The name of the file is %s\n", testpres.fileName);
 
         // Change to .zip ...
-        presentation.changeExtension(filePath, testpres.fileName, presentationExtension, 1);
-        testpres.fileExtension = ".zip";
+        presentation.changeExtension(Paths.get(testpres.filePath), testpres.fileName, presentationExtension, 1);
+        testpres.fileExtension = "zip";
 
         // Need to update path to new extension
-        source = System.getProperty("user.dir") + "/test.zip";
+        source = sourcePath + "/test.zip";
         filePath = Paths.get(source);
         List<List<String>> themes = presentation.extractThemes(source);
         System.out.printf("The found themes are: %s\n", themes);
         try {
-            presentation.writeZipOutput(source, themes.get(0), testpres.fileName);
+            // remove hard coded theme selection
+            presentation.writeZipOutput(source, themes.get(0), testpres.fileName, testpres.filePath);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
 
         // Initialize new colorfield
         colorfield colorField = new colorfield();

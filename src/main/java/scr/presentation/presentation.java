@@ -1,13 +1,15 @@
 package scr.presentation;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -15,11 +17,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class presentation {
 
@@ -55,6 +63,8 @@ public class presentation {
      */
     public static void changeExtension(Path filePath, String fileName, String fileExtension, int extension) {
 
+        Path oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + "." + fileExtension);
+        System.out.printf("the old file path is: %s\n", oldFile.toString());
         String newExtension;
         if (extension == 1)
             newExtension = ".zip";
@@ -63,7 +73,7 @@ public class presentation {
 
         String newFileName = fileName + newExtension;
         try {
-            Files.move(filePath, filePath.resolveSibling(newFileName));
+            Files.move(oldFile, oldFile.resolveSibling(newFileName));
             System.out.printf("pptx file converted to %s\n", newExtension);
         } catch (IOException e) {
             e.printStackTrace();
@@ -143,37 +153,43 @@ public class presentation {
         }
     }
 
-    public static void writeZipOutput(String zipFilePath, List<String> themeSelection, String filename)
+    public static void writeZipOutput(String zipFilePath, List<String> themeSelection, String filename, String filePath)
             throws FileNotFoundException {
-        // "File" is outdated, preferrably use "Files" instead
+        
+        // Bind the selected Theme in a constant
+        final String THEME_PATH = "ppt" + osPathSymbol() + "theme" + osPathSymbol() + themeSelection.get(0);
+        // Create a new zipfile to copy all the contents over to
         File zipNew = new File(filename + "_tmp.zip");
+        // Create an output stream for copying everything over
         ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipNew));
 
+        // Now open the zipfile
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            // This enum holds the references to the contents of the zipfile
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
+            // Iterate over the entries of the zipfile
             while (entries.hasMoreElements()) {
+                // Gather information about the current entry
                 ZipEntry entry = entries.nextElement();
                 String name = entry.getName();
                 String type = entry.isDirectory() ? "DIR" : "FILE";
+                // Put the current zip entry into the new file
                 zipWrite.putNextEntry(entry);
 
-                // Create input stream and a buffer to write to the new .zip
-                InputStream inputStream = zipFile.getInputStream(entry);
-                
-                if (type.equals("FILE") && name.contains(themeSelection.get(0))) {
-                    writeXML(themeSelection.get(0), inputStream);
+                try ( // Create input stream and a buffer to write to the new .zip
+                        InputStream inputStream = zipFile.getInputStream(entry)) {
+                    if (type.equals("FILE") && name.contains(themeSelection.get(0))) {
+                        // maybe instead of picking the .xml file out of the the stream, we inject the already created .xml file here
+                        // writeXML(themeSelection.get(0), inputStream);
+                    }
+                    
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(buffer)) > 0) {
+                        zipWrite.write(buffer, 0, len);
+                    }
                 }
-                
-                byte[] buffer = new byte[1024];
-                int len;
-                while ((len = inputStream.read(buffer)) > 0) {
-                    zipWrite.write(buffer, 0, len);
-                }
-
-
-
-                inputStream.close();
                 zipWrite.closeEntry();
             }
             zipWrite.close();
@@ -181,54 +197,40 @@ public class presentation {
             System.err.println(ex);
         }
 
-        replaceOldFile(filename);
+        replaceOldFile(filename, filePath);
     }
 
-    private static void writeXML(String selectedTheme, InputStream themeStream) {
-        File newXML = new File(selectedTheme + "_tmp.xml");
-
+    private static void writeXML(String selectedTheme, InputStream themeStream) throws IOException {
+        // On hold, doesn't work the way I want
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         XMLStreamReader reader;
-        try {
-            OutputStream outputStream = new FileOutputStream(newXML);
-            reader = XMLInputFactory.newInstance().createXMLStreamReader(themeStream);
-            XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-            // writer.writeDefaultNamespace("http://schemas.openxmlformats.org/drawingml/2006/main");
-            
-            while (reader.hasNext()) {
-                int eventType = reader.next();
-                writer.writeStartDocument();
-                switch (eventType) {
-                    case XMLStreamReader.START_ELEMENT -> {
-                        writer.writeStartElement(reader.getPrefix(), reader.getLocalName(), reader.getNamespaceURI());
-                        for (int i = 0; i < reader.getAttributeCount(); i++) {
-                            writer.writeAttribute(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
-                        }
-                        writer.writeDefaultNamespace(reader.getNamespaceURI());
-                    }
-                    case XMLStreamReader.END_ELEMENT -> writer.writeEndElement();
-                    case XMLStreamReader.CHARACTERS -> writer.writeCharacters(reader.getText());
-                    case XMLStreamReader.CDATA -> writer.writeCData(reader.getText());
-                    case XMLStreamReader.SPACE -> writer.writeCharacters(reader.getText());
-                    case XMLStreamReader.COMMENT -> writer.writeComment(reader.getText());
-                }
-                writer.writeEndDocument();
-            }
         
-            writer.flush();
-            writer.close();
-            reader.close();
-        } catch (XMLStreamException | javax.xml.stream.FactoryConfigurationError | FileNotFoundException e) {
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            reader = XMLInputFactory.newInstance().createXMLStreamReader(themeStream);
+            
+            DocumentBuilder docBuilder = factory.newDocumentBuilder();
+            byte[] data = new byte[1024];
+            int read;
+            
+            while ((read = themeStream.read(data)) != -1 && !new String(data, 0, read).contains("END_CONDITION")) {
+                buffer.write(data, 0, read);
+            }
+            
+            Document xmldoc = docBuilder.parse(new ByteArrayInputStream(buffer.toByteArray()));
+            Element element = xmldoc.getDocumentElement();
+
+        } catch (ParserConfigurationException | SAXException | XMLStreamException | FactoryConfigurationError e) {
             e.printStackTrace();
-        }
+            }
     }
 
 
-    private static void replaceOldFile(String oldFile) {
-        String oldFilePath = oldFile + ".zip";
+    private static void replaceOldFile(String oldFile, String filePath) {
+        String oldFilePath = filePath + osPathSymbol() + oldFile + ".zip";
         File oldZip = new File(oldFilePath);
         oldZip.delete();
 
-        String newFilePath = oldFile + ".pptx"; // -> no hardcoded file extension!!
+        String newFilePath = filePath + osPathSymbol() + oldFile + ".pptx"; // better use the "change file extension" method
         File newZip = new File(oldFile + "_tmp.zip");
         newZip.renameTo(new File(newFilePath));
     }
