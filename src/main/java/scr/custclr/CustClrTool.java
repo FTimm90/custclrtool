@@ -6,6 +6,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import scr.colorfield.colorfield;
 import scr.presentation.presentation;
 
@@ -50,7 +54,7 @@ public class CustClrTool {
         try {
             // remove hard coded theme selection
             presentation.writeZipOutput(source, themes.get(0), testpres.fileName, testpres.filePath);
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | ParserConfigurationException | SAXException e) {
             e.printStackTrace();
         }
 

@@ -1,7 +1,5 @@
 package scr.presentation;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -20,13 +18,20 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class presentation {
@@ -83,7 +88,7 @@ public class presentation {
      
     /**
      * Processes the contents of the .zip version of the presentation file 
-     * to extract information
+     * to extract information about existing custom colors
      * @param zipFilePath   The path to the zipfile converted from the pptx.
      * @return              Returns a nested list with the extracted information
      *                      the first string is the name of the theme, after that
@@ -113,6 +118,14 @@ public class presentation {
         return foundThemes;
     }
 
+    /**
+     * Extracts Data from the theme selection (Theme name & 
+     * Potential existing custom colors)
+     * @return  All information stored in a List of strings
+     *          (0) --> Theme number (e.g. theme1)
+     *          (1) --> Theme name
+     *          (2:) -> Names and values of the custom colors
+     */
     private static List<String> extractThemeData(InputStream inputStream, String themeNumber) throws XMLStreamException {
         List<String> themeData = new ArrayList<>();
         String themeName = "";
@@ -153,13 +166,21 @@ public class presentation {
         }
     }
 
+    /**
+     * Creates a copy of the .zip converted PowerPoint file 
+     * and injects the modified .xml file
+     * @param zipFilePath       Path of the .zip file
+     * @param themeSelection    User selected theme file to modify
+     * @param filename          Base name of the file
+     * @param filePath          Base path of the file
+     */
     public static void writeZipOutput(String zipFilePath, List<String> themeSelection, String filename, String filePath)
-            throws FileNotFoundException {
+            throws FileNotFoundException, ParserConfigurationException, SAXException {
+
+        final String ZIP_TMP = "_tmp.zip";
         
-        // Bind the selected Theme in a constant
-        final String THEME_PATH = "ppt" + osPathSymbol() + "theme" + osPathSymbol() + themeSelection.get(0);
         // Create a new zipfile to copy all the contents over to
-        File zipNew = new File(filename + "_tmp.zip");
+        File zipNew = new File(filename + ZIP_TMP);
         // Create an output stream for copying everything over
         ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipNew));
 
@@ -175,23 +196,18 @@ public class presentation {
                 String name = entry.getName();
                 String type = entry.isDirectory() ? "DIR" : "FILE";
                 // Put the current zip entry into the new file
-                zipWrite.putNextEntry(entry);
 
-                try ( // Create input stream and a buffer to write to the new .zip
-                        InputStream inputStream = zipFile.getInputStream(entry)) {
-                    if (type.equals("FILE") && name.contains(themeSelection.get(0))) {
-                        // maybe instead of picking the .xml file out of the the stream, we inject the already created .xml file here
-                        // writeXML(themeSelection.get(0), inputStream);
-                    }
-                    
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = inputStream.read(buffer)) > 0) {
-                        zipWrite.write(buffer, 0, len);
-                    }
+                InputStream inputStream = zipFile.getInputStream(entry);
+
+                if (type.equals("FILE") && name.contains(themeSelection.get(0))) {
+                    processTheme(inputStream);
                 }
-                zipWrite.closeEntry();
+                else {
+                    insertZipEntry(entry, zipWrite, inputStream);
+                }
+                
             }
+
             zipWrite.close();
         } catch (IOException ex) {
             System.err.println(ex);
@@ -199,32 +215,135 @@ public class presentation {
 
         replaceOldFile(filename, filePath);
     }
-
-    private static void writeXML(String selectedTheme, InputStream themeStream) throws IOException {
-        // On hold, doesn't work the way I want
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        XMLStreamReader reader;
+    
+    /**
+     * Helper method to write .zip entries from InputStream (old file) into
+     * ZipOutPutStream (new file)
+     * @param entry         Zip entry from old file
+     * @param zipWrite      The zip file that is going to be written into
+     * @param inputStream   The zip entry as InputStream
+     */
+    public static void insertZipEntry(ZipEntry entry, ZipOutputStream zipWrite, InputStream inputStream) throws IOException {
+        zipWrite.putNextEntry(entry);
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = inputStream.read(buffer)) > 0) {
+            zipWrite.write(buffer, 0, len);
+        }
+        zipWrite.closeEntry();
+    }
+    
+    /**
+     * Takes the input stream from found theme to extract XML, 
+     * load it into DOM object and further process it.
+     * @param inputStream
+     */
+    public static void processTheme(InputStream inputStream) throws IOException, ParserConfigurationException, SAXException {
+        final String CUSTCLR_NODE = "a:custClrLst";
         
-        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-            reader = XMLInputFactory.newInstance().createXMLStreamReader(themeStream);
-            
-            DocumentBuilder docBuilder = factory.newDocumentBuilder();
-            byte[] data = new byte[1024];
-            int read;
-            
-            while ((read = themeStream.read(data)) != -1 && !new String(data, 0, read).contains("END_CONDITION")) {
-                buffer.write(data, 0, read);
-            }
-            
-            Document xmldoc = docBuilder.parse(new ByteArrayInputStream(buffer.toByteArray()));
-            Element element = xmldoc.getDocumentElement();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
 
-        } catch (ParserConfigurationException | SAXException | XMLStreamException | FactoryConfigurationError e) {
-            e.printStackTrace();
+        // Parse the input stream as an XML document
+        Document document = builder.parse(inputStream);
+        Element rootElement = document.getDocumentElement();
+        NodeList childNodes = rootElement.getChildNodes();
+        
+        // Remove Custom Color Node
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node childNode = childNodes.item(i);
+            if (childNode.getNodeName().equals(CUSTCLR_NODE)) {
+                Node parentNode = childNode.getParentNode();
+                if (parentNode != null) {
+                    parentNode.removeChild(childNode);
+                }
+                break;
             }
+        }
+        // -> TO-DO: Insert newly written XML
+    }
+    
+    /**
+     * Helper method to find a specific child node based on a parent node 
+     * and its name as a string.
+     * @param parent    Parent node
+     * @param nodeName  Name of the node that should be found
+     * @return          The node itself, or null if not found
+     */
+    private static Node findNode(Node parent, String nodeName) {
+    NodeList childNodes = parent.getChildNodes();
+    for (int i = 0; i < childNodes.getLength(); i++) {
+        Node child = childNodes.item(i);
+        if (child.getNodeName().equals(nodeName)) {
+            return child;
+        } else if (child.hasChildNodes()) { 
+            Node foundNode = findNode(child, nodeName);
+            if (foundNode != null) {
+                return foundNode;
+            }
+        }
+    }
+    return null; // Node not found
+    }
+
+    /**
+     * Buils the XML structure for adding new custom colors and writes them into the XMl document
+     * @param document  XML Document object.
+     */
+    private static void writeIntoTheme(Document document) throws ParserConfigurationException, TransformerException {
+        // Create a new Document
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        // Create the parent element (example)
+        Element parentElement = document.createElementNS("http://schemas.openxmlformats.org/drawingml/2006/main",
+                "a:custClrLst");
+
+        // Create new Custom colors
+        Element newElement = createCustClrElement(document, "TEST COLOR", "FFFFFF");
+
+        // Insert the new custom colors to the DOM
+        Node extLstNode = findNode(parentElement, "a:extLst"); 
+        if (extLstNode != null) {
+            parentElement.insertBefore(newElement, extLstNode); 
+        }
+
+        // Print the resulting XML
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.transform(new DOMSource(document), new StreamResult(System.out));
+    }
+    
+    /**
+     * Create a single new custom color to insert into theme.xml. 
+     * Needs a <a:custClrLst> parent element.
+     * @param document  XML DOM document theme.xml to add the custom colors to
+     * @param name      Name of the custom color
+     * @param value     HEX Value of the custom color
+     * @return          Custom color as XML Element
+     */
+    private static Element createCustClrElement(Document document, String name, String value) {
+        // This needs to adjusted to be fed with the actual data (list?)
+        
+        // Create the two elements that a custom color consists of
+        Element custClrElement = document.createElementNS("http://schemas.openxmlformats.org/drawingml/2006/main", "a:custClr"); 
+        Element srgbClrElement = document.createElementNS("http://schemas.openxmlformats.org/drawingml/2006/main", "a:srgbClr");
+        // Set the values for the custom color elements
+        custClrElement.setAttribute("name", name);
+        srgbClrElement.setAttribute("val", value);
+        // Append the srgbClr Element to the custClr Element 
+        custClrElement.appendChild(srgbClrElement);
+        return custClrElement;
     }
 
 
+    /**
+     * Helper function to Replace the old .zip file with the new, modified one.
+     * @param oldFile   The path of the old file
+     * @param filePath  Path of the new file
+     */
     private static void replaceOldFile(String oldFile, String filePath) {
         String oldFilePath = filePath + osPathSymbol() + oldFile + ".zip";
         File oldZip = new File(oldFilePath);
