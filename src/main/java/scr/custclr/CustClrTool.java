@@ -1,14 +1,9 @@
 package scr.custclr;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
 
 import scr.colorfield.colorfield;
 import scr.presentation.presentation;
@@ -49,14 +44,14 @@ public class CustClrTool {
         // Need to update path to new extension
         source = sourcePath + "/test.zip";
         filePath = Paths.get(source);
-        List<List<String>> themes = presentation.extractThemes(source);
-        System.out.printf("The found themes are: %s\n", themes);
-        try {
-            // remove hard coded theme selection
-            presentation.writeZipOutput(source, themes.get(0), testpres.fileName, testpres.filePath);
-        } catch (FileNotFoundException | ParserConfigurationException | SAXException e) {
-            e.printStackTrace();
-        }
+        List<List<List<String[]>>> themes = presentation.extractThemes(source);
+
+        // try {
+        //     // remove hard coded theme selection
+        //     presentation.writeZipOutput(source, themes.get(0), testpres.fileName, testpres.filePath);
+        // } catch (FileNotFoundException | ParserConfigurationException | SAXException e) {
+        //     e.printStackTrace();
+        // }
 
 
         // Initialize new colorfield

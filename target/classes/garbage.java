@@ -1,23 +1,5 @@
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
-
-private static void writeXML(String selectedTheme, InputStream themeStream) {
+/*private static void writeXML(String selectedTheme, InputStream themeStream) {
         File newXML = new File(selectedTheme + "_tmp.xml");
 
         XMLStreamReader reader;
@@ -53,12 +35,12 @@ private static void writeXML(String selectedTheme, InputStream themeStream) {
         } catch (XMLStreamException | javax.xml.stream.FactoryConfigurationError | FileNotFoundException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static void writeZipOutput(String zipFilePath, List<String> themeSelection, String filename, String filePath)
+/*    public static void writeZipOutput(String zipFilePath, List<String> themeSelection, String filename, String filePath)
         throws FileNotFoundException, IOException {
 
     // Bind the selected Theme in a constant
@@ -93,12 +75,12 @@ private static void writeXML(String selectedTheme, InputStream themeStream) {
 
     replaceOldFile(filename, filePath);
 }
-
+*/
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // Helper method to extract entry content
-private static byte[] extractEntryContent(ZipFile zipFile, ZipEntry entry) throws IOException {
+/*private static byte[] extractEntryContent(ZipFile zipFile, ZipEntry entry) throws IOException {
     try (InputStream inputStream = zipFile.getInputStream(entry)) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] data = new byte[1024];
@@ -109,15 +91,39 @@ private static byte[] extractEntryContent(ZipFile zipFile, ZipEntry entry) throw
         return buffer.toByteArray();
     }
 }
-
+*/
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // Helper method to write entry to zip file
-private static void writeEntryToZip(File zipFile, ZipEntry entry, byte[] content) throws IOException {
+/*private static void writeEntryToZip(File zipFile, ZipEntry entry, byte[] content) throws IOException {
     try (ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipFile))) {
         zipWrite.putNextEntry(entry);
         zipWrite.write(content, 0, content.length);
         zipWrite.closeEntry();
     }
-}
+}*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*if (eventType == XMLStreamReader.START_ELEMENT) {
+                    String[] clrSet;
+                    clrSet = new String[2];
+                    
+                    if (reader.getLocalName().equals("custClr")) {
+                        
+                        String colorName = reader.getAttributeValue("", "name");
+                        if (colorName != null) {
+                            clrSet[0] = colorName;
+                        }
+                        else {
+                            clrSet[0] = " ";
+                        }
+                    } else if (reader.getLocalName().equals("srgbClr")) {
+                        String colorValue = reader.getAttributeValue("", "val");
+                        clrSet[1] = colorValue;
+                    }
+
+                    if (clrSet.length == 2) {
+                        themeData.add(clrSet);
+                    }*/
