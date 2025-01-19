@@ -40,7 +40,8 @@ public class presentation {
     public String fileName = "";
     public String fileExtension = "";
 
-    final static String CUSTCLR_NODE = "a:custClrLst";
+    final static String CUSTCLR_NODE = "custClrLst";
+    final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
         
         public void pickFile() {
             System.out.println("File selection not yet implemented.");
@@ -146,7 +147,7 @@ public class presentation {
                         themeName = reader.getAttributeValue("", "name");
                         numberAndName[1] = themeName;
                         theme.add(numberAndName);
-                    } else if (reader.getLocalName().equals("custClrLst")) {
+                    } else if (reader.getLocalName().equals(CUSTCLR_NODE)) {
                         processColorList(reader, theme);
                     }
                 } else if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("theme")) {
@@ -169,7 +170,7 @@ public class presentation {
                 while (reader.hasNext()) {
                     int eventType = reader.next();
 
-                    if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("custClrLst")) {
+                    if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(CUSTCLR_NODE)) {
                         break;
 
                     } else if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("custClr")) {
@@ -275,7 +276,7 @@ public class presentation {
             // Remove Custom Color Node
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node childNode = childNodes.item(i);
-                if (childNode.getNodeName().equals(CUSTCLR_NODE)) {
+                if (childNode.getNodeName().equals("a:" + CUSTCLR_NODE)) {
                     Node parentNode = childNode.getParentNode();
                     if (parentNode != null) {
                         parentNode.removeChild(childNode);
@@ -314,12 +315,15 @@ public class presentation {
          * @param document  XML Document object.
          */
         private static void writeIntoTheme(Document document) throws ParserConfigurationException, TransformerException {
+            
+            // TO-DO!
+            
             // Create a new Document
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
     
             // Create the parent element (example)
-            Element parentElement = document.createElementNS("http://schemas.openxmlformats.org/drawingml/2006/main", CUSTCLR_NODE);
+            Element parentElement = document.createElementNS(NAMESPACE, "a:" + CUSTCLR_NODE);
 
             // Create new Custom colors
             Element newElement = createCustClrElement(document, "TEST COLOR", "FFFFFF");
@@ -349,8 +353,8 @@ public class presentation {
             // This needs to adjusted to be fed with the actual data (list?)
             
             // Create the two elements that a custom color consists of
-            Element custClrElement = document.createElementNS("http://schemas.openxmlformats.org/drawingml/2006/main", "a:custClr"); 
-            Element srgbClrElement = document.createElementNS("http://schemas.openxmlformats.org/drawingml/2006/main", "a:srgbClr");
+            Element custClrElement = document.createElementNS(NAMESPACE, "a:custClr"); 
+            Element srgbClrElement = document.createElementNS(NAMESPACE, "a:srgbClr");
             // Set the values for the custom color elements
             custClrElement.setAttribute("name", name);
             srgbClrElement.setAttribute("val", value);
