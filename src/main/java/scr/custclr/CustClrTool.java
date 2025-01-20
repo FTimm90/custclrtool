@@ -1,9 +1,15 @@
 package scr.custclr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import org.xml.sax.SAXException;
 
 import scr.colorfield.colorfield;
 import scr.presentation.presentation;
@@ -45,14 +51,16 @@ public class CustClrTool {
         source = sourcePath + "/test.zip";
         filePath = Paths.get(source);
         List<List<List<String[]>>> themes = presentation.extractThemes(source);
+        // printThemesList(themes);
 
-        // try {
-        //     // remove hard coded theme selection
-        //     presentation.writeZipOutput(source, themes.get(0), testpres.fileName, testpres.filePath);
-        // } catch (FileNotFoundException | ParserConfigurationException | SAXException e) {
-        //     e.printStackTrace();
-        // }
-
+        // TO-DO -> replace with user selection
+        List<String[]> hardCodedThemeSelection = themes.get(0).get(0);
+        
+        try {
+            presentation.writeZipOutput(source, hardCodedThemeSelection, testpres.fileName, testpres.filePath);
+        } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException e) {
+            e.printStackTrace();
+        }
 
         // Initialize new colorfield
         colorfield colorField = new colorfield();
@@ -79,5 +87,20 @@ public class CustClrTool {
         //            System.out.print(colorfield.colorName);
         //            System.out.printf(" is %s\n", colorfield.active);
         //        }
+    }
+    
+    private static void printThemesList(List<List<List<String[]>>> themes) {
+        for (List<List<String[]>> theme : themes) {
+            System.out.println("Next Theme:");
+            for (List<String[]> theme_content : theme) {
+                System.out.println("    └ theme content:");
+                for (String[] content : theme_content) {
+                    System.out.println("        └ elements:");
+                    for (int i = 0; i < content.length; i++) {
+                        System.out.printf("             └ element %d: %s\n", i, content[i]);
+                    }
+                }
+            }
+        }
     }
 }

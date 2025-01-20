@@ -1,5 +1,6 @@
 package scr.presentation;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -199,8 +200,8 @@ public class presentation {
          * @param filename          Base name of the file
          * @param filePath          Base path of the file
          */
-        public static void writeZipOutput(String zipFilePath, List<String> themeSelection, String filename, String filePath)
-                throws FileNotFoundException, ParserConfigurationException, SAXException {
+        public static void writeZipOutput(String zipFilePath, List<String[]> themeSelection, String filename, String filePath)
+                throws FileNotFoundException, ParserConfigurationException, SAXException, TransformerException {
     
             final String ZIP_TMP = "_tmp.zip";
             
@@ -224,8 +225,8 @@ public class presentation {
     
                     InputStream inputStream = zipFile.getInputStream(entry);
     
-                    if (type.equals("FILE") && name.contains(themeSelection.get(0))) {
-                        processTheme(inputStream);
+                    if (type.equals("FILE") && name.contains(themeSelection.get(0)[0])) {
+                        processTheme(inputStream, themeSelection.get(0)[0], zipWrite);
                     }
                     else {
                         insertZipEntry(entry, zipWrite, inputStream);
@@ -262,7 +263,7 @@ public class presentation {
          * load it into DOM object and further process it.
          * @param inputStream
          */
-        public static void processTheme(InputStream inputStream) throws IOException, ParserConfigurationException, SAXException {
+        public static void processTheme(InputStream inputStream, String themeSelection, ZipOutputStream zipWrite) throws IOException, ParserConfigurationException, SAXException, TransformerException {
             
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -284,7 +285,8 @@ public class presentation {
                     break;
                 }
             }
-            // -> TO-DO: Insert newly written XML
+
+            writeIntoTheme(document, themeSelection, zipWrite);
         }
         
         /**
@@ -313,32 +315,49 @@ public class presentation {
         /**
          * Buils the XML structure for adding new custom colors and writes them into the XMl document
          * @param document  XML Document object.
-         */
-        private static void writeIntoTheme(Document document) throws ParserConfigurationException, TransformerException {
-            
-            // TO-DO!
+                  * @throws IOException 
+                  */
+        private static void writeIntoTheme(Document document, String themeSelection, ZipOutputStream zipWrite) throws ParserConfigurationException, TransformerException, IOException {
             
             // Create a new Document
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-    
+        
             // Create the parent element (example)
             Element parentElement = document.createElementNS(NAMESPACE, "a:" + CUSTCLR_NODE);
 
+            // ######## DOESN'T WORK ########
+            
             // Create new Custom colors
-            Element newElement = createCustClrElement(document, "TEST COLOR", "FFFFFF");
+            Element newElement = createCustClrElement(document, "TEST COLOR", "FFFFFF"); 
 
             // Insert the new custom colors to the DOM
             Node extLstNode = findNode(parentElement, "a:extLst"); 
             if (extLstNode != null) {
-                parentElement.insertBefore(newElement, extLstNode); 
+                parentElement.insertBefore(newElement, extLstNode);
             }
+            
+            // #############################
 
-            // Print the resulting XML
+            // Write the resulting XML to a ByteArrayOutputStream
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.transform(new DOMSource(document), new StreamResult(System.out));
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(outputStream); 
+            transformer.transform(source, result);
+
+            // Create a ZipEntry with the XML data
+            String outputName = "ppt/theme/" + themeSelection + ".xml";
+            ZipEntry zipEntry = new ZipEntry(outputName);
+            zipEntry.setSize(outputStream.size());
+            zipEntry.setTime(System.currentTimeMillis()); 
+
+            // Write the data to the ZipOutputStream
+            zipWrite.putNextEntry(zipEntry);
+            zipWrite.write(outputStream.toByteArray());
+            zipWrite.closeEntry();
         }
     
         /**
