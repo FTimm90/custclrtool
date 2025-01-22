@@ -22,7 +22,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -297,53 +296,39 @@ public class presentation {
          * @return          The node itself, or null if not found
          */
         private static Node findNode(Node parent, String nodeName) {
+
             NodeList childNodes = parent.getChildNodes();
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node child = childNodes.item(i);
                 if (child.getNodeName().equals(nodeName)) {
                     return child;
-                } else if (child.hasChildNodes()) { 
+                } else if (child.hasChildNodes()) {
                     Node foundNode = findNode(child, nodeName);
                     if (foundNode != null) {
                         return foundNode;
-                    }
+                        }
                 }
             }
-            return null; // Node not found
+            return null;
         }
-    
+
         /**
-         * Buils the XML structure for adding new custom colors and writes them into the XMl document
+         * Builds the XML structure for adding new custom colors and writes them into the XMl document
          * @param document  XML Document object.
-                  * @throws IOException 
-                  */
+         * @throws IOException 
+         */
         private static void writeIntoTheme(Document document, String themeSelection, ZipOutputStream zipWrite) throws ParserConfigurationException, TransformerException, IOException {
+    
+            Node extLstNode = findNode(document, "a:extLst");
+            // TO-DO: Replace with user selected colors!
+            Element newElement = createCustClrElement(document, "TEST COLOR", "FFFFFF");
+            extLstNode.getParentNode().insertBefore(newElement, extLstNode);
             
-            // Create a new Document
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-        
-            // Create the parent element (example)
-            Element parentElement = document.createElementNS(NAMESPACE, "a:" + CUSTCLR_NODE);
-
-            // ######## DOESN'T WORK ########
-            
-            // Create new Custom colors
-            Element newElement = createCustClrElement(document, "TEST COLOR", "FFFFFF"); 
-
-            // Insert the new custom colors to the DOM
-            Node extLstNode = findNode(parentElement, "a:extLst"); 
-            if (extLstNode != null) {
-                parentElement.insertBefore(newElement, extLstNode);
-            }
-            
-            // #############################
-
             // Write the resulting XML to a ByteArrayOutputStream
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            // transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             DOMSource source = new DOMSource(document);
             StreamResult result = new StreamResult(outputStream); 
             transformer.transform(source, result);
@@ -369,15 +354,11 @@ public class presentation {
          * @return          Custom color as XML Element
          */
         private static Element createCustClrElement(Document document, String name, String value) {
-            // This needs to adjusted to be fed with the actual data (list?)
-            
             // Create the two elements that a custom color consists of
             Element custClrElement = document.createElementNS(NAMESPACE, "a:custClr"); 
             Element srgbClrElement = document.createElementNS(NAMESPACE, "a:srgbClr");
-            // Set the values for the custom color elements
             custClrElement.setAttribute("name", name);
             srgbClrElement.setAttribute("val", value);
-            // Append the srgbClr Element to the custClr Element 
             custClrElement.appendChild(srgbClrElement);
             return custClrElement;
         }
