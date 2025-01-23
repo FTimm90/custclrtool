@@ -163,33 +163,33 @@ public class presentation {
          * @param reader    Input XML Data
          * @param theme     Theme list to store the colors
         */
-            private static void processColorList(XMLStreamReader reader, List<String[]> theme) throws XMLStreamException {
+        private static void processColorList(XMLStreamReader reader, List<String[]> theme) throws XMLStreamException {
+        
+            String[] clrSet = new String[2]; // [0] = Name of the color, [1] = HEX Value of the color
             
-                String[] clrSet = new String[2]; // [0] = Name of the color, [1] = HEX Value of the color
-                
-                while (reader.hasNext()) {
-                    int eventType = reader.next();
+            while (reader.hasNext()) {
+                int eventType = reader.next();
 
-                    if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(CUSTCLR_NODE)) {
-                        break;
+                if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(CUSTCLR_NODE)) {
+                    break;
 
-                    } else if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("custClr")) {
-                        theme.add(clrSet.clone());
+                } else if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("custClr")) {
+                    theme.add(clrSet.clone());
 
-                    } else if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("custClr")) {
-                        String colorName = reader.getAttributeValue("", "name");
-                        if (colorName != null) {
-                            clrSet[0] = colorName;
-                        } else {
-                            clrSet[0] = " ";
-                        }
-
-                    } else if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("srgbClr")) {
-                        String colorValue = reader.getAttributeValue("", "val");
-                        clrSet[1] = colorValue;
+                } else if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("custClr")) {
+                    String colorName = reader.getAttributeValue("", "name");
+                    if (colorName != null) {
+                        clrSet[0] = colorName;
+                    } else {
+                        clrSet[0] = " ";
                     }
+
+                } else if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("srgbClr")) {
+                    String colorValue = reader.getAttributeValue("", "val");
+                    clrSet[1] = colorValue;
                 }
             }
+        }
     
         /**
          * Creates a copy of the .zip converted PowerPoint file 
@@ -378,7 +378,7 @@ public class presentation {
             newZip.renameTo(new File(newFilePath));
         }
 
-        private static char osPathSymbol() {
+        public static char osPathSymbol() {
             char pathDivider;
 
             String currentOS = System.getProperty("os.name");

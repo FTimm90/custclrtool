@@ -17,10 +17,7 @@ import scr.presentation.presentation;
 public class CustClrTool {
     public static void main(String[] args) {
         // Define Presentation
-        String sourcePath = System.getProperty("user.dir") + "/src/main/resources";
-        String source = sourcePath + "/test.pptx";
-        System.out.println(source);
-        Path filePath = Paths.get(source);
+        Path filePath = openPresentation();
 
         File presentationFile = new File(filePath.toString());
 
@@ -48,8 +45,7 @@ public class CustClrTool {
         testpres.fileExtension = "zip";
 
         // Need to update path to new extension
-        source = sourcePath + "/test.zip";
-        filePath = Paths.get(source);
+        String source = changeToZip(filePath).toString();
         List<List<List<String[]>>> themes = presentation.extractThemes(source);
         // printThemesList(themes);
 
@@ -90,6 +86,7 @@ public class CustClrTool {
     }
     
     private static void printThemesList(List<List<List<String[]>>> themes) {
+        // Mostly for debugging purposes
         for (List<List<String[]>> theme : themes) {
             System.out.println("Next Theme:");
             for (List<String[]> theme_content : theme) {
@@ -102,5 +99,21 @@ public class CustClrTool {
                 }
             }
         }
+    }
+
+    private static Path openPresentation() {
+        // Replace with actual open file dialog
+        String sourcePath = System.getProperty("user.dir") + "/src/main/resources";
+        String source = sourcePath + "/test.pptx";
+        Path filePath = Paths.get(source);
+        return filePath;
+    }
+
+    private static Path changeToZip(Path oldPath) {
+        // Temporary method
+        String oldPathCut = oldPath.toString().substring(0, oldPath.toString().lastIndexOf("."));
+        System.out.printf("the cut-up path is: %s\n", oldPathCut);
+        Path newPath = Paths.get(oldPathCut + ".zip");
+        return newPath;
     }
 }
