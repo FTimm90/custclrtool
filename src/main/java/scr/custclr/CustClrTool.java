@@ -12,10 +12,14 @@ import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 
 import scr.colorfield.colorfield;
+import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
 public class CustClrTool {
     public static void main(String[] args) {
+
+        new mainWindow();
+        
         // Define Presentation
         Path filePath = openPresentation();
 
@@ -112,7 +116,6 @@ public class CustClrTool {
     private static Path changeToZip(Path oldPath) {
         // Temporary method
         String oldPathCut = oldPath.toString().substring(0, oldPath.toString().lastIndexOf("."));
-        System.out.printf("the cut-up path is: %s\n", oldPathCut);
         Path newPath = Paths.get(oldPathCut + ".zip");
         return newPath;
     }
