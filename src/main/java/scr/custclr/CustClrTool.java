@@ -13,10 +13,11 @@ import scr.presentation.presentation;
 public class CustClrTool {
     
     public static presentation newpres;
+    public static mainWindow mainGUI;
         public static void main(String[] args) {
     
             SwingUtilities.invokeLater(() -> {
-                new mainWindow();
+                mainGUI = new mainWindow();
             });
     
             // // Need to update path to new extension

@@ -129,7 +129,7 @@ public class mainWindow extends JFrame implements ActionListener {
         
         JComboBox newCB = new JComboBox(themes);
         
-        newCB.setBounds(30, 90, 100, 30);
+        newCB.setBounds(30, 90, 200, 30);
 
         return newCB;
     }
@@ -144,7 +144,7 @@ public class mainWindow extends JFrame implements ActionListener {
         }
 
         themeSelection = comboBox(themesNumbered);
-        themeSelection.addActionListener(new mainWindow());
+        themeSelection.addActionListener(CustClrTool.mainGUI);
         centerPanel.add(themeSelection);
     }
     
