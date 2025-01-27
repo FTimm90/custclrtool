@@ -33,56 +33,57 @@ public class mainWindow extends JFrame implements ActionListener {
     final static Font BASE_FONT = new Font("roboto", Font.PLAIN, 12);
 
     JButton chooseFileButton;
-    JComboBox selectTheme;
+    static JComboBox themeSelection;
+        
     static JPanel centerPanel;
-    
-        public mainWindow() {
-            JFrame window = new JFrame();
-    
-            // Settings
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                    | UnsupportedLookAndFeelException e) {
-                // TODO Auto-generated catch block                e.printStackTrace();
-            }            
-            this.setTitle("CustClr Tool");
-            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            this.setSize(1080, 720);
-            this.setLayout(new BorderLayout());
-            this.setVisible(true);
-            // this.setResizable(false);
-    
-            // Formatting
-            String IconPath = System.getProperty("user.dir") + "/src/main/resources/scr_icon.png";
-            ImageIcon icon = new ImageIcon(IconPath);
-            this.setIconImage(icon.getImage());
-            this.getContentPane().setBackground(BACKGROUND);
-    
-            // Items
-            JPanel leftPanel = newPanel(0, 0, 0, 0, 250, 0, LIGHTER_BG);
-            this.add(leftPanel, BorderLayout.WEST);
-    
-            JPanel bottomPanel = newPanel(1, 0, 0, 0, 0, 30, LIGHTER_BG);
-            this.add(bottomPanel, BorderLayout.SOUTH);
-    
-            centerPanel = newPanel(0, 0, 0, 0, 20, 20, BACKGROUND);
-            centerPanel.setLayout(null);
-            this.add(centerPanel, BorderLayout.CENTER);
-    
-            chooseFileButton = newButton(30, 30, "Choose File", "Click to select a file from your computer.");
-            chooseFileButton.addActionListener(this);
-            centerPanel.add(chooseFileButton);
-    
-        }
+        
+    public mainWindow() {
+        JFrame window = new JFrame();
 
+        // Settings
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | UnsupportedLookAndFeelException e) {
+            // TODO Auto-generated catch block                e.printStackTrace();
+        }            
+        this.setTitle("CustClr Tool");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setSize(1080, 720);
+        this.setLayout(new BorderLayout());
+        this.setVisible(true);
+        // this.setResizable(false);
+
+        // Formatting
+        String IconPath = System.getProperty("user.dir") + "/src/main/resources/scr_icon.png";
+        ImageIcon icon = new ImageIcon(IconPath);
+        this.setIconImage(icon.getImage());
+        this.getContentPane().setBackground(BACKGROUND);
+
+        // Items
+        JPanel leftPanel = newPanel(0, 0, 0, 0, 250, 0, LIGHTER_BG);
+        this.add(leftPanel, BorderLayout.WEST);
+
+        JPanel bottomPanel = newPanel(1, 0, 0, 0, 0, 30, LIGHTER_BG);
+        this.add(bottomPanel, BorderLayout.SOUTH);
+
+        centerPanel = newPanel(0, 0, 0, 0, 20, 20, BACKGROUND);
+        centerPanel.setLayout(null);
+        this.add(centerPanel, BorderLayout.CENTER);
+
+        chooseFileButton = newButton(30, 30, "Choose File", "Click to select a file from your computer.");
+        chooseFileButton.addActionListener(this);
+        centerPanel.add(chooseFileButton);
+
+    }
+    
     private static Border createBorder(int top, int left, int bottom, int right) {
         
         Border generalBorder = BorderFactory.createMatteBorder(top, left, bottom, right, TEXT_GRAY);
         
         return generalBorder;
     }
-
+    
     private static JPanel newPanel(int borderTop,
                                     int borderLeft,
                                     int borderBottom,
@@ -102,7 +103,7 @@ public class mainWindow extends JFrame implements ActionListener {
 
         return panel;
     }
-    
+        
     private static JButton newButton(int posX, int posY, String text, String toolTip) {
 
         JButton swingButton = new JButton();
@@ -123,7 +124,7 @@ public class mainWindow extends JFrame implements ActionListener {
 
         return swingButton;
     }
-
+    
     private static JComboBox comboBox(String[] themes) {
         
         JComboBox newCB = new JComboBox(themes);
@@ -132,9 +133,18 @@ public class mainWindow extends JFrame implements ActionListener {
 
         return newCB;
     }
-            
+                
     private static void drawDropDown() {
-        JComboBox themeSelection = comboBox(CustClrTool.newpres.allThemes);
+        
+        int numberOfThemes = CustClrTool.newpres.allThemes.length;
+        String[] themesNumbered = new String[numberOfThemes];
+        
+        for (int i = 0; i < numberOfThemes; i++) {
+            themesNumbered[i] = (i + 1) + ". " + CustClrTool.newpres.allThemes[i];
+        }
+
+        themeSelection = comboBox(themesNumbered);
+        themeSelection.addActionListener(new mainWindow());
         centerPanel.add(themeSelection);
     }
     
@@ -146,18 +156,23 @@ public class mainWindow extends JFrame implements ActionListener {
             if (response == JFileChooser.APPROVE_OPTION) {
                 File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
 
-                CustClrTool.createNewPresentation(presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),
+                CustClrTool.createNewPresentation(
+                        presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),
                         presentation.getFilename(newPresentation.toString()),
                         presentation.getFileExtension(newPresentation.toString()));
-                
+
                 System.out.printf("Presentation path: %s\n", CustClrTool.newpres.filePath);
                 System.out.printf("Presentation name: %s\n", CustClrTool.newpres.fileName);
                 System.out.printf("Presentation extension: %s\n", CustClrTool.newpres.fileExtension);
-                
+
                 CustClrTool.readPresentation();
                 drawDropDown();
                 repaint();
             }
+        }
+        if (click.getSource() == themeSelection) {
+            int selection = themeSelection.getSelectedIndex();
+            System.out.println(selection);
         }
     }
 }
