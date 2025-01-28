@@ -14,17 +14,19 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 
+import scr.colorfield.colorfield;
 import scr.custclr.CustClrTool;
 import scr.presentation.presentation;
 
 public class mainWindow extends JFrame implements ActionListener {
     
     final static Color BACKGROUND = new Color(24, 24, 24);
-    final static Color LIGHTER_BG = new Color(31, 31, 31);
+    public final static Color LIGHTER_BG = new Color(31, 31, 31);
     final static Color SCR_GREEN = new Color(80, 170, 100);
     final static Color TEXT_GRAY = new Color(163, 163, 163);
     final static Color ENTRY_BG = new Color(20, 20, 20);
@@ -75,16 +77,35 @@ public class mainWindow extends JFrame implements ActionListener {
         chooseFileButton.addActionListener(this);
         centerPanel.add(chooseFileButton);
 
+        int row = 30;
+        int column = 120;
+
+        colorfield[] colorfields = new colorfield[50];
+        
+        for (int i = 0; i < 50; i++) {
+            colorfield colorWidget = new colorfield(row, column);
+            colorfields[i] = colorWidget;
+            centerPanel.add(colorWidget.widget);
+            // column += 170;            
+            if ((i + 1) % 10 == 0) {
+                row = 30;
+                column += 170;
+            }
+            else {
+                row += 150;
+            }            
+        }
+
     }
     
     private static Border createBorder(int top, int left, int bottom, int right) {
         
-        Border generalBorder = BorderFactory.createMatteBorder(top, left, bottom, right, TEXT_GRAY);
+        Border generalBorder = BorderFactory.createMatteBorder(top, left, bottom, right, BORDER);
         
         return generalBorder;
     }
     
-    private static JPanel newPanel(int borderTop,
+    public static JPanel newPanel(int borderTop,
                                     int borderLeft,
                                     int borderBottom,
                                     int borderRight,
@@ -147,6 +168,25 @@ public class mainWindow extends JFrame implements ActionListener {
         themeSelection.addActionListener(CustClrTool.mainGUI);
         centerPanel.add(themeSelection);
     }
+
+    public static JTextField newTextField(boolean editable, String tooltip, String previewText) {
+        
+        JTextField textfield = new JTextField();
+        
+        // Settings
+        textfield.setPreferredSize(new Dimension(100, 30));
+        textfield.setText(previewText);
+        textfield.setEditable(editable);
+        textfield.setFont(BASE_FONT);
+        textfield.createToolTip();
+        textfield.setToolTipText(tooltip);
+
+        // Formatting
+        textfield.setBackground(ENTRY_BG);
+        textfield.setCaretColor(Color.white);
+
+        return textfield;
+    } 
     
     @Override
     public void actionPerformed(ActionEvent click) {
