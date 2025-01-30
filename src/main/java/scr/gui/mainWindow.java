@@ -86,6 +86,7 @@ public class mainWindow extends JFrame implements ActionListener {
             colorfield colorWidget = new colorfield(row, column);
             colorfields[i] = colorWidget;
             centerPanel.add(colorWidget.widget);
+            colorfield.activateColorField.addActionListener(this); // does not work
             // column += 170;            
             if ((i + 1) % 10 == 0) {
                 row = 30;
@@ -213,6 +214,21 @@ public class mainWindow extends JFrame implements ActionListener {
         if (click.getSource() == themeSelection) {
             int selection = themeSelection.getSelectedIndex();
             System.out.println(selection);
+        }
+        if (click.getSource() == colorfield.activateColorField) {
+            // this does not work!!
+            System.out.println("Clicked the checkbox");
+            if (colorfield.activateColorField.isSelected()) {
+                colorfield.active = true;
+                colorfield.colorName.setEnabled(true);
+                colorfield.colorValue.setEnabled(true);
+                System.out.println("The colorfield is ACTIVE!");
+            } else {
+                colorfield.active = false;
+                colorfield.colorName.setEnabled(false);
+                colorfield.colorValue.setEnabled(false);
+                System.out.println("The colorfield is INACTIVE!");
+            }
         }
     }
 }
