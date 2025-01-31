@@ -10,13 +10,12 @@ import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 
 import scr.colorfield.colorfield;
@@ -43,15 +42,16 @@ public class mainWindow extends JFrame implements ActionListener {
         JFrame window = new JFrame();
 
         // Settings
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | UnsupportedLookAndFeelException e) {
-            // TODO Auto-generated catch block                e.printStackTrace();
-        }            
+        // try {
+        //     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        // } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+        //         | UnsupportedLookAndFeelException e) {
+        //     e.printStackTrace();
+        // }
+                    
         this.setTitle("CustClr Tool");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(1080, 720);
+        this.setSize(1320, 940);
         this.setLayout(new BorderLayout());
         this.setVisible(true);
         // this.setResizable(false);
@@ -63,8 +63,8 @@ public class mainWindow extends JFrame implements ActionListener {
         this.getContentPane().setBackground(BACKGROUND);
 
         // Items
-        JPanel leftPanel = newPanel(0, 0, 0, 0, 250, 0, LIGHTER_BG);
-        this.add(leftPanel, BorderLayout.WEST);
+        // JPanel leftPanel = newPanel(0, 0, 0, 0, 250, 0, LIGHTER_BG);
+        // this.add(leftPanel, BorderLayout.WEST);
 
         JPanel bottomPanel = newPanel(1, 0, 0, 0, 0, 30, LIGHTER_BG);
         this.add(bottomPanel, BorderLayout.SOUTH);
@@ -86,14 +86,27 @@ public class mainWindow extends JFrame implements ActionListener {
             colorfield colorWidget = new colorfield(row, column);
             colorfields[i] = colorWidget;
             centerPanel.add(colorWidget.widget);
-            colorfield.activateColorField.addActionListener(this); // does not work
-            // column += 170;            
+            colorWidget.activateColorField.addActionListener((ActionEvent check) -> {
+                JCheckBox cb = (JCheckBox) check.getSource();
+                if (cb.isSelected()) {
+                    colorWidget.active = true;
+                    colorWidget.colorName.setEditable(true);
+                    colorWidget.colorValue.setEditable(true);
+                    System.out.println("The colorfield is ACTIVE!");
+                } else {
+                    colorWidget.active = false;
+                    colorWidget.colorName.setEditable(false);
+                    colorWidget.colorValue.setEditable(false);
+                    System.out.println("The colorfield is INACTIVE!");
+                }
+            });            
+
             if ((i + 1) % 10 == 0) {
                 row = 30;
-                column += 170;
+                column += 145;
             }
             else {
-                row += 150;
+                row += 125;
             }            
         }
 
@@ -214,21 +227,6 @@ public class mainWindow extends JFrame implements ActionListener {
         if (click.getSource() == themeSelection) {
             int selection = themeSelection.getSelectedIndex();
             System.out.println(selection);
-        }
-        if (click.getSource() == colorfield.activateColorField) {
-            // this does not work!!
-            System.out.println("Clicked the checkbox");
-            if (colorfield.activateColorField.isSelected()) {
-                colorfield.active = true;
-                colorfield.colorName.setEnabled(true);
-                colorfield.colorValue.setEnabled(true);
-                System.out.println("The colorfield is ACTIVE!");
-            } else {
-                colorfield.active = false;
-                colorfield.colorName.setEnabled(false);
-                colorfield.colorValue.setEnabled(false);
-                System.out.println("The colorfield is INACTIVE!");
-            }
         }
     }
 }

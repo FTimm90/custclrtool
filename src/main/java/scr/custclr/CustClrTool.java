@@ -8,6 +8,19 @@ import javax.swing.SwingUtilities;
 import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
+// TO-DO:
+// Set the "active" status of the entry fields correctly (not clickable before anything is loaded)
+// Adjust color preview field according to user input
+// Load colors from theme
+// Gather colors from color fields
+// Write colors into theme
+// Custom color cache button
+// Adjust size
+// Adjust theme
+// Add textlabel presentation name
+// Add textlabel theme name
+// Add textlabel eventQ -> and define events
+
 public class CustClrTool {
     
     public static presentation newpres;
