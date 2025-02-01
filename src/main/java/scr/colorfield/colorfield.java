@@ -18,6 +18,7 @@ public class colorfield implements FocusListener {
     public JCheckBox activateColorField;
     public JTextField colorName;
     public JTextField colorValue;
+    public JPanel colorPreview;
             
     private int posX;
     private int posY;
@@ -49,9 +50,9 @@ public class colorfield implements FocusListener {
 
         // Items
         activateColorField = new JCheckBox();
-        // activateColorField.setEnabled(false); // this needs to be deactivated for testing purposes
         activateColorField.createToolTip();
         activateColorField.setToolTipText("Activate / deactivate this colorfield.");
+        activateColorField.setEnabled(false);
         colorfield.add(activateColorField);
 
         colorName = mainWindow.newTextField(textfieldsEditable, "Enter a name for the custom color if needed.",
@@ -59,7 +60,7 @@ public class colorfield implements FocusListener {
         colorName.addFocusListener(this);
         colorfield.add(colorName);
 
-        JPanel colorPreview = mainWindow.newPanel(1, 1, 1, 1, 20, 20, colorVal);
+        colorPreview = mainWindow.newPanel(1, 1, 1, 1, 20, 20, colorVal);
         colorfield.add(colorPreview);
 
         colorValue = mainWindow.newTextField(textfieldsEditable, "Enter color HEX Value.", "Color value");
@@ -96,6 +97,21 @@ public class colorfield implements FocusListener {
         return false;
     }
 
+    public void activateEntries(boolean off) {
+        if (off) {
+            colorName.setEnabled(false);
+            colorValue.setEnabled(false);
+            activateColorField.setEnabled(false);
+        }
+        colorName.setEnabled(true);
+        colorValue.setEnabled(true);
+        activateColorField.setEnabled(true);
+    }
+    
+    public void changeColor(Color color) {
+        colorPreview.setBackground(color);
+    }
+
     @Override
     public void focusGained(FocusEvent e) {
         
@@ -128,7 +144,9 @@ public class colorfield implements FocusListener {
                 boolean valid = validateUserInput(colorValue.getText(), true);
                 if (!valid) {
                     colorValue.setText("Invalid");
-                }
+                } else {
+                    changeColor(Color.decode("#" + colorValue.getText().trim())); 
+                }                               
             }
         } 
     }

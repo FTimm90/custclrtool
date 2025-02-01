@@ -34,9 +34,10 @@ public class mainWindow extends JFrame implements ActionListener {
     final static Font BASE_FONT = new Font("roboto", Font.PLAIN, 12);
 
     JButton chooseFileButton;
-    static JComboBox themeSelection;
-        
+    static JComboBox themeSelection;        
     static JPanel centerPanel;
+
+    colorfield[] colorfields;
         
     public mainWindow() {
         JFrame window = new JFrame();
@@ -80,7 +81,7 @@ public class mainWindow extends JFrame implements ActionListener {
         int row = 30;
         int column = 120;
 
-        colorfield[] colorfields = new colorfield[50];
+        colorfields = new colorfield[50];
         
         for (int i = 0; i < 50; i++) {
             colorfield colorWidget = new colorfield(row, column);
@@ -191,6 +192,7 @@ public class mainWindow extends JFrame implements ActionListener {
         textfield.setPreferredSize(new Dimension(100, 30));
         textfield.setText(previewText);
         textfield.setEditable(editable);
+        textfield.setEnabled(false);
         textfield.setFont(BASE_FONT);
         textfield.createToolTip();
         textfield.setToolTipText(tooltip);
@@ -226,6 +228,9 @@ public class mainWindow extends JFrame implements ActionListener {
         }
         if (click.getSource() == themeSelection) {
             int selection = themeSelection.getSelectedIndex();
+            for (colorfield colorfield : colorfields) {
+                colorfield.activateEntries(false);
+            }            
             System.out.println(selection);
         }
     }

@@ -9,8 +9,8 @@ import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
 // TO-DO:
-// Set the "active" status of the entry fields correctly (not clickable before anything is loaded)
-// Adjust color preview field according to user input
+// Set the "active" status of the entry fields correctly (not clickable before anything is loaded) ✅
+// Adjust color preview field according to user input ✅
 // Load colors from theme
 // Gather colors from color fields
 // Write colors into theme
