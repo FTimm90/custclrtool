@@ -97,7 +97,7 @@ public class colorfield implements FocusListener {
         return false;
     }
 
-    public void activateEntries(boolean off) {
+    public void activateEntry(boolean off) {
         if (off) {
             colorName.setEnabled(false);
             colorValue.setEnabled(false);

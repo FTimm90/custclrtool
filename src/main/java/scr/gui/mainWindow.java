@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -37,8 +38,8 @@ public class mainWindow extends JFrame implements ActionListener {
     static JComboBox themeSelection;        
     static JPanel centerPanel;
 
-    colorfield[] colorfields;
-        
+    static colorfield[] colorfields;
+            
     public mainWindow() {
         JFrame window = new JFrame();
 
@@ -62,10 +63,6 @@ public class mainWindow extends JFrame implements ActionListener {
         ImageIcon icon = new ImageIcon(IconPath);
         this.setIconImage(icon.getImage());
         this.getContentPane().setBackground(BACKGROUND);
-
-        // Items
-        // JPanel leftPanel = newPanel(0, 0, 0, 0, 250, 0, LIGHTER_BG);
-        // this.add(leftPanel, BorderLayout.WEST);
 
         JPanel bottomPanel = newPanel(1, 0, 0, 0, 0, 30, LIGHTER_BG);
         this.add(bottomPanel, BorderLayout.SOUTH);
@@ -112,14 +109,14 @@ public class mainWindow extends JFrame implements ActionListener {
         }
 
     }
-    
+        
     private static Border createBorder(int top, int left, int bottom, int right) {
         
         Border generalBorder = BorderFactory.createMatteBorder(top, left, bottom, right, BORDER);
         
         return generalBorder;
     }
-    
+        
     public static JPanel newPanel(int borderTop,
                                     int borderLeft,
                                     int borderBottom,
@@ -139,7 +136,7 @@ public class mainWindow extends JFrame implements ActionListener {
 
         return panel;
     }
-        
+            
     private static JButton newButton(int posX, int posY, String text, String toolTip) {
 
         JButton swingButton = new JButton();
@@ -160,7 +157,7 @@ public class mainWindow extends JFrame implements ActionListener {
 
         return swingButton;
     }
-    
+        
     private static JComboBox comboBox(String[] themes) {
         
         JComboBox newCB = new JComboBox(themes);
@@ -183,11 +180,11 @@ public class mainWindow extends JFrame implements ActionListener {
         themeSelection.addActionListener(CustClrTool.mainGUI);
         centerPanel.add(themeSelection);
     }
-
+    
     public static JTextField newTextField(boolean editable, String tooltip, String previewText) {
-        
+
         JTextField textfield = new JTextField();
-        
+
         // Settings
         textfield.setPreferredSize(new Dimension(100, 30));
         textfield.setText(previewText);
@@ -202,7 +199,21 @@ public class mainWindow extends JFrame implements ActionListener {
         textfield.setCaretColor(Color.white);
 
         return textfield;
-    } 
+    }
+        
+    public static void fillColorFields(List<List<List<String[]>>> themes, int themeSelection) {
+        List<List<String[]>> selectedTheme = themes.get(themeSelection);
+        for (int i = 1; i < selectedTheme.size(); i++) {
+            for (int j = 0; j < selectedTheme.get(i).size(); j++) {
+                colorfields[i].activateEntry(false);
+                String name = selectedTheme.get(i).get(j)[0];
+                String color = selectedTheme.get(i).get(j)[1];
+                colorfields[i].colorName.setText(name);
+                colorfields[i].colorValue.setText(color);
+                colorfields[i].changeColor(Color.decode("#" + color));
+            }
+        }
+    }
     
     @Override
     public void actionPerformed(ActionEvent click) {
@@ -216,11 +227,7 @@ public class mainWindow extends JFrame implements ActionListener {
                         presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),
                         presentation.getFilename(newPresentation.toString()),
                         presentation.getFileExtension(newPresentation.toString()));
-
-                System.out.printf("Presentation path: %s\n", CustClrTool.newpres.filePath);
-                System.out.printf("Presentation name: %s\n", CustClrTool.newpres.fileName);
-                System.out.printf("Presentation extension: %s\n", CustClrTool.newpres.fileExtension);
-
+                
                 CustClrTool.readPresentation();
                 drawDropDown();
                 repaint();
@@ -228,10 +235,12 @@ public class mainWindow extends JFrame implements ActionListener {
         }
         if (click.getSource() == themeSelection) {
             int selection = themeSelection.getSelectedIndex();
-            for (colorfield colorfield : colorfields) {
-                colorfield.activateEntries(false);
-            }            
+            // for (colorfield colorfield : colorfields) {
+            //     colorfield.activateEntries(false);
+            // }
+            fillColorFields(CustClrTool.themes, selection);
             System.out.println(selection);
+
         }
     }
 }

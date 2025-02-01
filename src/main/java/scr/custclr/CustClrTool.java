@@ -25,6 +25,7 @@ public class CustClrTool {
     
     public static presentation newpres;
     public static mainWindow mainGUI;
+    public static List<List<List<String[]>>> themes;
         public static void main(String[] args) {
     
             SwingUtilities.invokeLater(() -> {
@@ -36,7 +37,7 @@ public class CustClrTool {
         public static void readPresentation() {
             presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 1);
             String source = newpres.filePath + presentation.osPathSymbol() + newpres.fileName + ".zip";
-            List<List<List<String[]>>> themes = presentation.extractThemes(source);
+            themes = presentation.extractThemes(source);
             printThemesList(themes);
             presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 2);
         }
