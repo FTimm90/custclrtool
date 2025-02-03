@@ -11,10 +11,11 @@ import scr.presentation.presentation;
 // TO-DO:
 // Set the "active" status of the entry fields correctly (not clickable before anything is loaded) ✅
 // Adjust color preview field according to user input ✅
-// Load colors from theme
-// Gather colors from color fields
-// Write colors into theme
+// Load colors from theme ✅
+// Gather colors from color fields ✅
+// Write colors into theme ✅
 // Custom color cache button
+// Clear everything when new file is opened
 // Adjust size
 // Adjust theme
 // Add textlabel presentation name
@@ -36,14 +37,14 @@ public class CustClrTool {
         
         public static void readPresentation() {
             presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 1);
-            String source = newpres.filePath + presentation.osPathSymbol() + newpres.fileName + ".zip";
-            themes = presentation.extractThemes(source);
-            printThemesList(themes);
+            newpres.zipPathString = newpres.filePath + presentation.osPathSymbol() + newpres.fileName + ".zip";
+            themes = presentation.extractThemes( newpres.zipPathString);
+            // printThemesList(themes);
             presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 2);
         }
         
         private static void printThemesList(List<List<List<String[]>>> themes) {
-            // Mostly for debugging purposes
+            // DEBUGGING
             for (List<List<String[]>> theme : themes) {
                 System.out.println("Next Theme:");
                 for (List<String[]> theme_content : theme) {
@@ -63,10 +64,10 @@ public class CustClrTool {
             
             newpres = new presentation();
 
-        newpres.fileExtension = presentationExtension;
-        newpres.fileName = presentationName;
-        newpres.filePath = presentationPath;
+            newpres.fileExtension = presentationExtension;
+            newpres.fileName = presentationName;
+            newpres.filePath = presentationPath;
 
-        return newpres;
+            return newpres;
         }
 }

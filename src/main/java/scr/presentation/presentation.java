@@ -34,11 +34,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import scr.gui.mainWindow;
+
 public class presentation {
 
     public String filePath = "";
     public String fileName = "";
     public String fileExtension = "";
+    public String zipPathString;
 
     public static String[] allThemes;
     static List<List<List<String[]>>> foundThemes;
@@ -205,16 +208,18 @@ public class presentation {
      * and injects the modified .xml file
      * @param zipFilePath       Path of the .zip file
      * @param themeSelection    User selected theme file to modify
-     * @param filename          Base name of the file
+     * @param fileName          Base name of the file
      * @param filePath          Base path of the file
      */
-    public static void writeZipOutput(String zipFilePath, List<String[]> themeSelection, String filename, String filePath)
+    public static void writeZipOutput(String zipFilePath, String fileName, String filePath)
             throws FileNotFoundException, ParserConfigurationException, SAXException, TransformerException {
 
         final String ZIP_TMP = "_tmp.zip";
+
+        // mainWindow.printAllColors();
         
         // Create a new zipfile to copy all the contents over to
-        File zipNew = new File(filename + ZIP_TMP);
+        File zipNew = new File(fileName + ZIP_TMP);
         // Create an output stream for copying everything over
         ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipNew));
 
@@ -233,20 +238,19 @@ public class presentation {
 
                 InputStream inputStream = zipFile.getInputStream(entry);
 
-                if (type.equals("FILE") && name.contains(themeSelection.get(0)[0])) {
-                    processTheme(inputStream, themeSelection.get(0)[0], zipWrite);
+                if (type.equals("FILE") && name.contains(mainWindow.selectThemeFileName)) {
+                    processTheme(inputStream, mainWindow.selectThemeFileName, zipWrite);
                 }
                 else {
                     insertZipEntry(entry, zipWrite, inputStream);
                 }
                 
             }
-
             zipWrite.close();
         } catch (IOException ex) {
             System.err.println(ex);
         }
-        replaceOldFile(filename, filePath);
+        replaceOldFile(fileName, filePath);
     }
     
     /**
@@ -329,9 +333,15 @@ public class presentation {
     private static void writeIntoTheme(Document document, String themeSelection, ZipOutputStream zipWrite) throws ParserConfigurationException, TransformerException, IOException {
 
         Node extLstNode = findNode(document, "a:extLst");
-        // TO-DO: Replace with user selected colors!
-        Element newElement = createCustClrElement(document, "TEST COLOR", "FFFFFF");
-        extLstNode.getParentNode().insertBefore(newElement, extLstNode);
+        
+        Element listElement = document.createElementNS(NAMESPACE, "a:custClrLst");
+        List<String[]> userColors = mainWindow.fetchColors();
+        for (int i = 0; i < userColors.size(); i++) {
+            Element newElement = createCustClrElement(document, userColors.get(i)[0], userColors.get(i)[1]);
+            listElement.appendChild(newElement);
+        }
+        
+        extLstNode.getParentNode().insertBefore(listElement, extLstNode);
         
         // Write the resulting XML to a ByteArrayOutputStream
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); 

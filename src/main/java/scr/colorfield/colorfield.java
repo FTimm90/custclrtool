@@ -13,7 +13,6 @@ import scr.gui.mainWindow;
 
 public class colorfield implements FocusListener {    
 
-    public boolean active = false;
     public JPanel widget;
     public JCheckBox activateColorField;
     public JTextField colorName;
@@ -42,7 +41,6 @@ public class colorfield implements FocusListener {
     private JPanel colorFieldWidget(int posX, int posY) {
 
         boolean textfieldsEditable = false;
-        Color colorVal = new Color(20, 200, 20);
 
         // Settings
         JPanel colorfield = mainWindow.newPanel(0, 0, 0, 0, 120, 140, mainWindow.LIGHTER_BG);
@@ -60,7 +58,7 @@ public class colorfield implements FocusListener {
         colorName.addFocusListener(this);
         colorfield.add(colorName);
 
-        colorPreview = mainWindow.newPanel(1, 1, 1, 1, 20, 20, colorVal);
+        colorPreview = mainWindow.newPanel(1, 1, 1, 1, 20, 20, mainWindow.BACKGROUND);
         colorfield.add(colorPreview);
 
         colorValue = mainWindow.newTextField(textfieldsEditable, "Enter color HEX Value.", "Color value");
