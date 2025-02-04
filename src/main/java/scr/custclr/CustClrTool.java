@@ -14,7 +14,7 @@ import scr.presentation.presentation;
 // Load colors from theme ✅
 // Gather colors from color fields ✅
 // Write colors into theme ✅
-// Custom color cache button
+// Custom color cache button ✅
 // Clear everything when new file is opened
 // Adjust size
 // Adjust theme

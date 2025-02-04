@@ -39,16 +39,19 @@ public class mainWindow extends JFrame implements ActionListener {
     final static Color ENTRY_BG = new Color(20, 20, 20);
     final static Color BORDER = new Color(36, 36, 36);
 
-    final static Font BASE_FONT = new Font("roboto", Font.PLAIN, 12);
+    final static Font BASE_FONT = new Font("roboto", Font.PLAIN, 11);
 
     public static String selectThemeFileName;
     
         JButton chooseFileButton;
         JButton applyButton;
+        JButton cacheButton;
+        JButton loadCacheButton;
         static JComboBox themeSelection;        
         static JPanel centerPanel;
     
         static colorfield[] colorfields;
+        static colorfield[] colorfieldCache;
                 
         public mainWindow() {
             JFrame window = new JFrame();
@@ -85,13 +88,13 @@ public class mainWindow extends JFrame implements ActionListener {
             chooseFileButton.addActionListener(this);
             centerPanel.add(chooseFileButton);
     
-            int row = 30;
-            int column = 120;
+            int column = 30;
+            int row = 150;
     
             colorfields = new colorfield[50];
             
             for (int i = 0; i < 50; i++) {
-                colorfield colorWidget = new colorfield(row, column);
+                colorfield colorWidget = new colorfield(column, row);
                 colorfields[i] = colorWidget;
                 centerPanel.add(colorWidget.widget);
                 colorWidget.activateColorField.addActionListener((ActionEvent check) -> {
@@ -108,16 +111,29 @@ public class mainWindow extends JFrame implements ActionListener {
                 });
     
                 if ((i + 1) % 10 == 0) {
-                    row = 30;
-                    column += 145;
+                    column = 30;
+                    // Vertical distance between color fields
+                    row += 115;
                 } else {
-                    row += 125;
+                    // Horizontal distance between color fields
+                    column += 125;
                 }
             }
             
-            applyButton = newButton(30, 850, "Apply", "Write the custom colors into the file.");
+            applyButton = newButton(30, 740, "Apply", "Write the custom colors into the file.");
             applyButton.addActionListener(this);
+            applyButton.setEnabled(false);
             centerPanel.add(applyButton);
+
+            cacheButton = newButton(1050, 740, "Cache colors", "Store the current custom colors to write into a different theme.");
+            cacheButton.addActionListener(this);
+            cacheButton.setEnabled(false);
+            centerPanel.add(cacheButton);
+
+            loadCacheButton = newButton(1175, 740, "Load cache", "Apply the stored custom colors to the current theme.");
+            loadCacheButton.addActionListener(this);
+            loadCacheButton.setEnabled(false);
+            centerPanel.add(loadCacheButton);
     
         }
             
@@ -197,7 +213,7 @@ public class mainWindow extends JFrame implements ActionListener {
             JTextField textfield = new JTextField();
     
             // Settings
-            textfield.setPreferredSize(new Dimension(100, 30));
+            textfield.setPreferredSize(new Dimension(100, 20));
             textfield.setText(previewText);
             textfield.setEditable(editable);
             textfield.setEnabled(false);
@@ -233,8 +249,8 @@ public class mainWindow extends JFrame implements ActionListener {
         for (int i = 0; i < colorfields.length; i++) {
             if (colorfields[i].activateColorField.isSelected()) {
                 String[] addcolor = new String[2];
-                addcolor[0] = colorfields[i].colorName.getText();
-                addcolor[1] = colorfields[i].colorValue.getText();
+                addcolor[0] = colorfields[i].colorName.getText().trim();
+                addcolor[1] = colorfields[i].colorValue.getText().trim();
                 fetchedColors.add(addcolor);
             }
         }
@@ -253,9 +269,64 @@ public class mainWindow extends JFrame implements ActionListener {
             }
 
             System.out.printf("Colorfield Nr.%d\n", i);
-            System.out.printf("Color Name: %s\n", colorfields[i].colorName.getText());
-            System.out.printf("Color Value: %s\n", colorfields[i].colorValue.getText());
-            System.out.printf("Color Checkbox: %s\n", checkBoxValue);
+            System.out.printf("Color Name:%s\n", colorfields[i].colorName.getText());
+            System.out.printf("Color Value:%s\n", colorfields[i].colorValue.getText());
+            System.out.printf("Color Checkbox:%s\n", checkBoxValue);
+        }
+    }
+
+    private static void printCachedColors() {
+        // DEBUGGING
+        for (int i = 0; i < colorfieldCache.length; i++) {
+            String checkBoxValue;
+            if (colorfieldCache[i].activateColorField.isSelected()) {
+                checkBoxValue = "checked!";
+            } else {
+                checkBoxValue = "not checked!";
+            }
+
+            System.out.printf("Colorfield Nr.%d\n", i);
+            System.out.printf("Color Name:%s\n", colorfieldCache[i].colorName.getText());
+            System.out.printf("Color Value:%s\n", colorfieldCache[i].colorValue.getText());
+            System.out.printf("Color Checkbox:%s\n", checkBoxValue);
+        }
+    }
+
+    private static void activateAllColorfields() {
+        for (colorfield colorfield : colorfields) {
+            colorfield.activateEntry(false);
+            colorfield.clearColorField();
+        }
+    }
+    
+    /**
+     * @param in if true current fields -> cache
+     * @return
+     */
+    private static colorfield[] cacheColorFields(boolean in) {
+        if (in) {
+            colorfieldCache = new colorfield[50];
+            for (int i = 0; i < colorfields.length; i++) {
+                colorfield colorCacheWidget = new colorfield(colorfields[i].posX, colorfields[i].posY);                
+                if (colorfields[i].activateColorField.isSelected()) {
+                    colorCacheWidget.activateColorField.setSelected(true);
+                }
+                colorCacheWidget.colorName.setText(colorfields[i].colorName.getText());
+                colorCacheWidget.colorValue.setText(colorfields[i].colorValue.getText());
+                colorCacheWidget.colorPreview.setBackground(colorfields[i].colorPreview.getBackground());
+                colorfieldCache[i] = colorCacheWidget;
+            }
+            return colorfieldCache;
+        } else {
+            for (int j = 0; j < colorfields.length; j++) {
+                if (colorfieldCache[j].activateColorField.isSelected()) {
+                    colorfields[j].activateColorField.setSelected(true);
+                }
+                colorfields[j].colorName.setText(colorfieldCache[j].colorName.getText());
+                colorfields[j].colorValue.setText(colorfieldCache[j].colorValue.getText());
+                colorfields[j].colorPreview.setBackground(colorfieldCache[j].colorPreview.getBackground());
+            }
+            return colorfields;
         }
     }
     
@@ -263,10 +334,9 @@ public class mainWindow extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent click) {
         if (click.getSource() == chooseFileButton) {
             JFileChooser presentationSelection = new JFileChooser();
-            int response = presentationSelection.showOpenDialog(null);
+            int response = presentationSelection.showOpenDialog(null);            
             if (response == JFileChooser.APPROVE_OPTION) {
                 File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
-
                 CustClrTool.createNewPresentation(
                         presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),
                         presentation.getFilename(newPresentation.toString()),
@@ -279,22 +349,34 @@ public class mainWindow extends JFrame implements ActionListener {
         }
         else if (click.getSource() == themeSelection) {
             int selection = themeSelection.getSelectedIndex();
-            for (colorfield colorfield : colorfields) {
-                colorfield.activateEntry(false);
-            }
+            activateAllColorfields();
             fillColorFields(CustClrTool.themes, selection);
-            System.out.println(selection);
+            cacheButton.setEnabled(true);
+            applyButton.setEnabled(true);
         }
         else if (click.getSource() == applyButton) {
+            // printAllColors();
             try {
                 String filePath = CustClrTool.newpres.filePath;
                 String fileName = CustClrTool.newpres.fileName;
                 String zipPath = CustClrTool.newpres.zipPathString;
-                
+
                 presentation.changeExtension(Paths.get(filePath), fileName, CustClrTool.newpres.fileExtension, 1);
                 presentation.writeZipOutput(zipPath, fileName, filePath);
             } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
             }
+            for (colorfield colorfield : colorfields) {
+                colorfield.clearColorField();
+                colorfield.activateEntry(true);
+            }            
+            cacheButton.setEnabled(false);
+        }
+        else if (click.getSource() == cacheButton) {
+            cacheColorFields(true);
+            loadCacheButton.setEnabled(true);
+        }
+        else if (click.getSource() == loadCacheButton) {
+            cacheColorFields(false);
         }
     }
 }

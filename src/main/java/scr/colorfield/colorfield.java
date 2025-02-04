@@ -19,8 +19,8 @@ public class colorfield implements FocusListener {
     public JTextField colorValue;
     public JPanel colorPreview;
             
-    private int posX;
-    private int posY;
+    public int posX;
+    public int posY;
     
     public colorfield(int posX, int posY) {
         this.posX = posX;
@@ -44,7 +44,7 @@ public class colorfield implements FocusListener {
 
         // Settings
         JPanel colorfield = mainWindow.newPanel(0, 0, 0, 0, 120, 140, mainWindow.LIGHTER_BG);
-        colorfield.setBounds(posX, posY, 120, 140);
+        colorfield.setBounds(posX, posY, 120, 110);
 
         // Items
         activateColorField = new JCheckBox();
@@ -95,10 +95,14 @@ public class colorfield implements FocusListener {
         return false;
     }
 
+    /**
+     * @param off true = the field is deactivated
+     */
     public void activateEntry(boolean off) {
         if (off) {
             colorName.setEnabled(false);
             colorValue.setEnabled(false);
+            activateColorField.setSelected(false);
             activateColorField.setEnabled(false);
         }
         colorName.setEnabled(true);
@@ -108,6 +112,13 @@ public class colorfield implements FocusListener {
     
     public void changeColor(Color color) {
         colorPreview.setBackground(color);
+    }
+
+    public void clearColorField() {
+        colorName.setText("Color name");
+        colorValue.setText("Color value");
+        activateColorField.setSelected(false);
+        changeColor(mainWindow.BACKGROUND);
     }
 
     @Override
