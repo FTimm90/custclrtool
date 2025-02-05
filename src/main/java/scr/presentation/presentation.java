@@ -44,7 +44,7 @@ public class presentation {
     public String zipPathString;
 
     public static String[] allThemes;
-    static List<List<List<String[]>>> foundThemes;
+    public static List<List<List<String[]>>> foundThemes;
         
         final static String CUSTCLR_NODE = "custClrLst";
         final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -62,6 +62,15 @@ public class presentation {
         public static String getFilePath(String path) {
             String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
             return filename;
+        }
+
+        public void clearPresentationObject() {
+            filePath = "";
+            fileName = "";
+            fileExtension = "";
+            zipPathString = "";
+            allThemes = new String[0];
+            foundThemes = new ArrayList<>();
         }
     
         /**

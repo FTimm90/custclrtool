@@ -299,34 +299,29 @@ public class mainWindow extends JFrame implements ActionListener {
         }
     }
     
-    /**
-     * @param in if true current fields -> cache
-     * @return
-     */
-    private static colorfield[] cacheColorFields(boolean in) {
-        if (in) {
-            colorfieldCache = new colorfield[50];
-            for (int i = 0; i < colorfields.length; i++) {
-                colorfield colorCacheWidget = new colorfield(colorfields[i].posX, colorfields[i].posY);                
-                if (colorfields[i].activateColorField.isSelected()) {
-                    colorCacheWidget.activateColorField.setSelected(true);
-                }
-                colorCacheWidget.colorName.setText(colorfields[i].colorName.getText());
-                colorCacheWidget.colorValue.setText(colorfields[i].colorValue.getText());
-                colorCacheWidget.colorPreview.setBackground(colorfields[i].colorPreview.getBackground());
-                colorfieldCache[i] = colorCacheWidget;
+    private static colorfield[] cacheColorFields() {
+        colorfieldCache = new colorfield[50];
+        for (int i = 0; i < colorfields.length; i++) {
+            colorfield colorCacheWidget = new colorfield(colorfields[i].posX, colorfields[i].posY);
+            if (colorfields[i].activateColorField.isSelected()) {
+                colorCacheWidget.activateColorField.setSelected(true);
             }
-            return colorfieldCache;
-        } else {
-            for (int j = 0; j < colorfields.length; j++) {
-                if (colorfieldCache[j].activateColorField.isSelected()) {
-                    colorfields[j].activateColorField.setSelected(true);
-                }
-                colorfields[j].colorName.setText(colorfieldCache[j].colorName.getText());
-                colorfields[j].colorValue.setText(colorfieldCache[j].colorValue.getText());
-                colorfields[j].colorPreview.setBackground(colorfieldCache[j].colorPreview.getBackground());
+            colorCacheWidget.colorName.setText(colorfields[i].colorName.getText());
+            colorCacheWidget.colorValue.setText(colorfields[i].colorValue.getText());
+            colorCacheWidget.colorPreview.setBackground(colorfields[i].colorPreview.getBackground());
+            colorfieldCache[i] = colorCacheWidget;
+        }
+        return colorfieldCache;
+    }
+    
+    private static void applyCachedColors() {
+        for (int i = 0; i < colorfields.length; i++) {
+            if (colorfieldCache[i].activateColorField.isSelected()) {
+                colorfields[i].activateColorField.setSelected(true);
             }
-            return colorfields;
+            colorfields[i].colorName.setText(colorfieldCache[i].colorName.getText());
+            colorfields[i].colorValue.setText(colorfieldCache[i].colorValue.getText());
+            colorfields[i].colorPreview.setBackground(colorfieldCache[i].colorPreview.getBackground());
         }
     }
     
@@ -336,6 +331,15 @@ public class mainWindow extends JFrame implements ActionListener {
             JFileChooser presentationSelection = new JFileChooser();
             int response = presentationSelection.showOpenDialog(null);            
             if (response == JFileChooser.APPROVE_OPTION) {
+                // Doesn't really work yet. When opening a new file everything bugs out
+                if (CustClrTool.newpres != null) {
+                    for (colorfield colorfield : colorfields)
+                        colorfield.clearColorField();
+                    CustClrTool.newpres.clearPresentationObject();
+                    drawDropDown();
+                }
+                // -------
+                
                 File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
                 CustClrTool.createNewPresentation(
                         presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),
@@ -372,11 +376,11 @@ public class mainWindow extends JFrame implements ActionListener {
             cacheButton.setEnabled(false);
         }
         else if (click.getSource() == cacheButton) {
-            cacheColorFields(true);
+            cacheColorFields();
             loadCacheButton.setEnabled(true);
         }
         else if (click.getSource() == loadCacheButton) {
-            cacheColorFields(false);
+            applyCachedColors();
         }
     }
 }
