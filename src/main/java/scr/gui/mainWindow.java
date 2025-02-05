@@ -195,7 +195,6 @@ public class mainWindow extends JFrame implements ActionListener {
         }
                     
         private static void drawDropDown() {
-            
             int numberOfThemes = CustClrTool.newpres.allThemes.length;
             String[] themesNumbered = new String[numberOfThemes];
             
@@ -331,15 +330,23 @@ public class mainWindow extends JFrame implements ActionListener {
             JFileChooser presentationSelection = new JFileChooser();
             int response = presentationSelection.showOpenDialog(null);            
             if (response == JFileChooser.APPROVE_OPTION) {
-                // Doesn't really work yet. When opening a new file everything bugs out
                 if (CustClrTool.newpres != null) {
-                    for (colorfield colorfield : colorfields)
+                    /*Something about this doesn't work.
+                    * when opening a new presentation after one has already been opened
+                    * newpres.allThemes is correct, themesNumbered is correct
+                    * but the dropdown list does not get updated properly and keeps
+                    * all the old entries from the first file opened.
+                    * The problem seems to be with the dropdown widget.
+                    * Maybe try adding a function that specifically destroys
+                    * and rebuilds it, coupled with a repaint.
+                    */
+                    for (colorfield colorfield : colorfields) {
                         colorfield.clearColorField();
+                    }                        
                     CustClrTool.newpres.clearPresentationObject();
-                    drawDropDown();
-                }
-                // -------
-                
+                    themeSelection.remove(CustClrTool.mainGUI);
+                    repaint();
+                }                
                 File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
                 CustClrTool.createNewPresentation(
                         presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),

@@ -16,7 +16,7 @@ import scr.presentation.presentation;
 // Write colors into theme ✅
 // Custom color cache button ✅
 // Clear everything when new file is opened
-// Adjust size
+// Adjust size ✅
 // Adjust theme
 // Add textlabel presentation name
 // Add textlabel theme name
@@ -38,7 +38,8 @@ public class CustClrTool {
         public static void readPresentation() {
             presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 1);
             newpres.zipPathString = newpres.filePath + presentation.osPathSymbol() + newpres.fileName + ".zip";
-            themes = presentation.extractThemes( newpres.zipPathString);
+            themes = newpres.extractThemes(newpres.zipPathString);
+            // DEBUGGING
             // printThemesList(themes);
             presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 2);
         }

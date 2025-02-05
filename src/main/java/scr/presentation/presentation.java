@@ -43,7 +43,7 @@ public class presentation {
     public String fileExtension = "";
     public String zipPathString;
 
-    public static String[] allThemes;
+    public String[] allThemes;
     public static List<List<List<String[]>>> foundThemes;
         
         final static String CUSTCLR_NODE = "custClrLst";
@@ -112,35 +112,39 @@ public class presentation {
          *                      theme Information.
          *                      per theme: [[Theme#, Theme Name],[Color Name, Color Value], ...]
          */
-        public static List<List<List<String[]>>> extractThemes(String zipFilePath) {
-    
+        public List<List<List<String[]>>> extractThemes(String zipFilePath) {
+
             foundThemes = new ArrayList<>();
 
-        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                String name = entry.getName();
-                String type = entry.isDirectory() ? "DIR" : "FILE";
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    String type = entry.isDirectory() ? "DIR" : "FILE";
 
-                if (type.equals("FILE") && name.contains("theme")) {
-                    List<List<String[]>> themeData = extractThemeData(zipFile.getInputStream(entry), name);
-                    foundThemes.add(themeData);
+                    if (type.equals("FILE") && name.contains("theme")) {
+                        List<List<String[]>> themeData = extractThemeData(zipFile.getInputStream(entry), name);
+                        foundThemes.add(themeData);
+                    }
                 }
+
+                populateAllThemesList();
+
+            } catch (IOException | XMLStreamException ex) {
+                System.err.println(ex);
             }
 
-            allThemes = new String[foundThemes.size()];
-            for (int i = 0; i < foundThemes.size(); i++) {
+            return foundThemes;
+        }
+    
+        private void populateAllThemesList() {
+        allThemes = new String[foundThemes.size()];
+        for (int i = 0; i < foundThemes.size(); i++) {
                 allThemes[i] = foundThemes.get(i).get(0).get(0)[1];
             }
-            
-        } catch (IOException | XMLStreamException ex) {
-            System.err.println(ex);
-        }
-
-        return foundThemes;
-    }
+        }   
 
     /**
      * Extracts Data from the theme selection (Theme name & 
