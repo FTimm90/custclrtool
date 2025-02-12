@@ -21,6 +21,7 @@ import scr.presentation.presentation;
 // Add textlabel presentation name
 // Add textlabel theme name
 // Add textlabel eventQ -> and define events
+// "Setter" & "Getter" methods
 
 public class CustClrTool {
     
