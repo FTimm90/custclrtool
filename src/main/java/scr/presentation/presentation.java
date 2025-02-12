@@ -46,105 +46,105 @@ public class presentation {
     public String[] allThemes;
     public static List<List<List<String[]>>> foundThemes;
         
-        final static String CUSTCLR_NODE = "custClrLst";
-        final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
-    
-        public static String getFileExtension(String path) {
-            String fileextension = path.substring(path.lastIndexOf('.') + 1);
-            return fileextension;
-        }
-    
-        public static String getFilename(String path) {
-            String filename = path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
-            return filename;
-        }
-    
-        public static String getFilePath(String path) {
-            String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
-            return filename;
+    final static String CUSTCLR_NODE = "custClrLst";
+    final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
+
+    public static String getFileExtension(String path) {
+        String fileextension = path.substring(path.lastIndexOf('.') + 1);
+        return fileextension;
+    }
+
+    public static String getFilename(String path) {
+        String filename = path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
+        return filename;
+    }
+
+    public static String getFilePath(String path) {
+        String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
+        return filename;
+    }
+
+    public void clearPresentationObject() {
+        filePath = "";
+        fileName = "";
+        fileExtension = "";
+        zipPathString = "";
+        allThemes = new String[0];
+        foundThemes = new ArrayList<>();
+    }
+
+    /**
+     * Changes the extension of the specified file.
+     * @param filePath      the path of the file
+     * @param fileName      the name of the file
+     * @param fileExtension the original file extension
+     * @param extension     the desired extension. 1 = .zip, anything else = original extension
+     */
+    public static void changeExtension(Path filePath, String fileName, String fileExtension, int extension) {
+
+        Path oldFile;
+        String newExtension;
+        
+        if (extension == 1){
+            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + "." + fileExtension);
+            newExtension = ".zip";
+        }  
+        else {
+            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + ".zip");
+            newExtension = "." + fileExtension;
+        }            
+
+        String newFileName = fileName + newExtension;
+        try {
+            Files.move(oldFile, oldFile.resolveSibling(newFileName));
+            System.out.printf("file converted to %s\n", newExtension);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        public void clearPresentationObject() {
-            filePath = "";
-            fileName = "";
-            fileExtension = "";
-            zipPathString = "";
-            allThemes = new String[0];
-            foundThemes = new ArrayList<>();
-        }
-    
-        /**
-         * Changes the extension of the specified file.
-         * @param filePath      the path of the file
-         * @param fileName      the name of the file
-         * @param fileExtension the original file extension
-         * @param extension     the desired extension. 1 = .zip, anything else = original extension
-         */
-        public static void changeExtension(Path filePath, String fileName, String fileExtension, int extension) {
-    
-            Path oldFile;
-            String newExtension;
-            
-            if (extension == 1){
-                oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + "." + fileExtension);
-                newExtension = ".zip";
-            }  
-            else {
-                oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + ".zip");
-                newExtension = "." + fileExtension;
-            }            
-    
-            String newFileName = fileName + newExtension;
-            try {
-                Files.move(oldFile, oldFile.resolveSibling(newFileName));
-                System.out.printf("file converted to %s\n", newExtension);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-    
-        }
-            
-        /**
-         * Processes the contents of the .zip version of the presentation file 
-         * to extract information about existing custom colors
-         * @param zipFilePath   The path to the zipfile converted from the pptx.
-         * @return              Returns a nested list with the extracted
-         *                      theme Information.
-         *                      per theme: [[Theme#, Theme Name],[Color Name, Color Value], ...]
-         */
-        public List<List<List<String[]>>> extractThemes(String zipFilePath) {
+    }
+        
+    /**
+     * Processes the contents of the .zip version of the presentation file 
+     * to extract information about existing custom colors
+     * @param zipFilePath   The path to the zipfile converted from the pptx.
+     * @return              Returns a nested list with the extracted
+     *                      theme Information.
+     *                      per theme: [[Theme#, Theme Name],[Color Name, Color Value], ...]
+     */
+    public List<List<List<String[]>>> extractThemes(String zipFilePath) {
 
-            foundThemes = new ArrayList<>();
+        foundThemes = new ArrayList<>();
 
-            try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-                    String name = entry.getName();
-                    String type = entry.isDirectory() ? "DIR" : "FILE";
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String name = entry.getName();
+                String type = entry.isDirectory() ? "DIR" : "FILE";
 
-                    if (type.equals("FILE") && name.contains("theme")) {
-                        List<List<String[]>> themeData = extractThemeData(zipFile.getInputStream(entry), name);
-                        foundThemes.add(themeData);
-                    }
+                if (type.equals("FILE") && name.contains("theme")) {
+                    List<List<String[]>> themeData = extractThemeData(zipFile.getInputStream(entry), name);
+                    foundThemes.add(themeData);
                 }
-
-                populateAllThemesList();
-
-            } catch (IOException | XMLStreamException ex) {
-                System.err.println(ex);
             }
 
-            return foundThemes;
+            populateAllThemesList();
+
+        } catch (IOException | XMLStreamException ex) {
+            System.err.println(ex);
         }
-    
-        private void populateAllThemesList() {
-        allThemes = new String[foundThemes.size()];
-        for (int i = 0; i < foundThemes.size(); i++) {
-                allThemes[i] = foundThemes.get(i).get(0).get(0)[1];
-            }
-        }   
+
+        return foundThemes;
+    }
+
+    private void populateAllThemesList() {
+    allThemes = new String[foundThemes.size()];
+    for (int i = 0; i < foundThemes.size(); i++) {
+            allThemes[i] = foundThemes.get(i).get(0).get(0)[1];
+        }
+    }   
 
     /**
      * Extracts Data from the theme selection (Theme name & 
@@ -229,6 +229,7 @@ public class presentation {
 
         final String ZIP_TMP = "_tmp.zip";
 
+        // DEBUGGING
         // mainWindow.printAllColors();
         
         // Create a new zipfile to copy all the contents over to

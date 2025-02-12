@@ -46,6 +46,7 @@ public class mainWindow extends JFrame {
     static JButton applyButton;
     static JButton cacheButton;
     JButton loadCacheButton;
+    static JButton testButton;
     static JComboBox<String> themeSelection;        
     static JPanel centerPanel;
 
@@ -89,21 +90,14 @@ public class mainWindow extends JFrame {
             int response = presentationSelection.showOpenDialog(null);            
             if (response == JFileChooser.APPROVE_OPTION) {
                 if (CustClrTool.newpres != null) {
-                    /*Something about this doesn't work.
-                    * when opening a new presentation after one has already been opened
-                    * newpres.allThemes is correct, themesNumbered is correct
-                    * but the dropdown list does not get updated properly and keeps
-                    * all the old entries from the first file opened.
-                    * The problem seems to be with the dropdown widget.
-                    * Maybe try adding a function that specifically destroys
-                    * and rebuilds it, coupled with a repaint.
-                    */
                     for (colorfield colorfield : colorfields) {
                         colorfield.clearColorField();
                     }                        
                     CustClrTool.newpres.clearPresentationObject();
-                    themeSelection.remove(CustClrTool.mainGUI);
-                    repaint();
+                    centerPanel.remove(themeSelection);
+                    centerPanel.revalidate();
+                    centerPanel.repaint();
+                    themeSelection = null;
                 }                
                 File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
                 CustClrTool.createNewPresentation(
@@ -152,6 +146,7 @@ public class mainWindow extends JFrame {
         
         applyButton = newButton(30, 740, "Apply", "Write the custom colors into the file.");
         applyButton.addActionListener(click -> {
+            // DEBUGGING
             // printAllColors();
             try {
                 String filePath = CustClrTool.newpres.filePath;
@@ -165,7 +160,9 @@ public class mainWindow extends JFrame {
             for (colorfield colorfield : colorfields) {
                 colorfield.clearColorField();
                 colorfield.activateEntry(true);
-            }            
+            }
+            // clearDropDown(themeSelection);
+            // themeSelection.setEnabled(false);
             cacheButton.setEnabled(false);
         });
         applyButton.setEnabled(false);
@@ -185,6 +182,12 @@ public class mainWindow extends JFrame {
         });
         loadCacheButton.setEnabled(false);
         centerPanel.add(loadCacheButton);
+
+        // testButton = newButton(600, 740, "TEST", "this is just to test things");
+        // testButton.addActionListener(click -> {
+        //     System.out.println("clicked the button!");
+        // });
+        // centerPanel.add(testButton);
 
     }
                             
@@ -237,9 +240,9 @@ public class mainWindow extends JFrame {
     }
                     
     private static JComboBox<String> comboBox(String[] themes) {
-        
+
         JComboBox<String> newCB = new JComboBox<>(themes);
-        
+
         newCB.setBounds(30, 90, 200, 30);
 
         return newCB;
@@ -248,7 +251,7 @@ public class mainWindow extends JFrame {
     private static void drawDropDown() {
         int numberOfThemes = CustClrTool.newpres.allThemes.length;
         String[] themesNumbered = new String[numberOfThemes];
-        
+
         for (int i = 0; i < numberOfThemes; i++) {
             themesNumbered[i] = (i + 1) + ". " + CustClrTool.newpres.allThemes[i];
         }
@@ -259,7 +262,7 @@ public class mainWindow extends JFrame {
             activateAllColorfields();
             fillColorFields(CustClrTool.themes, selection);
             cacheButton.setEnabled(true);
-        applyButton.setEnabled(true);
+            applyButton.setEnabled(true);
         });
         centerPanel.add(themeSelection);
     }
