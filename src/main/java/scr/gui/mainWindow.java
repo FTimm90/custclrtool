@@ -46,7 +46,7 @@ public class mainWindow extends JFrame {
     static JPanel centerPanel;
     JPanel bottomPanel;
     JLabel presentationNameLabel;
-    JLabel eventLog;
+    public JLabel eventLog;
 
     static colorfield[] colorfields;
     static colorfield[] colorfieldCache;
@@ -351,8 +351,10 @@ public class mainWindow extends JFrame {
             colorfields[i - 1].activateColorField.setEnabled(true);
             colorfields[i - 1].activateColorField.setSelected(true);
             colorfields[i - 1].colorName.setText(name);
+            colorfields[i - 1].colorName.setEditable(true);
             colorfields[i - 1].changeColor(Color.decode("#" + color));
-            colorfields[i - 1].colorValue.setText(color);            
+            colorfields[i - 1].colorValue.setText(color);
+            colorfields[i - 1].colorValue.setEditable(true);
         }
     }
     

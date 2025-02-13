@@ -9,6 +9,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import scr.custclr.CustClrTool;
 import scr.gui.mainWindow;
 
 public class colorfield implements FocusListener {    
@@ -141,6 +142,7 @@ public class colorfield implements FocusListener {
                 boolean valid = validateUserInput(colorName.getText(), false);
                 if (!valid) {
                     colorName.setText("Invalid");
+                    CustClrTool.mainGUI.eventLog.setText("Please enter a valid color name.");
                 }
             }
         } else if (e.getSource() == colorValue) {
@@ -150,6 +152,7 @@ public class colorfield implements FocusListener {
                 boolean valid = validateUserInput(colorValue.getText(), true);
                 if (!valid) {
                     colorValue.setText("Invalid");
+                    CustClrTool.mainGUI.eventLog.setText("Please enter a valid HEX value.");
                 } else {
                     changeColor(Color.decode("#" + colorValue.getText().trim())); 
                 }                               
