@@ -17,11 +17,10 @@ import scr.presentation.presentation;
 // Custom color cache button ✅
 // Clear everything when new file is opened ✅
 // Adjust size ✅
-// Adjust theme
-// Add textlabel presentation name
-// Add textlabel theme name
-// Add textlabel eventQ -> and define events
+// Add textlabel presentation name ✅
+// Add textlabel eventQ -> and define events ✅
 // "Setter" & "Getter" methods
+// Adjust theme
 
 public class CustClrTool {
     

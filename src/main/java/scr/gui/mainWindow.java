@@ -17,6 +17,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
@@ -49,6 +50,9 @@ public class mainWindow extends JFrame {
     static JButton testButton;
     static JComboBox<String> themeSelection;        
     static JPanel centerPanel;
+    static JPanel bottomPanel;
+    JLabel presentationNameLabel;
+    JLabel eventLog;
 
     static colorfield[] colorfields;
     static colorfield[] colorfieldCache;
@@ -69,7 +73,6 @@ public class mainWindow extends JFrame {
         this.setSize(1320, 980);
         this.setLayout(new BorderLayout());
         this.setVisible(true);
-        // this.setResizable(false);
 
         // Formatting
         String IconPath = System.getProperty("user.dir") + "/src/main/resources/scr_icon.png";
@@ -77,8 +80,12 @@ public class mainWindow extends JFrame {
         this.setIconImage(icon.getImage());
         this.getContentPane().setBackground(BACKGROUND);
 
-        JPanel bottomPanel = newPanel(1, 0, 0, 0, 0, 30, LIGHTER_BG);
+        bottomPanel = newPanel(1, 0, 0, 0, 0, 30, LIGHTER_BG);
+        bottomPanel.setLayout(null);       
         this.add(bottomPanel, BorderLayout.SOUTH);
+
+        eventLog = newLabel(10, 0, "The last action that happened.");
+        bottomPanel.add(eventLog);  
 
         centerPanel = newPanel(0, 0, 0, 0, 20, 20, BACKGROUND);
         centerPanel.setLayout(null);
@@ -108,9 +115,14 @@ public class mainWindow extends JFrame {
                 CustClrTool.readPresentation();
                 drawDropDown();
                 repaint();
+                presentationNameLabel.setText(presentation.getFilename(newPresentation.toString()));
+                eventLog.setText("File read.");
             }
         });
         centerPanel.add(chooseFileButton);
+
+        presentationNameLabel = newLabel(150, 30, "Name of the currently loaded presentation file.");
+        centerPanel.add(presentationNameLabel);        
 
         int column = 30;
         int row = 150;
@@ -156,14 +168,15 @@ public class mainWindow extends JFrame {
                 presentation.changeExtension(Paths.get(filePath), fileName, CustClrTool.newpres.fileExtension, 1);
                 presentation.writeZipOutput(zipPath, fileName, filePath);
             } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
+                eventLog.setText("An error occured while trying to write the colors to the theme.");
             }
             for (colorfield colorfield : colorfields) {
                 colorfield.clearColorField();
                 colorfield.activateEntry(true);
             }
-            // clearDropDown(themeSelection);
-            // themeSelection.setEnabled(false);
+            presentationNameLabel.setText("");
             cacheButton.setEnabled(false);
+            eventLog.setText("Colors successfully modified.");
         });
         applyButton.setEnabled(false);
         centerPanel.add(applyButton);
@@ -172,6 +185,7 @@ public class mainWindow extends JFrame {
         cacheButton.addActionListener(click -> {
             cacheColorFields();
             loadCacheButton.setEnabled(true);
+            eventLog.setText("Current colors cached.");
         });
         cacheButton.setEnabled(false);
         centerPanel.add(cacheButton);
@@ -179,15 +193,10 @@ public class mainWindow extends JFrame {
         loadCacheButton = newButton(1175, 740, "Load cache", "Apply the stored custom colors to the current theme.");
         loadCacheButton.addActionListener(click -> {
             applyCachedColors();
+            eventLog.setText("Current colors replaced with cached colors.");
         });
         loadCacheButton.setEnabled(false);
         centerPanel.add(loadCacheButton);
-
-        // testButton = newButton(600, 740, "TEST", "this is just to test things");
-        // testButton.addActionListener(click -> {
-        //     System.out.println("clicked the button!");
-        // });
-        // centerPanel.add(testButton);
 
     }
                             
@@ -243,7 +252,7 @@ public class mainWindow extends JFrame {
 
         JComboBox<String> newCB = new JComboBox<>(themes);
 
-        newCB.setBounds(30, 90, 200, 30);
+        newCB.setBounds(30, 90, 245, 30);
 
         return newCB;
     }
@@ -276,15 +285,35 @@ public class mainWindow extends JFrame {
         textfield.setText(previewText);
         textfield.setEditable(editable);
         textfield.setEnabled(false);
-        textfield.setFont(BASE_FONT);
         textfield.createToolTip();
         textfield.setToolTipText(tooltip);
 
         // Formatting
         textfield.setBackground(ENTRY_BG);
         textfield.setCaretColor(Color.white);
+        textfield.setFont(BASE_FONT);
 
         return textfield;
+    }
+
+    public static JLabel newLabel(int posX, int posY, String tooltip) {
+
+        JLabel label = new JLabel();
+
+        // Settings
+        label.setBounds(posX, posY, 500, 30);
+        label.setText("");
+        label.createToolTip();
+        label.setToolTipText(tooltip);
+        label.setFocusable(false);
+        
+
+        // Formattig
+        label.setFont(BASE_FONT);
+        label.setBackground(BACKGROUND);
+        label.setForeground(TEXT_GRAY);
+
+        return label;
     }
         
     public static void fillColorFields(List<List<List<String[]>>> themes, int themeSelection) {
