@@ -1,6 +1,6 @@
 In an effort to learn Java I have decided to rewrite this program that I initially wrote in Python. This README is basically just the same as it is for the python version, which can be found here: https://github.com/FTimm90/CustClrTool_py <br>
-While rewriting it I also tried my best to apply lessons learned and iron out most flaws that the python version has. For example you can now cache a set of custom colors and apply it to other theme files, even in other presentation files if you haven't closed the program before opening the new file. <br>
-Also the file is really just opened when necessary now, so if you close the program without applying the changes you will have the unchanged PowerPoint file, not a .zip file.
+<br>
+While rewriting it I also tried my best to apply lessons learned and iron out most flaws that the python version has. For example you can now cache a set of custom colors and apply it to other theme files, even in other presentation files if you haven't closed the program before opening the new file. Also the file is really just opened when necessary now, so if you close the program without applying the changes you will have the unchanged PowerPoint file, not a .zip file.
 
 ---
 
