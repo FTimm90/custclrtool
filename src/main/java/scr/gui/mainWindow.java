@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -174,6 +175,9 @@ public class mainWindow extends JFrame {
     private void eventFileSelection() {
 
         JFileChooser presentationSelection = new JFileChooser();
+        FileNameExtensionFilter presentationFilter = new FileNameExtensionFilter(
+    "PowerPoint files (*.pptx, *.potx)", "pptx", "potx");
+        presentationSelection.setFileFilter(presentationFilter);
         int response = presentationSelection.showOpenDialog(null);
         if (response == JFileChooser.APPROVE_OPTION) {
             if (CustClrTool.newpres != null) {
@@ -187,16 +191,21 @@ public class mainWindow extends JFrame {
                 themeSelection = null;
             }
             File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
-            CustClrTool.createNewPresentation(
+            String extension = presentation.getFileExtension(newPresentation.toString()).trim();
+            if (!"pptx".equals(extension) && !"potx".equals(extension)) {
+                eventLog.setText("Invalid file type! Please select .pptx or .potx file.");
+            } else {
+                CustClrTool.createNewPresentation(
                     presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),
                     presentation.getFilename(newPresentation.toString()),
                     presentation.getFileExtension(newPresentation.toString()));
 
-            CustClrTool.readPresentation();
-            drawDropDown();
-            repaint();
-            presentationNameLabel.setText(presentation.getFilename(newPresentation.toString()));
-            eventLog.setText("File read.");
+                CustClrTool.readPresentation();
+                drawDropDown();
+                repaint();
+                presentationNameLabel.setText(presentation.getFilename(newPresentation.toString()));
+                eventLog.setText("File read.");
+            }
         }
     }
 

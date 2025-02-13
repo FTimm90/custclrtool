@@ -34,6 +34,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import scr.custclr.CustClrTool;
 import scr.gui.mainWindow;
 
 public class presentation {
@@ -102,9 +103,10 @@ public class presentation {
         String newFileName = fileName + newExtension;
         try {
             Files.move(oldFile, oldFile.resolveSibling(newFileName));
-            System.out.printf("file converted to %s\n", newExtension);
+            String logMessage = String.format("File converted to %s\n", newExtension);
+            CustClrTool.mainGUI.eventLog.setText(logMessage);
         } catch (IOException e) {
-            e.printStackTrace();
+            CustClrTool.mainGUI.eventLog.setText("Failed to convert file.");
         }
 
     }
@@ -139,6 +141,7 @@ public class presentation {
 
         } catch (IOException | XMLStreamException ex) {
             System.err.println(ex);
+            CustClrTool.mainGUI.eventLog.setText("Failed to extract themes from file.");
         }
 
         return foundThemes;
@@ -260,6 +263,7 @@ public class presentation {
             zipWrite.close();
         } catch (IOException ex) {
             System.err.println(ex);
+            CustClrTool.mainGUI.eventLog.setText("Failed to create new Zipfile.");
         }
         replaceOldFile(fileName, filePath);
     }
