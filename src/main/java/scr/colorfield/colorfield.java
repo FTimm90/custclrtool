@@ -33,7 +33,7 @@ public class colorfield implements FocusListener {
         boolean textfieldsEditable = false;
 
         // Settings
-        JPanel colorfield = mainWindow.newPanel(0, 0, 0, 0, 120, 140, mainWindow.LIGHTER_BG);
+        JPanel colorfield = mainWindow.newPanel(0, 0, 0, 0, 120, 140);
         colorfield.setBounds(posX, posY, 120, 110);
 
         // Items
@@ -48,7 +48,7 @@ public class colorfield implements FocusListener {
         colorName.addFocusListener(this);
         colorfield.add(colorName);
 
-        colorPreview = mainWindow.newPanel(1, 1, 1, 1, 20, 20, mainWindow.BACKGROUND);
+        colorPreview = mainWindow.newPanel(1, 1, 1, 1, 20, 20);
         colorfield.add(colorPreview);
 
         colorValue = mainWindow.newTextField(textfieldsEditable, "Enter color HEX Value.", "Color value");
@@ -106,7 +106,7 @@ public class colorfield implements FocusListener {
         colorName.setText("Color name");
         colorValue.setText("Color value");
         activateColorField.setSelected(false);
-        changeColor(mainWindow.BACKGROUND);
+        changeColor(Color.LIGHT_GRAY);
     }
 
     @Override

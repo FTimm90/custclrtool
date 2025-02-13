@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
+
 import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
@@ -14,7 +16,7 @@ public class CustClrTool {
     public static mainWindow mainGUI;
     public static List<List<List<String[]>>> themes;
     public static void main(String[] args) {
-
+        FlatOneDarkIJTheme.setup();
         SwingUtilities.invokeLater(() -> {
             mainGUI = new mainWindow();
         });

@@ -20,11 +20,14 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.xml.sax.SAXException;
+
+import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
 
 import scr.colorfield.colorfield;
 import scr.custclr.CustClrTool;
@@ -32,12 +35,7 @@ import scr.presentation.presentation;
 
 public class mainWindow extends JFrame {
     
-    public final static Color BACKGROUND = new Color(24, 24, 24);
-    public final static Color LIGHTER_BG = new Color(31, 31, 31);
     final static Color SCR_GREEN = new Color(80, 170, 100);
-    final static Color TEXT_GRAY = new Color(163, 163, 163);
-    final static Color ENTRY_BG = new Color(20, 20, 20);
-    final static Color BORDER = new Color(36, 36, 36);
 
     final static Font BASE_FONT = new Font("roboto", Font.PLAIN, 11);
 
@@ -60,16 +58,15 @@ public class mainWindow extends JFrame {
         JFrame window = new JFrame();
 
         // Settings
-        // try {
-        //     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        // } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-        //         | UnsupportedLookAndFeelException e) {
-        //     e.printStackTrace();
-        // }
+        try {
+            UIManager.setLookAndFeel( new FlatOneDarkIJTheme() );
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
+        }
                     
         this.setTitle("CustClr Tool");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(1320, 980);
+        this.setSize(1320, 870);
         this.setLayout(new BorderLayout());
         this.setVisible(true);
 
@@ -77,16 +74,15 @@ public class mainWindow extends JFrame {
         String IconPath = System.getProperty("user.dir") + "/src/main/resources/scr_icon.png";
         ImageIcon icon = new ImageIcon(IconPath);
         this.setIconImage(icon.getImage());
-        this.getContentPane().setBackground(BACKGROUND);
 
-        bottomPanel = newPanel(1, 0, 0, 0, 0, 30, LIGHTER_BG);
+        bottomPanel = newPanel(1, 0, 0, 0, 0, 30);
         bottomPanel.setLayout(null);       
         this.add(bottomPanel, BorderLayout.SOUTH);
 
         eventLog = newLabel(10, 0, "The last action that happened.");
         bottomPanel.add(eventLog);  
 
-        centerPanel = newPanel(0, 0, 0, 0, 20, 20, BACKGROUND);
+        centerPanel = newPanel(0, 0, 0, 0, 20, 20);
         centerPanel.setLayout(null);
         this.add(centerPanel, BorderLayout.CENTER);
 
@@ -197,7 +193,7 @@ public class mainWindow extends JFrame {
                             
     private static Border createBorder(int top, int left, int bottom, int right) {
         
-        Border generalBorder = BorderFactory.createMatteBorder(top, left, bottom, right, BORDER);
+        Border generalBorder = BorderFactory.createMatteBorder(top, left, bottom, right, Color.LIGHT_GRAY);
         
         return generalBorder;
     }
@@ -207,8 +203,7 @@ public class mainWindow extends JFrame {
                                     int borderBottom,
                                     int borderRight,
                                     int sizeW,
-                                    int sizeH,
-                                    Color bgColor) {
+                                    int sizeH) {
 
         JPanel panel = new JPanel();
 
@@ -216,7 +211,6 @@ public class mainWindow extends JFrame {
         panel.setPreferredSize(new Dimension(sizeW, sizeH));
 
         // Formatting
-        panel.setBackground(bgColor);
         panel.setBorder(createBorder(borderTop, borderLeft, borderBottom, borderRight));        
 
         return panel;
@@ -237,8 +231,6 @@ public class mainWindow extends JFrame {
         // Formatting
         swingButton.setFont(BASE_FONT);
         swingButton.setBorder(createBorder(1, 1, 1, 1));
-        swingButton.setBackground(BACKGROUND);
-        swingButton.setForeground(Color.white);
 
         return swingButton;
     }
@@ -284,8 +276,6 @@ public class mainWindow extends JFrame {
         textfield.setToolTipText(tooltip);
 
         // Formatting
-        textfield.setBackground(ENTRY_BG);
-        textfield.setCaretColor(Color.white);
         textfield.setFont(BASE_FONT);
 
         return textfield;
@@ -304,8 +294,6 @@ public class mainWindow extends JFrame {
 
         // Formattig
         label.setFont(BASE_FONT);
-        label.setBackground(BACKGROUND);
-        label.setForeground(TEXT_GRAY);
 
         return label;
     }
