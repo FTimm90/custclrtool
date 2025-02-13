@@ -23,6 +23,7 @@ public class colorfield implements FocusListener {
     public int posY;
     
     public colorfield(int posX, int posY) {
+
         this.posX = posX;
         this.posY = posY;
         this.widget = colorFieldWidget(posX, posY);        
@@ -59,10 +60,12 @@ public class colorfield implements FocusListener {
     }
 
     public static boolean isAlnum(String str) {
+        
         return str.matches("^[a-zA-Z0-9 ]*$");
     }
 
     public static boolean validateHexColor(String hexColor) {
+        
         try {
             Color.decode(hexColor.toUpperCase(Locale.ROOT));
             return true;
@@ -72,6 +75,7 @@ public class colorfield implements FocusListener {
     }
     
     public boolean validateUserInput(String inputString, boolean hexValue) {
+        
         inputString = inputString.trim();
         if (isAlnum(inputString)) {
             if (hexValue) {
@@ -82,16 +86,19 @@ public class colorfield implements FocusListener {
             }
             return true;
         }
+        
         return false;
     }
 
     public void activateEntry() {
+        
         colorName.setEnabled(true);
         colorValue.setEnabled(true);
         activateColorField.setEnabled(true);
     }
 
-    public void deActivateEntry() {
+    public void deactivateEntry() {
+        
         colorName.setEnabled(false);
         colorValue.setEnabled(false);
         activateColorField.setSelected(false);
@@ -103,6 +110,7 @@ public class colorfield implements FocusListener {
     }
 
     public void clearColorField() {
+        
         colorName.setText("Color name");
         colorValue.setText("Color value");
         activateColorField.setSelected(false);
@@ -125,6 +133,7 @@ public class colorfield implements FocusListener {
 
     @Override
     public void focusLost(FocusEvent e) {
+        
         if (e.getSource() == colorName) {
             if (" ".equals(colorName.getText()) || colorName.getText() == null) {
                 colorName.setText("Color name");

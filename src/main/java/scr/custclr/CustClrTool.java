@@ -20,10 +20,10 @@ public class CustClrTool {
         SwingUtilities.invokeLater(() -> {
             mainGUI = new mainWindow();
         });
-
     }
     
     public static void readPresentation() {
+        
         presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 1);
         newpres.zipPathString = newpres.filePath + presentation.osPathSymbol() + newpres.fileName + ".zip";
         themes = newpres.extractThemes(newpres.zipPathString);
@@ -34,7 +34,6 @@ public class CustClrTool {
             String presentationExtension) {
         
         newpres = new presentation();
-
         newpres.fileExtension = presentationExtension;
         newpres.fileName = presentationName;
         newpres.filePath = presentationPath;

@@ -50,17 +50,23 @@ public class presentation {
     final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
     public static String getFileExtension(String path) {
+        
         String fileextension = path.substring(path.lastIndexOf('.') + 1);
+        
         return fileextension;
     }
 
     public static String getFilename(String path) {
+        
         String filename = path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
+        
         return filename;
     }
 
     public static String getFilePath(String path) {
+        
         String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
+        
         return filename;
     }
 
@@ -139,10 +145,11 @@ public class presentation {
     }
 
     private void populateAllThemesList() {
-    allThemes = new String[foundThemes.size()];
-    for (int i = 0; i < foundThemes.size(); i++) {
-            allThemes[i] = foundThemes.get(i).get(0).get(0)[1];
-        }
+        
+        allThemes = new String[foundThemes.size()];
+        for (int i = 0; i < foundThemes.size(); i++) {
+                allThemes[i] = foundThemes.get(i).get(0).get(0)[1];
+            }
     }   
 
     /**
@@ -178,6 +185,7 @@ public class presentation {
                 themeData.add(theme);
             }
         }
+
         return themeData;
     }
 
@@ -263,7 +271,9 @@ public class presentation {
      * @param zipWrite      The zip file that is going to be written into
      * @param inputStream   The zip entry as InputStream
      */
-    public static void insertZipEntry(ZipEntry entry, ZipOutputStream zipWrite, InputStream inputStream) throws IOException {
+    public static void insertZipEntry(ZipEntry entry, ZipOutputStream zipWrite, InputStream inputStream)
+            throws IOException {
+        
         zipWrite.putNextEntry(entry);
         byte[] buffer = new byte[1024];
         int len;
@@ -322,9 +332,10 @@ public class presentation {
                 Node foundNode = findNode(child, nodeName);
                 if (foundNode != null) {
                     return foundNode;
-                    }
+                }
             }
         }
+        
         return null;
     }
 
@@ -372,11 +383,13 @@ public class presentation {
      * @return          Custom color as XML Element
      */
     private static Element createCustClrElement(Document document, String name, String value) {
+        
         Element custClrElement = document.createElementNS(NAMESPACE, "a:custClr"); 
         Element srgbClrElement = document.createElementNS(NAMESPACE, "a:srgbClr");
         custClrElement.setAttribute("name", name);
         srgbClrElement.setAttribute("val", value);
         custClrElement.appendChild(srgbClrElement);
+        
         return custClrElement;
     }
 
@@ -386,6 +399,7 @@ public class presentation {
      * @param filePath  Path of the new file
      */
     private static void replaceOldFile(String oldFile, String filePath) {
+        
         String oldFilePath = filePath + osPathSymbol() + oldFile + ".zip";
         File oldZip = new File(oldFilePath);
         oldZip.delete();
@@ -396,12 +410,14 @@ public class presentation {
     }
 
     public static char osPathSymbol() {
+        
         char pathDivider;
         String currentOS = System.getProperty("os.name");
         if (currentOS.startsWith("Windows"))
             pathDivider = '\\';
         else
             pathDivider = '/';
+        
         return pathDivider;
     }
 }
