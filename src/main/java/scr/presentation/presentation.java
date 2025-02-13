@@ -74,7 +74,6 @@ public class presentation {
     }
 
     /**
-     * Changes the extension of the specified file.
      * @param filePath      the path of the file
      * @param fileName      the name of the file
      * @param fileExtension the original file extension
@@ -228,27 +227,17 @@ public class presentation {
             throws FileNotFoundException, ParserConfigurationException, SAXException, TransformerException {
 
         final String ZIP_TMP = "_tmp.zip";
-
-        // DEBUGGING
-        // mainWindow.printAllColors();
         
-        // Create a new zipfile to copy all the contents over to
         File zipNew = new File(fileName + ZIP_TMP);
-        // Create an output stream for copying everything over
         ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipNew));
 
-        // Now open the zipfile
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-            // This enum holds the references to the contents of the zipfile
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-            // Iterate over the entries of the zipfile
             while (entries.hasMoreElements()) {
-                // Gather information about the current entry
                 ZipEntry entry = entries.nextElement();
                 String name = entry.getName();
                 String type = entry.isDirectory() ? "DIR" : "FILE";
-                // Put the current zip entry into the new file
 
                 InputStream inputStream = zipFile.getInputStream(entry);
 
@@ -357,22 +346,18 @@ public class presentation {
         
         extLstNode.getParentNode().insertBefore(listElement, extLstNode);
         
-        // Write the resulting XML to a ByteArrayOutputStream
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
-        // transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         DOMSource source = new DOMSource(document);
         StreamResult result = new StreamResult(outputStream); 
         transformer.transform(source, result);
 
-        // Create a ZipEntry with the XML data
         String outputName = "ppt/theme/" + themeSelection + ".xml";
         ZipEntry zipEntry = new ZipEntry(outputName);
         zipEntry.setSize(outputStream.size());
         zipEntry.setTime(System.currentTimeMillis()); 
 
-        // Write the data to the ZipOutputStream
         zipWrite.putNextEntry(zipEntry);
         zipWrite.write(outputStream.toByteArray());
         zipWrite.closeEntry();
@@ -387,7 +372,6 @@ public class presentation {
      * @return          Custom color as XML Element
      */
     private static Element createCustClrElement(Document document, String name, String value) {
-        // Create the two elements that a custom color consists of
         Element custClrElement = document.createElementNS(NAMESPACE, "a:custClr"); 
         Element srgbClrElement = document.createElementNS(NAMESPACE, "a:srgbClr");
         custClrElement.setAttribute("name", name);
@@ -406,20 +390,18 @@ public class presentation {
         File oldZip = new File(oldFilePath);
         oldZip.delete();
 
-        String newFilePath = filePath + osPathSymbol() + oldFile + ".pptx"; // better use the "change file extension" method
+        String newFilePath = filePath + osPathSymbol() + oldFile + ".pptx";
         File newZip = new File(oldFile + "_tmp.zip");
         newZip.renameTo(new File(newFilePath));
     }
 
     public static char osPathSymbol() {
         char pathDivider;
-
         String currentOS = System.getProperty("os.name");
         if (currentOS.startsWith("Windows"))
             pathDivider = '\\';
         else
             pathDivider = '/';
-
         return pathDivider;
     }
 }

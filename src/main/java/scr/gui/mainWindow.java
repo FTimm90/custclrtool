@@ -47,7 +47,6 @@ public class mainWindow extends JFrame {
     static JButton applyButton;
     static JButton cacheButton;
     JButton loadCacheButton;
-    static JButton testButton;
     static JComboBox<String> themeSelection;        
     static JPanel centerPanel;
     static JPanel bottomPanel;
@@ -148,18 +147,14 @@ public class mainWindow extends JFrame {
 
             if ((i + 1) % 10 == 0) {
                 column = 30;
-                // Vertical distance between color fields
                 row += 115;
             } else {
-                // Horizontal distance between color fields
                 column += 125;
             }
         }
         
         applyButton = newButton(30, 740, "Apply", "Write the custom colors into the file.");
         applyButton.addActionListener(click -> {
-            // DEBUGGING
-            // printAllColors();
             try {
                 String filePath = CustClrTool.newpres.filePath;
                 String fileName = CustClrTool.newpres.fileName;
@@ -172,7 +167,7 @@ public class mainWindow extends JFrame {
             }
             for (colorfield colorfield : colorfields) {
                 colorfield.clearColorField();
-                colorfield.activateEntry(true);
+                colorfield.deActivateEntry();
             }
             presentationNameLabel.setText("");
             cacheButton.setEnabled(false);
@@ -305,8 +300,7 @@ public class mainWindow extends JFrame {
         label.setText("");
         label.createToolTip();
         label.setToolTipText(tooltip);
-        label.setFocusable(false);
-        
+        label.setFocusable(false);        
 
         // Formattig
         label.setFont(BASE_FONT);
@@ -345,44 +339,9 @@ public class mainWindow extends JFrame {
         return fetchedColors;
     }
 
-    public static void printAllColors() {
-        // DEBUGGING
-        for (int i = 0; i < colorfields.length; i++) {
-
-            String checkBoxValue;
-            if (colorfields[i].activateColorField.isSelected()) {
-                checkBoxValue = "checked!";
-            } else {
-                checkBoxValue = "not checked!";
-            }
-
-            System.out.printf("Colorfield Nr.%d\n", i);
-            System.out.printf("Color Name:%s\n", colorfields[i].colorName.getText());
-            System.out.printf("Color Value:%s\n", colorfields[i].colorValue.getText());
-            System.out.printf("Color Checkbox:%s\n", checkBoxValue);
-        }
-    }
-
-    private static void printCachedColors() {
-        // DEBUGGING
-        for (int i = 0; i < colorfieldCache.length; i++) {
-            String checkBoxValue;
-            if (colorfieldCache[i].activateColorField.isSelected()) {
-                checkBoxValue = "checked!";
-            } else {
-                checkBoxValue = "not checked!";
-            }
-
-            System.out.printf("Colorfield Nr.%d\n", i);
-            System.out.printf("Color Name:%s\n", colorfieldCache[i].colorName.getText());
-            System.out.printf("Color Value:%s\n", colorfieldCache[i].colorValue.getText());
-            System.out.printf("Color Checkbox:%s\n", checkBoxValue);
-        }
-    }
-
     private static void activateAllColorfields() {
         for (colorfield colorfield : colorfields) {
-            colorfield.activateEntry(false);
+            colorfield.activateEntry();
             colorfield.clearColorField();
         }
     }

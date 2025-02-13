@@ -28,16 +28,6 @@ public class colorfield implements FocusListener {
         this.widget = colorFieldWidget(posX, posY);        
     }
 
-    public String[] getColorProperties() {
-        
-        String[] colorProperties = new String[]{
-            colorName.getText(),
-            colorValue.getText()
-        };
-        
-        return colorProperties;
-    }
-
     private JPanel colorFieldWidget(int posX, int posY) {
 
         boolean textfieldsEditable = false;
@@ -95,19 +85,17 @@ public class colorfield implements FocusListener {
         return false;
     }
 
-    /**
-     * @param off true = the field is deactivated
-     */
-    public void activateEntry(boolean off) {
-        if (off) {
-            colorName.setEnabled(false);
-            colorValue.setEnabled(false);
-            activateColorField.setSelected(false);
-            activateColorField.setEnabled(false);
-        }
+    public void activateEntry() {
         colorName.setEnabled(true);
         colorValue.setEnabled(true);
         activateColorField.setEnabled(true);
+    }
+
+    public void deActivateEntry() {
+        colorName.setEnabled(false);
+        colorValue.setEnabled(false);
+        activateColorField.setSelected(false);
+        activateColorField.setEnabled(false);
     }
     
     public void changeColor(Color color) {

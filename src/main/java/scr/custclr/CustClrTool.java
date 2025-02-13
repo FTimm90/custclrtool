@@ -8,20 +8,6 @@ import javax.swing.SwingUtilities;
 import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
-// TO-DO:
-// Set the "active" status of the entry fields correctly (not clickable before anything is loaded) ✅
-// Adjust color preview field according to user input ✅
-// Load colors from theme ✅
-// Gather colors from color fields ✅
-// Write colors into theme ✅
-// Custom color cache button ✅
-// Clear everything when new file is opened ✅
-// Adjust size ✅
-// Add textlabel presentation name ✅
-// Add textlabel eventQ -> and define events ✅
-// "Setter" & "Getter" methods
-// Adjust theme
-
 public class CustClrTool {
     
     public static presentation newpres;
@@ -39,25 +25,7 @@ public class CustClrTool {
         presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 1);
         newpres.zipPathString = newpres.filePath + presentation.osPathSymbol() + newpres.fileName + ".zip";
         themes = newpres.extractThemes(newpres.zipPathString);
-        // DEBUGGING
-        // printThemesList(themes);
         presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 2);
-    }
-    
-    private static void printThemesList(List<List<List<String[]>>> themes) {
-        // DEBUGGING
-        for (List<List<String[]>> theme : themes) {
-            System.out.println("Next Theme:");
-            for (List<String[]> theme_content : theme) {
-                System.out.println("    └ theme content:");
-                for (String[] content : theme_content) {
-                    System.out.println("        └ elements:");
-                    for (int i = 0; i < content.length; i++) {
-                        System.out.printf("             └ element %d: %s\n", i, content[i]);
-                    }
-                }
-            }
-        }
     }
 
     public static presentation createNewPresentation(String presentationPath, String presentationName,
