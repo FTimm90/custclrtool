@@ -18,6 +18,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -43,8 +44,9 @@ public class mainWindow extends JFrame {
     static JButton cacheButton;
     JButton loadCacheButton;
     JButton chooseFileButton;
-    static JComboBox<String> themeSelection;        
-    static JPanel centerPanel;
+    static JComboBox<String> themeSelection;
+    static JPanel custClrPanel;
+    JPanel tablePanel;
     JPanel bottomPanel;
     JLabel presentationNameLabel;
     public JLabel eventLog;
@@ -64,30 +66,42 @@ public class mainWindow extends JFrame {
                     
         this.setTitle("CustClr Tool");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(1320, 870);
+        this.setSize(1320, 900);
         this.setLayout(new BorderLayout());
         this.setVisible(true);
 
         // Items
+        custClrPanel = newPanel(1, 0, 0, 0, 1000, 600);
+        custClrPanel.setLayout(null);
+
+        tablePanel = newPanel(1, 0, 0, 0, 1000, 600);
+        tablePanel.setLayout(null);
+
         bottomPanel = newPanel(1, 0, 0, 0, 0, 30);
-        bottomPanel.setLayout(null);       
+        bottomPanel.setLayout(null);
         this.add(bottomPanel, BorderLayout.SOUTH);
-
+        
         eventLog = newLabel(10, 0, "The last action that happened.");
-        bottomPanel.add(eventLog);  
+        bottomPanel.add(eventLog);        
+        
+        JTabbedPane windowTabs = new JTabbedPane();
+        windowTabs.setBounds(10, 10, 1320, 870);
+        windowTabs.addTab("Custom colors", custClrPanel);
+        windowTabs.addTab("Table styles", tablePanel);
+        this.add(windowTabs);
 
-        centerPanel = newPanel(0, 0, 0, 0, 20, 20);
-        centerPanel.setLayout(null);
-        this.add(centerPanel, BorderLayout.CENTER);
+        custClrPanelElements();
+    }
 
+    private void custClrPanelElements() {
         chooseFileButton = newButton(30, 30, "Choose File", "Click to select a file from your computer.");
         chooseFileButton.addActionListener(click -> {
             eventFileSelection();
         });
-        centerPanel.add(chooseFileButton);
+        custClrPanel.add(chooseFileButton);
 
         presentationNameLabel = newLabel(150, 30, "Name of the currently loaded presentation file.");
-        centerPanel.add(presentationNameLabel);        
+        custClrPanel.add(presentationNameLabel);        
 
         buildColorFields();
         
@@ -99,7 +113,7 @@ public class mainWindow extends JFrame {
             eventLog.setText("Colors successfully modified.");
         });
         applyButton.setEnabled(false);
-        centerPanel.add(applyButton);
+        custClrPanel.add(applyButton);
 
         cacheButton = newButton(1050, 740, "Cache colors", "Store the current custom colors to write into a different theme.");
         cacheButton.addActionListener(click -> {
@@ -108,7 +122,7 @@ public class mainWindow extends JFrame {
             eventLog.setText("Current colors cached.");
         });
         cacheButton.setEnabled(false);
-        centerPanel.add(cacheButton);
+        custClrPanel.add(cacheButton);
 
         loadCacheButton = newButton(1175, 740, "Load cache", "Apply the stored custom colors to the current theme.");
         loadCacheButton.addActionListener(click -> {
@@ -116,7 +130,7 @@ public class mainWindow extends JFrame {
             eventLog.setText("Current colors replaced with cached colors.");
         });
         loadCacheButton.setEnabled(false);
-        centerPanel.add(loadCacheButton);
+        custClrPanel.add(loadCacheButton);
     }
 
     private void buildColorFields() {
@@ -129,7 +143,7 @@ public class mainWindow extends JFrame {
         for (int i = 0; i < 50; i++) {
             colorfield colorWidget = new colorfield(column, row);
             colorfields[i] = colorWidget;
-            centerPanel.add(colorWidget.widget);
+            custClrPanel.add(colorWidget.widget);
             colorWidget.activateColorField.addActionListener((ActionEvent check) -> {
                 JCheckBox cb = (JCheckBox) check.getSource();
                 if (cb.isSelected()) {
@@ -185,9 +199,9 @@ public class mainWindow extends JFrame {
                     colorfield.clearColorField();
                 }
                 CustClrTool.newpres.clearPresentationObject();
-                centerPanel.remove(themeSelection);
-                centerPanel.revalidate();
-                centerPanel.repaint();
+                custClrPanel.remove(themeSelection);
+                custClrPanel.revalidate();
+                custClrPanel.repaint();
                 themeSelection = null;
             }
             File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
@@ -345,7 +359,7 @@ public class mainWindow extends JFrame {
             cacheButton.setEnabled(true);
             applyButton.setEnabled(true);
         });
-        centerPanel.add(themeSelection);
+        custClrPanel.add(themeSelection);
     }
         
     public static void fillColorFields(List<List<List<String[]>>> themes, int themeSelection) {
