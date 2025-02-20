@@ -33,6 +33,7 @@ import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
 import scr.colorfield.colorfield;
 import scr.custclr.CustClrTool;
 import scr.presentation.presentation;
+import scr.settingsField.settingsField;
 
 public class mainWindow extends JFrame {
     
@@ -48,6 +49,9 @@ public class mainWindow extends JFrame {
     static JPanel custClrPanel;
     JPanel tablePanel;
     JPanel bottomPanel;
+    JPanel rightPanel;
+    JPanel centerPanel;
+    JComboBox<String> tableElements;
     JLabel presentationNameLabel;
     public JLabel eventLog;
 
@@ -71,11 +75,11 @@ public class mainWindow extends JFrame {
         this.setVisible(true);
 
         // Items
-        custClrPanel = newPanel(1, 0, 0, 0, 1000, 600);
+        custClrPanel = newPanel(0, 0, 0, 0, 1000, 600);
         custClrPanel.setLayout(null);
 
-        tablePanel = newPanel(1, 0, 0, 0, 1000, 600);
-        tablePanel.setLayout(null);
+        tablePanel = newPanel(0, 0, 0, 0, 1000, 600);
+        tablePanel.setLayout(new BorderLayout());
 
         bottomPanel = newPanel(1, 0, 0, 0, 0, 30);
         bottomPanel.setLayout(null);
@@ -91,6 +95,25 @@ public class mainWindow extends JFrame {
         this.add(windowTabs);
 
         custClrPanelElements();
+        tablePanelElements();
+    }
+
+    private void tablePanelElements() {
+        rightPanel = newPanel(0, 1, 0, 0, 300, 0);
+        rightPanel.setLayout(null);
+        tablePanel.add(rightPanel, BorderLayout.EAST);
+
+        centerPanel = newPanel(0,0, 0, 0, 0, 0);
+        centerPanel.setLayout(null);
+        tablePanel.add(centerPanel, BorderLayout.CENTER);
+
+        String[] elementsArray = {"whole table", "banded rows", "banded columns", "first column", "last column", "text levels"};
+        tableElements = newComboBox(elementsArray);
+        tableElements.setBounds(30, 30, 240, 30);
+        rightPanel.add(tableElements);
+
+        settingsField testfield = new settingsField(30, 90);
+        rightPanel.add(testfield.widget);
     }
 
     private void custClrPanelElements() {
@@ -298,7 +321,7 @@ public class mainWindow extends JFrame {
         return button;
     }
                     
-    private static JComboBox<String> newComboBox(String[] themes) {
+    public static JComboBox<String> newComboBox(String[] themes) {
 
         JComboBox<String> comboBox = new JComboBox<>(themes);
 
