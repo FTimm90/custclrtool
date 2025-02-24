@@ -110,7 +110,9 @@ public class presentation {
         }
 
     }
-        
+    
+// The following block handles file INPUT
+
     /**
      * Processes the contents of the .zip version of the presentation file 
      * to extract information about existing custom colors
@@ -226,6 +228,8 @@ public class presentation {
         }
     }
 
+// The following block handles file OUTPUT
+
     /**
      * Creates a copy of the .zip converted PowerPoint file 
      * and injects the modified .xml file
@@ -302,12 +306,23 @@ public class presentation {
         // Parse the input stream as an XML document
         Document document = builder.parse(inputStream);
         Element rootElement = document.getDocumentElement();
-        NodeList childNodes = rootElement.getChildNodes();
         
         // Remove Custom Color Node
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            Node childNode = childNodes.item(i);
-            if (childNode.getNodeName().equals("a:" + CUSTCLR_NODE)) {
+        removeNode(rootElement, CUSTCLR_NODE);
+
+        writeIntoTheme(document, themeSelection, zipWrite);
+    }
+
+    /**
+     * Remove node + all children
+     * @param rootElement
+     * @param nodeName
+     */
+    private static void removeNode(Element rootElement, String nodeName) {
+        NodeList rootNode = rootElement.getChildNodes();
+        for (int i = 0; i < rootNode.getLength(); i++) {
+            Node childNode = rootNode.item(i);
+            if (childNode.getNodeName().equals("a:" + nodeName)) {
                 Node parentNode = childNode.getParentNode();
                 if (parentNode != null) {
                     parentNode.removeChild(childNode);
@@ -315,33 +330,6 @@ public class presentation {
                 break;
             }
         }
-
-        writeIntoTheme(document, themeSelection, zipWrite);
-    }
-    
-    /**
-     * Helper method to find a specific child node based on a parent node 
-     * and its name as a string.
-     * @param parent    Parent node
-     * @param nodeName  Name of the node that should be found
-     * @return          The node itself, or null if not found
-     */
-    private static Node findNode(Node parent, String nodeName) {
-
-        NodeList childNodes = parent.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            Node child = childNodes.item(i);
-            if (child.getNodeName().equals(nodeName)) {
-                return child;
-            } else if (child.hasChildNodes()) {
-                Node foundNode = findNode(child, nodeName);
-                if (foundNode != null) {
-                    return foundNode;
-                }
-            }
-        }
-        
-        return null;
     }
 
     /**
@@ -388,16 +376,43 @@ public class presentation {
      * @return          Custom color as XML Element
      */
     private static Element createCustClrElement(Document document, String name, String value) {
-        
-        Element custClrElement = document.createElementNS(NAMESPACE, "a:custClr"); 
+
+        Element custClrElement = document.createElementNS(NAMESPACE, "a:custClr");
         Element srgbClrElement = document.createElementNS(NAMESPACE, "a:srgbClr");
         custClrElement.setAttribute("name", name);
         srgbClrElement.setAttribute("val", value);
         custClrElement.appendChild(srgbClrElement);
-        
+
         return custClrElement;
     }
+    
+// Following are helper methods
 
+    /**
+     * Helper method to find a specific child node based on a parent node 
+     * and its name as a string.
+     * @param parent    Parent node
+     * @param nodeName  Name of the node that should be found
+     * @return          The node itself, or null if not found
+     */
+    private static Node findNode(Node parent, String nodeName) {
+
+        NodeList childNodes = parent.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node child = childNodes.item(i);
+            if (child.getNodeName().equals(nodeName)) {
+                return child;
+            } else if (child.hasChildNodes()) {
+                Node foundNode = findNode(child, nodeName);
+                if (foundNode != null) {
+                    return foundNode;
+                }
+            }
+        }
+
+        return null;
+    }
+    
     /**
      * Helper function to Replace the old .zip file with the new, modified one.
      * @param oldFile   The path of the old file
