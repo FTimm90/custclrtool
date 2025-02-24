@@ -230,11 +230,12 @@ public class presentation {
      * Creates a copy of the .zip converted PowerPoint file 
      * and injects the modified .xml file
      * @param zipFilePath       Path of the .zip file
-     * @param themeSelection    User selected theme file to modify
      * @param fileName          Base name of the file
      * @param filePath          Base path of the file
+     * @param destinationXML    The XML file to be replaced
+     * @param xmlProcessor      The method used to modify the found XML file
      */
-    public static void writeZipOutput(String zipFilePath, String fileName, String filePath)
+    public static void writeZipOutput(String zipFilePath, String fileName, String filePath, String destinationXML, XmlProcessor xmlProcessor)
             throws FileNotFoundException, ParserConfigurationException, SAXException, TransformerException {
 
         final String ZIP_TMP = "_tmp.zip";
@@ -252,8 +253,8 @@ public class presentation {
 
                 InputStream inputStream = zipFile.getInputStream(entry);
 
-                if (type.equals("FILE") && name.contains(mainWindow.selectThemeFileName)) {
-                    processTheme(inputStream, mainWindow.selectThemeFileName, zipWrite);
+                if (type.equals("FILE") && name.contains(destinationXML)) {
+                    xmlProcessor.process(inputStream, destinationXML, zipWrite);
                 }
                 else {
                     insertZipEntry(entry, zipWrite, inputStream);

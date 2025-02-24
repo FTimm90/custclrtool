@@ -199,7 +199,7 @@ public class mainWindow extends JFrame {
             String zipPath = CustClrTool.newpres.zipPathString;
 
             presentation.changeExtension(Paths.get(filePath), fileName, CustClrTool.newpres.fileExtension, 1);
-            presentation.writeZipOutput(zipPath, fileName, filePath);
+            presentation.writeZipOutput(zipPath, fileName, filePath, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite));
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
             eventLog.setText("An error occured while trying to write the colors to the theme.");
         }
