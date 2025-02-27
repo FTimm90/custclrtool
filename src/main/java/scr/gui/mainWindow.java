@@ -194,11 +194,11 @@ public class mainWindow extends JFrame {
     private void eventApplyCustomColors() {
         
         try {
-            String filePath = CustClrTool.newpres.filePath;
-            String fileName = CustClrTool.newpres.fileName;
-            String zipPath = CustClrTool.newpres.zipPathString;
+            String filePath = CustClrTool.newpres.getFilePath();
+            String fileName = CustClrTool.newpres.getFileName();
+            String zipPath = CustClrTool.newpres.getZipPathString();
 
-            presentation.changeExtension(Paths.get(filePath), fileName, CustClrTool.newpres.fileExtension, 1);
+            presentation.changeExtension(Paths.get(filePath), fileName, CustClrTool.newpres.getFileExtension(), 1);
             presentation.writeZipOutput(zipPath, fileName, filePath, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite));
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
             eventLog.setText("An error occured while trying to write the colors to the theme.");
@@ -228,19 +228,17 @@ public class mainWindow extends JFrame {
                 themeSelection = null;
             }
             File newPresentation = new File(presentationSelection.getSelectedFile().getAbsolutePath());
-            String extension = presentation.getFileExtension(newPresentation.toString()).trim();
+            String extension = presentation.extractFileExtension(newPresentation.toString()).trim();
+            String path = presentation.extractFilePath(newPresentation.getAbsolutePath());
+            String name = presentation.extractFilename(newPresentation.getAbsolutePath());
             if (!"pptx".equals(extension) && !"potx".equals(extension)) {
                 eventLog.setText("Invalid file type! Please select .pptx or .potx file.");
             } else {
-                CustClrTool.createNewPresentation(
-                    presentation.getFilePath(presentationSelection.getSelectedFile().getAbsolutePath()),
-                    presentation.getFilename(newPresentation.toString()),
-                    presentation.getFileExtension(newPresentation.toString()));
-
+                CustClrTool.createNewPresentation(path, extension, name);
                 CustClrTool.readPresentation();
                 drawDropDown();
                 repaint();
-                presentationNameLabel.setText(presentation.getFilename(newPresentation.toString()));
+                presentationNameLabel.setText(name);
                 eventLog.setText("File read.");
             }
         }

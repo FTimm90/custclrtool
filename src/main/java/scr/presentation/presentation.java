@@ -39,32 +39,57 @@ import scr.gui.mainWindow;
 
 public class presentation {
 
-    public String filePath = "";
-    public String fileName = "";
+    private String filePath = "";
+    public String getFilePath() {
+        return filePath;
+    }
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    private String fileName = "";
+    public String getFileName() {
+        return fileName;
+    }    
+    public void setFileName(String name) {
+        this.fileName = name;
+    }
+
     public String fileExtension = "";
+    public String getFileExtension() {
+        return fileExtension;
+    }
+    public void setFileExtension(String extension) {
+        this.fileExtension = extension;
+    }
+
     public String zipPathString;
+    public String getZipPathString() {
+        return zipPathString;
+    }
+    public void setZipPathString(String zipPath) {
+        this.zipPathString = zipPath;
+    }
 
     public String[] allThemes;
+    // TODO Implement setters & getters
     public static List<List<List<String[]>>> foundThemes;
         
     final static String CUSTCLR_NODE = "custClrLst";
     final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
-    public static String getFileExtension(String path) {
-        
+    public static String extractFileExtension(String path) {
+
         String fileextension = path.substring(path.lastIndexOf('.') + 1);
-        
+
         return fileextension;
     }
-
-    public static String getFilename(String path) {
-        
-        String filename = path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
-        
-        return filename;
+    
+    public static String extractFilename(String path) {
+        return path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
     }
-
-    public static String getFilePath(String path) {
+    
+    public static String extractFilePath(String path) {
         
         String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
         

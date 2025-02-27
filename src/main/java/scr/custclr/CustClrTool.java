@@ -24,20 +24,20 @@ public class CustClrTool {
     
     public static void readPresentation() {
         
-        presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 1);
-        newpres.zipPathString = newpres.filePath + presentation.osPathSymbol() + newpres.fileName + ".zip";
-        themes = newpres.extractThemes(newpres.zipPathString);
-        presentation.changeExtension(Paths.get(newpres.filePath), newpres.fileName, newpres.fileExtension, 2);
+        presentation.changeExtension(Paths.get(newpres.getFilePath()), newpres.getFileName(), newpres.getFileExtension(), 1);
+        newpres.setZipPathString(newpres.getFilePath() + presentation.osPathSymbol() + newpres.getFileName() + ".zip");
+        themes = newpres.extractThemes(newpres.getZipPathString());
+        presentation.changeExtension(Paths.get(newpres.getFilePath()), newpres.getFileName(), newpres.getFileExtension(), 2);
     }
 
-    public static presentation createNewPresentation(String presentationPath, String presentationName,
-            String presentationExtension) {
+    public static presentation createNewPresentation(String presentationPath,
+                                                    String presentationExtension,
+                                                    String presentationName) {
         
         newpres = new presentation();
-        newpres.fileExtension = presentationExtension;
-        newpres.fileName = presentationName;
-        newpres.filePath = presentationPath;
-
+        newpres.setFileExtension(presentationExtension);        
+        newpres.setFilePath(presentationPath);
+        newpres.setFileName(presentationName);
         return newpres;
     }
 }
