@@ -299,18 +299,25 @@ public class presentation {
      */
     public static void processTheme(InputStream inputStream, String themeSelection, ZipOutputStream zipWrite) throws IOException, ParserConfigurationException, SAXException, TransformerException {
         
+        Document document = buildXMLDOM(inputStream);
+        Element rootElement = document.getDocumentElement();
+        
+        removeNode(rootElement, CUSTCLR_NODE);
+
+        writeIntoTheme(document, themeSelection, zipWrite);
+    }
+
+    private static Document buildXMLDOM(InputStream inputStream)
+            throws SAXException, IOException, ParserConfigurationException {
+        
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         // Parse the input stream as an XML document
         Document document = builder.parse(inputStream);
-        Element rootElement = document.getDocumentElement();
-        
-        // Remove Custom Color Node
-        removeNode(rootElement, CUSTCLR_NODE);
 
-        writeIntoTheme(document, themeSelection, zipWrite);
+        return document;
     }
 
     /**
