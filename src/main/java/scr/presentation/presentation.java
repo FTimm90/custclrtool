@@ -55,7 +55,7 @@ public class presentation {
         this.fileName = name;
     }
 
-    public String fileExtension = "";
+    private String fileExtension = "";
     public String getFileExtension() {
         return fileExtension;
     }
@@ -63,7 +63,7 @@ public class presentation {
         this.fileExtension = extension;
     }
 
-    public String zipPathString;
+    private String zipPathString;
     public String getZipPathString() {
         return zipPathString;
     }
