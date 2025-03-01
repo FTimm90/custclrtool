@@ -24,8 +24,10 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -74,8 +76,8 @@ public class presentation {
 
     private String[] allThemes;
     public String[] getAllThemes() {
-        return allThemes;    }
-
+        return allThemes;
+    }
     private void setAllThemes(List<List<String>> collectedThemes) {
         allThemes = new String[collectedThemes.size()];
         for (int i = 0; i < collectedThemes.size(); i++) {
@@ -90,6 +92,14 @@ public class presentation {
     }
     public void setTableStylesID(String ID) {
         tableStylesID = ID;
+    }
+    
+    private Document tableStylesXML;
+    public Document getTableStylesXML() {
+        return tableStylesXML;
+    }
+    public void setTableStylesXML(Document tableStyles) {
+        tableStylesXML = tableStyles;
     }
 
     final static String CUSTCLR_NODE = "custClrLst";
@@ -106,7 +116,7 @@ public class presentation {
      *                      theme Information.
      *                      per theme: [[Theme#, Theme Name],[Color Name, Color Value], ...]
      */
-    public List<List<String>> extractThemes(String zipFilePath) {
+    public List<List<String>> extractXMLData(String zipFilePath) {
 
         themeCollection = new ArrayList<>();
 
@@ -124,10 +134,11 @@ public class presentation {
                     extractThemeData(zipFile.getInputStream(entry), name);
                 } else if (type.equals("FILE") && name.contains("tableStyles")) {
                     setTableStylesID(extractTableStylesID(zipFile.getInputStream(entry)));
+                    setTableStylesXML(buildXMLDOM(zipFile.getInputStream(entry)));
                 }
             }
             setAllThemes(themeCollection);
-        } catch (IOException | XMLStreamException ex) {
+        } catch (IOException | XMLStreamException | SAXException | ParserConfigurationException ex) {
             System.err.println(ex);
             CustClrTool.mainGUI.eventLog.setText("Failed to extract themes from file.");
         }
@@ -268,6 +279,8 @@ public class presentation {
 
                 if (type.equals("FILE") && name.contains(destinationXML)) {
                     xmlProcessor.process(inputStream, destinationXML, zipWrite);
+                } else if (type.equals("FILE") && name.contains("tableStyles.xml")) {
+                    writeZipEntry(CustClrTool.newpres.getTableStylesXML(), "ppt/tableStyles.xml", zipWrite);
                 }
                 else {
                     insertZipEntry(entry, zipWrite, inputStream);
@@ -313,7 +326,7 @@ public class presentation {
         
         removeNode(rootElement, CUSTCLR_NODE);
 
-        writeIntoTheme(document, themeSelection, zipWrite);
+        writeThemeXML(document, themeSelection, zipWrite);
     }
 
     private static Document buildXMLDOM(InputStream inputStream)
@@ -334,19 +347,26 @@ public class presentation {
      * @param document  XML Document object.
      * @throws IOException 
      */
-    private static void writeIntoTheme(Document document, String themeSelection, ZipOutputStream zipWrite) throws ParserConfigurationException, TransformerException, IOException {
+    private static void writeThemeXML(Document document, String themeSelection, ZipOutputStream zipWrite)
+            throws ParserConfigurationException, TransformerException, IOException {
 
         Node extLstNode = findNode(document, "a:extLst");
-        
+
         Element listElement = document.createElementNS(NAMESPACE, "a:custClrLst");
         List<String[]> userColors = mainWindow.fetchColors();
         for (int i = 0; i < userColors.size(); i++) {
             Element newElement = createCustClrElement(document, userColors.get(i)[0], userColors.get(i)[1]);
             listElement.appendChild(newElement);
         }
-        
+
         extLstNode.getParentNode().insertBefore(listElement, extLstNode);
-        
+        String outputName = "ppt/theme/" + themeSelection + ".xml";
+        writeZipEntry(document, outputName, zipWrite);
+    }
+    
+    private static void writeZipEntry(Document document, String outputName, ZipOutputStream zipWrite)
+            throws TransformerFactoryConfigurationError, TransformerConfigurationException, TransformerException,
+            IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
@@ -354,7 +374,6 @@ public class presentation {
         StreamResult result = new StreamResult(outputStream); 
         transformer.transform(source, result);
 
-        String outputName = "ppt/theme/" + themeSelection + ".xml";
         ZipEntry zipEntry = new ZipEntry(outputName);
         zipEntry.setSize(outputStream.size());
         zipEntry.setTime(System.currentTimeMillis()); 
@@ -384,6 +403,24 @@ public class presentation {
     }
     
 // Following are helper methods
+
+public static Document flushTableStyles(Document tableStylesXML, int selection) {
+        
+        Element rootElement = tableStylesXML.getDocumentElement();
+        NodeList styleList = tableStylesXML.getElementsByTagName("a:tblStyleLst");
+        Node styleListNode = styleList.item(0);
+        
+        List<String> selectedTheme = CustClrTool.themes.get(selection);
+        String IDValue = selectedTheme.get(selectedTheme.size() - 1);
+        String ID = IDValue.substring((IDValue.lastIndexOf(":") + 1));
+
+        if (styleListNode instanceof Element styleElement) { 
+                        styleElement.setAttribute("def", ID);
+        }
+        // TODO removing doesn't work!!
+        removeNode(rootElement, "tblStyle");
+        return tableStylesXML;
+    }
 
     /**
      * Remove node + all children

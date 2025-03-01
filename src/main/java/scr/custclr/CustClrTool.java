@@ -26,7 +26,7 @@ public class CustClrTool {
         
         presentation.changeExtension(Paths.get(newpres.getFilePath()), newpres.getFileName(), newpres.getFileExtension(), 1);
         newpres.setZipPathString(newpres.getFilePath() + presentation.osPathSymbol() + newpres.getFileName() + ".zip");
-        themes = newpres.extractThemes(newpres.getZipPathString());
+        themes = newpres.extractXMLData(newpres.getZipPathString());
         presentation.changeExtension(Paths.get(newpres.getFilePath()), newpres.getFileName(), newpres.getFileExtension(), 2);
     }
 

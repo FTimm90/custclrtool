@@ -54,6 +54,7 @@ public class mainWindow extends JFrame {
     JComboBox<String> tableElements;
     JLabel presentationNameLabel;
     public JLabel eventLog;
+    static JTabbedPane windowTabs;
 
     static colorfield[] colorfields;
     static colorfield[] colorfieldCache;
@@ -88,7 +89,7 @@ public class mainWindow extends JFrame {
         eventLog = newLabel(10, 0, "The last action that happened.");
         bottomPanel.add(eventLog);        
         
-        JTabbedPane windowTabs = new JTabbedPane();
+        windowTabs = new JTabbedPane();
         windowTabs.setBounds(10, 10, 1320, 870);
         windowTabs.addTab("Custom colors", custClrPanel);
         windowTabs.addTab("Table styles", tablePanel);
@@ -375,10 +376,12 @@ public class mainWindow extends JFrame {
             activateAllColorfields();
             fillColorFields(CustClrTool.themes, selection);
             if (presentation.validateID(CustClrTool.themes.get(selection), CustClrTool.newpres.getTableStylesID())){
-                System.out.println("ID: VALID! Theme ID and Table styles ID are the same.");
+                System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
             } else {
-                System.out.println("ID: INVALID! Theme ID and Table styles ID are not the same.");
+                System.out.println("ID INVALID! Theme ID and Table styles ID are not the same.");
+                CustClrTool.newpres.setTableStylesXML(presentation.flushTableStyles(CustClrTool.newpres.getTableStylesXML(), selection));
             }
+            windowTabs.setEnabledAt(1, true);
             cacheButton.setEnabled(true);
             applyButton.setEnabled(true);
         });
