@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -71,70 +72,29 @@ public class presentation {
         this.zipPathString = zipPath;
     }
 
-    public String[] allThemes;
-    // TODO Implement setters & getters
-    public static List<List<List<String[]>>> foundThemes;
-        
+    private String[] allThemes;
+    public String[] getAllThemes() {
+        return allThemes;    }
+
+    private void setAllThemes(List<List<String>> collectedThemes) {
+        allThemes = new String[collectedThemes.size()];
+        for (int i = 0; i < collectedThemes.size(); i++) {
+            String themeName = collectedThemes.get(i).get(1);
+            allThemes[i] = themeName.substring(themeName.lastIndexOf(":") + 1);
+        }
+    }
+    
+    private String tableStylesID = "";
+    public String getTableStylesID() {
+        return tableStylesID;
+    }
+    public void setTableStylesID(String ID) {
+        tableStylesID = ID;
+    }
+
     final static String CUSTCLR_NODE = "custClrLst";
     final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
-
-    public static String extractFileExtension(String path) {
-
-        String fileextension = path.substring(path.lastIndexOf('.') + 1);
-
-        return fileextension;
-    }
-    
-    public static String extractFilename(String path) {
-        return path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
-    }
-    
-    public static String extractFilePath(String path) {
-        
-        String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
-        
-        return filename;
-    }
-
-    public void clearPresentationObject() {
-        filePath = "";
-        fileName = "";
-        fileExtension = "";
-        zipPathString = "";
-        allThemes = new String[0];
-        foundThemes = new ArrayList<>();
-    }
-
-    /**
-     * @param filePath      the path of the file
-     * @param fileName      the name of the file
-     * @param fileExtension the original file extension
-     * @param extension     the desired extension. 1 = .zip, anything else = original extension
-     */
-    public static void changeExtension(Path filePath, String fileName, String fileExtension, int extension) {
-
-        Path oldFile;
-        String newExtension;
-        
-        if (extension == 1){
-            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + "." + fileExtension);
-            newExtension = ".zip";
-        }  
-        else {
-            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + ".zip");
-            newExtension = "." + fileExtension;
-        }            
-
-        String newFileName = fileName + newExtension;
-        try {
-            Files.move(oldFile, oldFile.resolveSibling(newFileName));
-            String logMessage = String.format("File converted to %s\n", newExtension);
-            CustClrTool.mainGUI.eventLog.setText(logMessage);
-        } catch (IOException e) {
-            CustClrTool.mainGUI.eventLog.setText("Failed to convert file.");
-        }
-
-    }
+    private List<List<String>> themeCollection;
     
 // The following block handles file INPUT
 
@@ -146,9 +106,9 @@ public class presentation {
      *                      theme Information.
      *                      per theme: [[Theme#, Theme Name],[Color Name, Color Value], ...]
      */
-    public List<List<List<String[]>>> extractThemes(String zipFilePath) {
+    public List<List<String>> extractThemes(String zipFilePath) {
 
-        foundThemes = new ArrayList<>();
+        themeCollection = new ArrayList<>();
 
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -159,98 +119,122 @@ public class presentation {
                 String type = entry.isDirectory() ? "DIR" : "FILE";
 
                 if (type.equals("FILE") && name.contains("theme")) {
-                    List<List<String[]>> themeData = extractThemeData(zipFile.getInputStream(entry), name);
-                    foundThemes.add(themeData);
+                    List<String> theme = extractThemeData(zipFile.getInputStream(entry), name);
+                    themeCollection.add(theme);
+                    extractThemeData(zipFile.getInputStream(entry), name);
+                } else if (type.equals("FILE") && name.contains("tableStyles")) {
+                    setTableStylesID(extractTableStylesID(zipFile.getInputStream(entry)));
                 }
             }
-
-            populateAllThemesList();
-
+            setAllThemes(themeCollection);
         } catch (IOException | XMLStreamException ex) {
             System.err.println(ex);
             CustClrTool.mainGUI.eventLog.setText("Failed to extract themes from file.");
         }
-
-        return foundThemes;
+        return themeCollection;
     }
 
-    private void populateAllThemesList() {
-        
-        allThemes = new String[foundThemes.size()];
-        for (int i = 0; i < foundThemes.size(); i++) {
-                allThemes[i] = foundThemes.get(i).get(0).get(0)[1];
+    private static String extractTableStylesID(InputStream inputStream) throws XMLStreamException {
+        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
+        while (reader.hasNext()) {
+            int eventType = reader.next();
+            if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("tblStyleLst")) {
+                return reader.getAttributeValue("", "def");
             }
-    }   
+        }
+        return "";
+    }
 
     /**
      * Extracts Data from the theme selection (Theme name & 
-     * Potential existing custom colors)
+     * Potential existing custom colors) Split by ":"
      * @return  All information stored in a List of strings
      *          (0) --> Theme number (e.g. theme1)
      *          (1) --> Theme name
      *          (2:) -> Names and values of the custom colors
      */
-    private static List<List<String[]>> extractThemeData(InputStream inputStream, String themeNumber)
+    private static List<String> extractThemeData(InputStream inputStream, String themeNumber)
             throws XMLStreamException {
-        
-        List<String[]> theme = new ArrayList<>(); // Stores all information for a single theme
-        List<List<String[]>> themeData = new ArrayList<>(); // Stores all collected themes together
-        String[] numberAndName = new String[2]; // Stores theme number and name in theme[0]
-        String themeName;
 
-        numberAndName[0] = (themeNumber.substring(themeNumber.lastIndexOf('/')+1,themeNumber.lastIndexOf('.')));
+        List<String> theme = new ArrayList<>(); 
+
+        themeNumber = themeNumber.substring(themeNumber.lastIndexOf('/') + 1, themeNumber.lastIndexOf('.'));
 
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
         while (reader.hasNext()) {
             int eventType = reader.next();
             if (eventType == XMLStreamReader.START_ELEMENT) {
-                if (reader.getLocalName().equals("theme")) {
-                    themeName = reader.getAttributeValue("", "name");
-                    numberAndName[1] = themeName;
-                    theme.add(numberAndName);
-                } else if (reader.getLocalName().equals(CUSTCLR_NODE)) {
-                    processColorList(reader, theme);
+                switch (reader.getLocalName()) {
+                    case "theme" -> {
+                        String themeName = reader.getAttributeValue("", "name");
+                        theme.add(String.format("theme number:%s", themeNumber));
+                        theme.add(String.format("theme name:%s", themeName));
+                    }
+                    case CUSTCLR_NODE -> {
+                        HashMap<String, String> findColorElements = new HashMap<>();
+                        findColorElements.put("custClr", "name");
+                        findColorElements.put("srgbClr", "val");
+                        List<String> foundElements = gatherChildElements(reader, CUSTCLR_NODE, findColorElements);
+                        for (int i = 0; i < foundElements.size(); i++) {
+                            theme.add(foundElements.get(i));
+                        }
+                    }
+                    case "themeFamily" -> {
+                        String themeID = reader.getAttributeValue("", "id");
+                        theme.add(String.format("themeID:%s", themeID));
+                    }
+                    default -> {
+                    }
                 }
             } else if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("theme")) {
-                themeData.add(theme);
+                break;
             }
         }
-
-        return themeData;
+        return theme;
     }
-
-    /**
-     * Reads Custom colors from the input .zip and adds them directly 
-     * to the theme list.
-     * @param reader    Input XML Data
-     * @param theme     Theme list to store the colors
-    */
-    private static void processColorList(XMLStreamReader reader, List<String[]> theme) throws XMLStreamException {
     
-        String[] clrSet = new String[2]; // [0] = Name of the color, [1] = HEX Value of the color
+    /**
+     * @param reader Opened XML file.
+     * @param parentElement Find child elements within the scope of this.
+     * @param childKeyValue Tag : Value to be found.
+     * @return A List of all the found child elements.
+     * @throws XMLStreamException
+     */
+    private static List<String> gatherChildElements(XMLStreamReader reader, String parentElement,
+            HashMap<String, String> childKeyValue) throws XMLStreamException {
         
+        List<String> foundElements = new ArrayList<>();
         while (reader.hasNext()) {
             int eventType = reader.next();
-
-            if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(CUSTCLR_NODE)) {
-                break;
-
-            } else if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("custClr")) {
-                theme.add(clrSet.clone());
-
-            } else if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("custClr")) {
-                String colorName = reader.getAttributeValue("", "name");
-                if (colorName != null) {
-                    clrSet[0] = colorName;
-                } else {
-                    clrSet[0] = " ";
+            if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(parentElement)) {
+                return foundElements;
+            } else {
+                for (String i : childKeyValue.keySet()) {
+                    if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals(i)) {
+                        String name = reader.getAttributeValue("", childKeyValue.get(i));
+                        if (name == null) {
+                            name = "";
+                        }
+                        String foundElement = String.format("%s:%s", i, name);
+                        foundElements.add(foundElement);
+                    }
                 }
-
-            } else if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("srgbClr")) {
-                String colorValue = reader.getAttributeValue("", "val");
-                clrSet[1] = colorValue;
             }
         }
+        return foundElements;
+    }
+    
+    /**
+     * If the ID of the selected theme is equal to the ID in the tableStyles.xml
+     * it is very likely, that potentially existing table styles are custom.
+     * @param theme
+     * @param tableStyleID
+     */
+    public static boolean validateID(List<String> theme, String tableStyleID) {
+        String idExtract = theme.get(theme.size() - 1);
+        String themeID = idExtract.substring(idExtract.lastIndexOf(":") + 1);
+        System.out.printf("theme ID: %s, table styles ID: %s\n", themeID, tableStyleID);
+        return themeID.equals(tableStyleID);
     }
 
 // The following block handles file OUTPUT
@@ -346,25 +330,6 @@ public class presentation {
     }
 
     /**
-     * Remove node + all children
-     * @param rootElement
-     * @param nodeName
-     */
-    private static void removeNode(Element rootElement, String nodeName) {
-        NodeList rootNode = rootElement.getChildNodes();
-        for (int i = 0; i < rootNode.getLength(); i++) {
-            Node childNode = rootNode.item(i);
-            if (childNode.getNodeName().equals("a:" + nodeName)) {
-                Node parentNode = childNode.getParentNode();
-                if (parentNode != null) {
-                    parentNode.removeChild(childNode);
-                }
-                break;
-            }
-        }
-    }
-
-    /**
      * Builds the XML structure for adding new custom colors and writes them into the XMl document
      * @param document  XML Document object.
      * @throws IOException 
@@ -400,7 +365,7 @@ public class presentation {
     }
 
     /**
-     * Create a single new custom color to insert into theme.xml. 
+     * Create a single new custom color node to insert into theme.xml. 
      * Needs a <a:custClrLst> parent element.
      * @param document  XML DOM document theme.xml to add the custom colors to
      * @param name      Name of the custom color
@@ -420,6 +385,81 @@ public class presentation {
     
 // Following are helper methods
 
+    /**
+     * Remove node + all children
+     * @param rootElement
+     * @param nodeName
+     */
+    private static void removeNode(Element rootElement, String nodeName) {
+        NodeList rootNode = rootElement.getChildNodes();
+        for (int i = 0; i < rootNode.getLength(); i++) {
+            Node childNode = rootNode.item(i);
+            if (childNode.getNodeName().equals("a:" + nodeName)) {
+                Node parentNode = childNode.getParentNode();
+                if (parentNode != null) {
+                    parentNode.removeChild(childNode);
+                }
+                break;
+            }
+        }
+    }
+
+    public static String extractFileExtension(String path) {
+
+        String fileextension = path.substring(path.lastIndexOf('.') + 1);
+
+        return fileextension;
+    }
+    
+    public static String extractFilename(String path) {
+        return path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
+    }
+    
+    public static String extractFilePath(String path) {
+        
+        String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
+        
+        return filename;
+    }
+
+    public void clearPresentationObject() {
+        filePath = "";
+        fileName = "";
+        fileExtension = "";
+        zipPathString = "";
+        allThemes = new String[0];
+    }
+
+    /**
+     * @param filePath      the path of the file
+     * @param fileName      the name of the file
+     * @param fileExtension the original file extension
+     * @param extension     the desired extension. 1 = .zip, anything else = original extension
+     */
+    public static void changeExtension(Path filePath, String fileName, String fileExtension, int extension) {
+
+        Path oldFile;
+        String newExtension;
+
+        if (extension == 1) {
+            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + "." + fileExtension);
+            newExtension = ".zip";
+        } else {
+            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + ".zip");
+            newExtension = "." + fileExtension;
+        }
+
+        String newFileName = fileName + newExtension;
+        try {
+            Files.move(oldFile, oldFile.resolveSibling(newFileName));
+            String logMessage = String.format("File converted to %s\n", newExtension);
+            CustClrTool.mainGUI.eventLog.setText(logMessage);
+        } catch (IOException e) {
+            CustClrTool.mainGUI.eventLog.setText("Failed to convert file.");
+        }
+
+    }
+    
     /**
      * Helper method to find a specific child node based on a parent node 
      * and its name as a string.
@@ -441,15 +481,9 @@ public class presentation {
                 }
             }
         }
-
         return null;
     }
     
-    /**
-     * Helper function to Replace the old .zip file with the new, modified one.
-     * @param oldFile   The path of the old file
-     * @param filePath  Path of the new file
-     */
     private static void replaceOldFile(String oldFile, String filePath) {
         
         String oldFilePath = filePath + osPathSymbol() + oldFile + ".zip";

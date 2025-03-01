@@ -14,7 +14,7 @@ public class CustClrTool {
     
     public static presentation newpres;
     public static mainWindow mainGUI;
-    public static List<List<List<String[]>>> themes;
+    public static List<List<String>> themes;
     public static void main(String[] args) {
         FlatOneDarkIJTheme.setup();
         SwingUtilities.invokeLater(() -> {

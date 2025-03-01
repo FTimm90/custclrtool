@@ -92,6 +92,7 @@ public class mainWindow extends JFrame {
         windowTabs.setBounds(10, 10, 1320, 870);
         windowTabs.addTab("Custom colors", custClrPanel);
         windowTabs.addTab("Table styles", tablePanel);
+        windowTabs.setEnabledAt(1, false);
         this.add(windowTabs);
 
         custClrPanelElements();
@@ -202,10 +203,6 @@ public class mainWindow extends JFrame {
             presentation.writeZipOutput(zipPath, fileName, filePath, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite));
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
             eventLog.setText("An error occured while trying to write the colors to the theme.");
-        }
-        for (colorfield colorfield : colorfields) {
-            colorfield.clearColorField();
-            colorfield.deactivateEntry();
         }
     }
 
@@ -365,11 +362,11 @@ public class mainWindow extends JFrame {
 
 // Helper Methods
     private static void drawDropDown() {
-        int numberOfThemes = CustClrTool.newpres.allThemes.length;
+        int numberOfThemes = CustClrTool.newpres.getAllThemes().length;
         String[] themesNumbered = new String[numberOfThemes];
 
         for (int i = 0; i < numberOfThemes; i++) {
-            themesNumbered[i] = (i + 1) + ". " + CustClrTool.newpres.allThemes[i];
+            themesNumbered[i] = (i + 1) + ". " + CustClrTool.newpres.getAllThemes()[i];
         }
 
         themeSelection = newComboBox(themesNumbered);
@@ -377,28 +374,43 @@ public class mainWindow extends JFrame {
             int selection = themeSelection.getSelectedIndex();
             activateAllColorfields();
             fillColorFields(CustClrTool.themes, selection);
+            if (presentation.validateID(CustClrTool.themes.get(selection), CustClrTool.newpres.getTableStylesID())){
+                System.out.println("ID: VALID! Theme ID and Table styles ID are the same.");
+            } else {
+                System.out.println("ID: INVALID! Theme ID and Table styles ID are not the same.");
+            }
             cacheButton.setEnabled(true);
             applyButton.setEnabled(true);
         });
         custClrPanel.add(themeSelection);
     }
         
-    public static void fillColorFields(List<List<List<String[]>>> themes, int themeSelection) {
+    public static void fillColorFields(List<List<String>> themes, int themeSelection) {
         
-        List<List<String[]>> getTheme = themes.get(themeSelection);
-        List<String[]> selectedTheme = getTheme.get(0);
-        selectThemeFileName = selectedTheme.get(0)[0];
-        // i = 1 because (0) is theme name and number
-        for (int i = 1; i < selectedTheme.size(); i++) {
-            String name = selectedTheme.get(i)[0];
-            String color = selectedTheme.get(i)[1];
-            colorfields[i - 1].activateColorField.setEnabled(true);
-            colorfields[i - 1].activateColorField.setSelected(true);
-            colorfields[i - 1].colorName.setText(name);
-            colorfields[i - 1].colorName.setEditable(true);
-            colorfields[i - 1].changeColor(Color.decode("#" + color));
-            colorfields[i - 1].colorValue.setText(color);
-            colorfields[i - 1].colorValue.setEditable(true);
+        List<String> selectedTheme = themes.get(themeSelection);
+        
+        String themeName = selectedTheme.get(1);
+        int index = (themeName.lastIndexOf(":")) + 1;
+        selectThemeFileName = themeName.substring(index);
+        
+        int fieldIndex = 0;
+        // i = 2 because (0-1) is theme name and number
+        for (int i = 2; i < selectedTheme.size() - 1; i++) {
+            int getIndex = (selectedTheme.get(i).lastIndexOf(":")) + 1;
+            if (selectedTheme.get(i).contains("custClr")) {
+                String name = selectedTheme.get(i).substring(getIndex);
+                colorfields[fieldIndex].colorName.setText(name);
+            } else if (selectedTheme.get(i).contains("srgbClr")) {
+                String color = selectedTheme.get(i).substring(getIndex);
+                colorfields[fieldIndex].activateColorField.setEnabled(true);
+                colorfields[fieldIndex].activateColorField.setSelected(true);
+                colorfields[fieldIndex].colorName.setEditable(true);
+                colorfields[fieldIndex].changeColor(Color.decode("#" + color));
+                colorfields[fieldIndex].colorValue.setText(color);
+                colorfields[fieldIndex].colorValue.setEditable(true);
+                fieldIndex++;
+            }
+            
         }
     }
     
