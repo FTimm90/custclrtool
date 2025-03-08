@@ -13,23 +13,56 @@ public class settingsField {
     private final int PANELWIDTH = 240;
     private final String[] SIDES = { "Left", "Right", "Top", "Bottom" };
     
+    private XmlValue[] lineWidths = {
+        new XmlValue("0,00pt", "0"),
+        new XmlValue("0,25pt", "3175"),
+        new XmlValue("0,50pt", "6350"),
+        new XmlValue("0,75pt", "9525"),
+        new XmlValue("1,00pt", "12700"),
+        new XmlValue("1,50pt", "28575"),
+        new XmlValue("2,25pt", "38100"),
+        new XmlValue("3,00pt", "57150"),
+        new XmlValue("4,50pt", "76200"),
+        new XmlValue("6,00pt", "104775")      
+        };
+        
+    private XmlValue[] themeColors = {
+        new XmlValue("Light 1", "lt1"),
+        new XmlValue("Dark 1", "dk1"),
+        new XmlValue("Light 2", "lt2"),
+        new XmlValue("Dark 2", "dk2"),
+        new XmlValue("accent 1", "accent1"),
+        new XmlValue("accent 2", "accent2"),
+        new XmlValue("accent 3", "accent3"),
+        new XmlValue("accent 4", "accent4"),
+        new XmlValue("accent 5", "accent5"),
+        new XmlValue("accent 6", "accent6"),
+        new XmlValue("Hyperlink", "hlink"),
+        new XmlValue("Followed Hyperlink", "folHlink")    
+        };
+
+    private XmlValue[] themeFonts = {
+        new XmlValue("Body Text", "minor"),
+        new XmlValue("Headline Text", "major"),
+        };
+
 
     public JPanel widget;
     JPanel fontPanel;
     JPanel linePanel;
     JPanel colorPreview;
-    JComboBox<String> fontSelectBox;
-    JComboBox<String> colorSelectBox;
-    private JComboBox<String>[] lineSizes = new JComboBox[6];
-    public List<JComboBox<String>> collectedValues = new ArrayList<>();
+    JComboBox<XmlValue> fontSelectBox;
+    JComboBox<XmlValue> colorSelectBox;
+    private List<JComboBox<XmlValue>> collectedValues = new ArrayList<>();
 
-    int lineSizeCounter = 0;
-    
-    public List<JComboBox<String>> getCollectedValues() {
-        for (JComboBox<String> value : collectedValues) {
-            System.out.println(value.getSelectedItem());
+    public List<String> getCollectedValues() {
+    List<String> xmlValues = new ArrayList<>();
+        for (JComboBox<XmlValue> value : collectedValues) {
+            XmlValue selected = (XmlValue) value.getSelectedItem();
+            System.out.printf("GUI Value: %s    XML Value: %s\n", value.getSelectedItem().toString(), selected.getXmlValue()).toString();
+            xmlValues.add(selected.getXmlValue());
         }
-        return collectedValues;
+        return xmlValues;
     }
 
     public settingsField(int posX, int posY) {
@@ -86,9 +119,7 @@ public class settingsField {
         leftBorder.setBounds(0, 0, 100, 30);
         linePanel.add(leftBorder);
 
-        JComboBox<String> lineOne = widthSelection();        
-        lineSizes[lineSizeCounter] = lineOne;
-        lineSizeCounter += 1;
+        JComboBox<XmlValue> lineOne = widthSelection();        
 
         linePanel.add(lineOne);
 
@@ -139,26 +170,20 @@ public class settingsField {
         return dividerLine;
     }
     
-    private JComboBox<String> widthSelection() {
-
-        String[] lineWidths = { "0pt", "0,25pt", "0,5pt", "0,75pt", "1pt", "1,5pt", "2,25pt", "3pt", "4pt", "6pt" };
-        JComboBox<String> widthSelect = mainWindow.newComboBox(lineWidths);
+    private JComboBox<XmlValue> widthSelection() {
+        JComboBox<XmlValue> widthSelect = new JComboBox<>(lineWidths);
         collectedValues.add(widthSelect);
         return widthSelect;
     }
     
-    private JComboBox<String> fontSelection() {
-
-        String[] fonts = { "Body text", "Headline text" };
-        JComboBox<String> fontSelect = mainWindow.newComboBox(fonts);
+    private JComboBox<XmlValue> fontSelection() {
+        JComboBox<XmlValue> fontSelect = new JComboBox<>(themeFonts);
         collectedValues.add(fontSelect);
         return fontSelect;
     }
     
-    private JComboBox<String> colorSelection() {
-        
-        String[] themeColors = { "Light 1", "Dark 1", "Light 2", "Dark 2", "Accent 1", "Accent 2", "Accent 3", "Accent 4", "Accent 5", "Accent 6", "Link", "Followed link" };
-        JComboBox<String> colorSelect = mainWindow.newComboBox(themeColors);
+    private JComboBox<XmlValue> colorSelection() {
+        JComboBox<XmlValue> colorSelect = new JComboBox<>(themeColors);
         collectedValues.add(colorSelect);
         return colorSelect;
     }

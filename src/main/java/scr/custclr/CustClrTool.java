@@ -10,6 +10,13 @@ import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
 import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
+// TODO
+// Read theme colors from presentation
+// Read existing tables from presentation (if necessary)
+// Make table UI adjustable (for each of the 6)
+// Write table into file
+// Add another table
+
 public class CustClrTool {
     
     public static presentation newpres;
