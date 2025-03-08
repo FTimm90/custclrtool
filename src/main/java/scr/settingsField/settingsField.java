@@ -1,4 +1,7 @@
 package scr.settingsField;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -7,33 +10,37 @@ import scr.gui.mainWindow;
 
 public class settingsField {
 
+    private final int PANELWIDTH = 240;
+    private final String[] SIDES = { "Left", "Right", "Top", "Bottom" };
+    
+
     public JPanel widget;
     JPanel fontPanel;
     JPanel linePanel;
     JPanel colorPreview;
     JComboBox<String> fontSelectBox;
     JComboBox<String> colorSelectBox;
-            
-    public int posX;
-    public int posY;
+    private JComboBox<String>[] lineSizes = new JComboBox[6];
+    public List<JComboBox<String>> collectedValues = new ArrayList<>();
 
-    public JComboBox<String>[] lineSizes = new JComboBox[6];
     int lineSizeCounter = 0;
-
-    private final int PANELWIDTH = 240;
-    private final String[] SIDES = { "Left", "Right", "Top", "Bottom" };
     
+    public List<JComboBox<String>> getCollectedValues() {
+        for (JComboBox<String> value : collectedValues) {
+            System.out.println(value.getSelectedItem());
+        }
+        return collectedValues;
+    }
+
     public settingsField(int posX, int posY) {
 
-        this.posX = posX;
-        this.posY = posY;
         this.widget = settingsWidget(posX, posY);
     }
 
     private JPanel settingsWidget(int posX, int posY) {
 
-        widget = mainWindow.newPanel(1, 1, 1, 1, 120, 140);
-        widget.setBounds(posX, posY, PANELWIDTH, 700);
+        widget = mainWindow.newPanel(0, 0, 0, 0, 120, 140);
+        widget.setBounds(posX, posY, PANELWIDTH, 750);
 
         setBordersWidget();
 
@@ -43,14 +50,17 @@ public class settingsField {
         JPanel innerVertical = lineWidget(0, 0, "Inner Vertical Border:");
         widget.add(innerVertical);
 
-        JPanel fontSelection = fontWidget(0, 0, "Font:");
-        widget.add(fontSelection);
+        JPanel dividerLine = divider();
+        widget.add(dividerLine);
 
-        JPanel fontColor = colorWidget(0, 0, "Text color:");
-        widget.add(fontColor);
-        
         JPanel cellColor = colorWidget(0, 0, "Cell color");
         widget.add(cellColor);
+        
+        JPanel fontSelection = fontWidget(0, 0, "Font:");
+        widget.add(fontSelection);
+        
+        JPanel fontColor = colorWidget(0, 0, "Text color:");
+        widget.add(fontColor);
 
         return widget;
     }
@@ -90,7 +100,10 @@ public class settingsField {
     
     private JPanel fontWidget(int posX, int posY, String lineText) {
 
-        fontPanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 30);
+        fontPanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 50);
+        
+        JPanel dividerLine = divider();
+        fontPanel.add(dividerLine);
 
         JLabel fontLabel = mainWindow.newLabel(0, 0, "");
         fontLabel.setText(lineText);
@@ -125,12 +138,12 @@ public class settingsField {
         JPanel dividerLine = mainWindow.newPanel(1, 0, 0, 0, PANELWIDTH, 10);
         return dividerLine;
     }
-
     
     private JComboBox<String> widthSelection() {
 
-        String[] lineWidths = { "0,25pt", "0,5pt", "0,75pt", "1pt", "1,5pt", "2,25pt", "3pt", "4pt", "6pt" };
+        String[] lineWidths = { "0pt", "0,25pt", "0,5pt", "0,75pt", "1pt", "1,5pt", "2,25pt", "3pt", "4pt", "6pt" };
         JComboBox<String> widthSelect = mainWindow.newComboBox(lineWidths);
+        collectedValues.add(widthSelect);
         return widthSelect;
     }
     
@@ -138,13 +151,34 @@ public class settingsField {
 
         String[] fonts = { "Body text", "Headline text" };
         JComboBox<String> fontSelect = mainWindow.newComboBox(fonts);
+        collectedValues.add(fontSelect);
         return fontSelect;
     }
     
     private JComboBox<String> colorSelection() {
         
         String[] themeColors = { "Light 1", "Dark 1", "Light 2", "Dark 2", "Accent 1", "Accent 2", "Accent 3", "Accent 4", "Accent 5", "Accent 6", "Link", "Followed link" };
-        JComboBox<String> fontSelect = mainWindow.newComboBox(themeColors);
-        return fontSelect;
+        JComboBox<String> colorSelect = mainWindow.newComboBox(themeColors);
+        collectedValues.add(colorSelect);
+        return colorSelect;
+    }
+}
+
+class XmlValue {
+    private String displayValue;
+    private String xmlValue;
+
+    public XmlValue(String displayValue, String xmlValue) {
+        this.displayValue = displayValue;
+        this.xmlValue = xmlValue;
+    }
+
+    @Override
+    public String toString() {
+        return displayValue; 
+    }
+
+    public String getXmlValue() {
+        return xmlValue;
     }
 }

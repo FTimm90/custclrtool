@@ -404,12 +404,22 @@ public class presentation {
     
 // Following are helper methods
 
+/**
+ * Removing exisiting table styles to start with a "clean" file.
+ * Match the tableStylesXML ID to theme ID.
+ * @param tableStylesXML
+ * @param selection
+ * @return
+ */
 public static Document flushTableStyles(Document tableStylesXML, int selection) {
         
-        Element rootElement = tableStylesXML.getDocumentElement();
         NodeList styleList = tableStylesXML.getElementsByTagName("a:tblStyleLst");
         Node styleListNode = styleList.item(0);
-        
+
+        while (styleListNode.hasChildNodes()) {
+            styleListNode.removeChild(styleListNode.getFirstChild());
+        }
+
         List<String> selectedTheme = CustClrTool.themes.get(selection);
         String IDValue = selectedTheme.get(selectedTheme.size() - 1);
         String ID = IDValue.substring((IDValue.lastIndexOf(":") + 1));
@@ -417,13 +427,11 @@ public static Document flushTableStyles(Document tableStylesXML, int selection) 
         if (styleListNode instanceof Element styleElement) { 
                         styleElement.setAttribute("def", ID);
         }
-        // TODO removing doesn't work!!
-        removeNode(rootElement, "tblStyle");
         return tableStylesXML;
     }
 
     /**
-     * Remove node + all children
+     * Remove a specific node + all children
      * @param rootElement
      * @param nodeName
      */

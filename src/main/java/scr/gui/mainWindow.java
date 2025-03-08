@@ -55,6 +55,7 @@ public class mainWindow extends JFrame {
     JLabel presentationNameLabel;
     public JLabel eventLog;
     static JTabbedPane windowTabs;
+    settingsField testfield;
 
     static colorfield[] colorfields;
     static colorfield[] colorfieldCache;
@@ -109,12 +110,18 @@ public class mainWindow extends JFrame {
         centerPanel.setLayout(null);
         tablePanel.add(centerPanel, BorderLayout.CENTER);
 
+        JButton addTableButton = newButton(30, 30, "Add table", "Adds another empty custom table");
+        addTableButton.addActionListener(click -> {
+            testfield.getCollectedValues();
+        });
+        centerPanel.add(addTableButton);
+
         String[] elementsArray = {"whole table", "banded rows", "banded columns", "first column", "last column", "text levels"};
         tableElements = newComboBox(elementsArray);
         tableElements.setBounds(30, 30, 240, 30);
         rightPanel.add(tableElements);
 
-        settingsField testfield = new settingsField(30, 90);
+        testfield = new settingsField(30, 90);
         rightPanel.add(testfield.widget);
     }
 
@@ -375,6 +382,8 @@ public class mainWindow extends JFrame {
             int selection = themeSelection.getSelectedIndex();
             activateAllColorfields();
             fillColorFields(CustClrTool.themes, selection);
+            // If the selected theme ID and the ID in the tableStyles.xml are identical
+            // it's very likely, that the contained table styles already are custom ones.
             if (presentation.validateID(CustClrTool.themes.get(selection), CustClrTool.newpres.getTableStylesID())){
                 System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
             } else {
