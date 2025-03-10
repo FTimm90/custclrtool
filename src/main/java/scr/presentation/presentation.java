@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 
 import scr.custclr.CustClrTool;
 import scr.gui.mainWindow;
+import scr.settingsField.settingsField;
 
 public class presentation {
 
@@ -168,8 +169,8 @@ public class presentation {
             throws XMLStreamException {
 
         List<String> theme = new ArrayList<>(); 
-
         themeNumber = themeNumber.substring(themeNumber.lastIndexOf('/') + 1, themeNumber.lastIndexOf('.'));
+        List<String> themeColors = new ArrayList<>();
 
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
         while (reader.hasNext()) {
@@ -180,6 +181,16 @@ public class presentation {
                         String themeName = reader.getAttributeValue("", "name");
                         theme.add(String.format("theme number:%s", themeNumber));
                         theme.add(String.format("theme name:%s", themeName));
+                    }
+                    case "clrScheme" -> {
+                        if (themeColors.isEmpty()) {
+                            HashMap<String, String> findThemeColors = new HashMap<>();
+                            findThemeColors.put("srgbClr", "val");
+                            themeColors = gatherChildElements(reader, "clrScheme", findThemeColors);
+                            for (String colorValue : themeColors) {
+                                System.out.println(colorValue);
+                            }
+                        }
                     }
                     case CUSTCLR_NODE -> {
                         HashMap<String, String> findColorElements = new HashMap<>();
@@ -218,6 +229,7 @@ public class presentation {
         while (reader.hasNext()) {
             int eventType = reader.next();
             if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(parentElement)) {
+                System.out.println("Reached END_ELEMENT: " + parentElement);
                 return foundElements;
             } else {
                 for (String i : childKeyValue.keySet()) {
@@ -541,14 +553,63 @@ public static Document flushTableStyles(Document tableStylesXML, int selection) 
     }
 
     public static char osPathSymbol() {
-        
+
         char pathDivider;
         String currentOS = System.getProperty("os.name");
         if (currentOS.startsWith("Windows"))
             pathDivider = '\\';
         else
             pathDivider = '/';
-        
+
         return pathDivider;
+    }
+
+    class Themedata {
+
+        private String themeName = "";
+        private String themeNumber = "";
+        private String themeID = "";
+        private HashMap<String, String> themeColors = new HashMap<>();
+        private List<String> customColors;
+        
+        Themedata(String name) {
+            String[] currentColorName = settingsField.getThemeColors();
+            for (int i = 0; i < 12; i++) {
+                themeColors.put(currentColorName[i], "");
+            }
+            this.themeName = name;
+        }
+
+        public String getThemeName() {
+            return themeName;
+        }
+
+        public void setThemeName(String themeName) {
+            this.themeName = themeName;
+        }
+
+        public String getThemeNumber() {
+            return themeNumber;
+        }
+
+        public void setThemeNumber(String themeNumber) {
+            this.themeNumber = themeNumber;
+        }
+
+        public String getThemeID() {
+            return themeID;
+        }
+
+        public void setThemeID(String themeID) {
+            this.themeID = themeID;
+        }
+
+        public List<String> getCustomColors() {
+            return customColors;
+        }
+
+        public void setCustomColors(List<String> customColors) {
+            this.customColors = customColors;
+        }        
     }
 }

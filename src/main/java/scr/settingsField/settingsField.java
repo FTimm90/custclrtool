@@ -10,10 +10,18 @@ import scr.gui.mainWindow;
 
 public class settingsField {
 
+    public static String[] getThemeColors() {
+        String[] themeColorNames = new String[12];
+        for (int i = 0; i < 12; i++) {
+            themeColorNames[i] = themeColors[i].getXmlValue();
+        }
+        return themeColorNames;
+    }
+
     private final int PANELWIDTH = 240;
     private final String[] SIDES = { "Left", "Right", "Top", "Bottom" };
     
-    private XmlValue[] lineWidths = {
+    private static final XmlValue[] lineWidths = {
         new XmlValue("0,00pt", "0"),
         new XmlValue("0,25pt", "3175"),
         new XmlValue("0,50pt", "6350"),
@@ -26,7 +34,7 @@ public class settingsField {
         new XmlValue("6,00pt", "104775")      
         };
         
-    private XmlValue[] themeColors = {
+    private static final XmlValue[] themeColors = {
         new XmlValue("Light 1", "lt1"),
         new XmlValue("Dark 1", "dk1"),
         new XmlValue("Light 2", "lt2"),
@@ -41,7 +49,7 @@ public class settingsField {
         new XmlValue("Followed Hyperlink", "folHlink")    
         };
 
-    private XmlValue[] themeFonts = {
+    private static final XmlValue[] themeFonts = {
         new XmlValue("Body Text", "minor"),
         new XmlValue("Headline Text", "major"),
         };
