@@ -1,8 +1,5 @@
 package scr.custclr;
 
-import java.nio.file.Paths;
-import java.util.List;
-
 import javax.swing.SwingUtilities;
 
 import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
@@ -22,7 +19,6 @@ public class CustClrTool {
     
     public static presentation newpres;
     public static mainWindow mainGUI;
-    public static List<List<String>> themes;
     public static void main(String[] args) {
         FlatOneDarkIJTheme.setup();
         SwingUtilities.invokeLater(() -> {
@@ -32,10 +28,10 @@ public class CustClrTool {
     
     public static void readPresentation() {
         
-        presentation.changeExtension(Paths.get(newpres.getFilePath()), newpres.getFileName(), newpres.getFileExtension(), 1);
+        presentation.changeExtension(newpres, 1);
         newpres.setZipPathString(newpres.getFilePath() + presentation.osPathSymbol() + newpres.getFileName() + ".zip");
-        themes = newpres.extractXMLData(newpres.getZipPathString());
-        presentation.changeExtension(Paths.get(newpres.getFilePath()), newpres.getFileName(), newpres.getFileExtension(), 2);
+        newpres.extractXMLData(newpres.getZipPathString());
+        presentation.changeExtension(newpres, 2);
     }
 
     public static presentation createNewPresentation(String presentationPath,

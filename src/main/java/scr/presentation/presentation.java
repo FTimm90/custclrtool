@@ -71,22 +71,16 @@ public class presentation {
     public String getZipPathString() {
         return zipPathString;
     }
+
     public void setZipPathString(String zipPath) {
         this.zipPathString = zipPath;
     }
-
-    private String[] allThemes;
-    public String[] getAllThemes() {
-        return allThemes;
-    }
-    private void setAllThemes(List<List<String>> collectedThemes) {
-        allThemes = new String[collectedThemes.size()];
-        for (int i = 0; i < collectedThemes.size(); i++) {
-            String themeName = collectedThemes.get(i).get(1);
-            allThemes[i] = themeName.substring(themeName.lastIndexOf(":") + 1);
-        }
-    }
     
+    private List<Themedata> themeDataList = new ArrayList<>();
+    public List<Themedata> getThemeDataList() {
+        return themeDataList;
+    }
+
     private String tableStylesID = "";
     public String getTableStylesID() {
         return tableStylesID;
@@ -105,7 +99,6 @@ public class presentation {
 
     final static String CUSTCLR_NODE = "custClrLst";
     final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
-    private List<List<String>> themeCollection;
     
 // The following block handles file INPUT
 
@@ -117,9 +110,7 @@ public class presentation {
      *                      theme Information.
      *                      per theme: [[Theme#, Theme Name],[Color Name, Color Value], ...]
      */
-    public List<List<String>> extractXMLData(String zipFilePath) {
-
-        themeCollection = new ArrayList<>();
+    public void extractXMLData(String zipFilePath) {
 
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -130,20 +121,21 @@ public class presentation {
                 String type = entry.isDirectory() ? "DIR" : "FILE";
 
                 if (type.equals("FILE") && name.contains("theme")) {
-                    List<String> theme = extractThemeData(zipFile.getInputStream(entry), name);
-                    themeCollection.add(theme);
-                    extractThemeData(zipFile.getInputStream(entry), name);
+                    // implementing Themedata
+                    Themedata newTheme = new Themedata();
+                    extractThemeData(zipFile.getInputStream(entry), name, newTheme);
+                    themeDataList.add(newTheme);
+                    newTheme.printThemeData();
+
                 } else if (type.equals("FILE") && name.contains("tableStyles")) {
                     setTableStylesID(extractTableStylesID(zipFile.getInputStream(entry)));
                     setTableStylesXML(buildXMLDOM(zipFile.getInputStream(entry)));
                 }
             }
-            setAllThemes(themeCollection);
         } catch (IOException | XMLStreamException | SAXException | ParserConfigurationException ex) {
             System.err.println(ex);
             CustClrTool.mainGUI.eventLog.setText("Failed to extract themes from file.");
         }
-        return themeCollection;
     }
 
     private static String extractTableStylesID(InputStream inputStream) throws XMLStreamException {
@@ -165,12 +157,13 @@ public class presentation {
      *          (1) --> Theme name
      *          (2:) -> Names and values of the custom colors
      */
-    private static List<String> extractThemeData(InputStream inputStream, String themeNumber)
+    private static void extractThemeData(InputStream inputStream, String themeNumber, Themedata newTheme)
             throws XMLStreamException {
 
-        List<String> theme = new ArrayList<>(); 
         themeNumber = themeNumber.substring(themeNumber.lastIndexOf('/') + 1, themeNumber.lastIndexOf('.'));
         List<String> themeColors = new ArrayList<>();
+
+        newTheme.themeNumber = themeNumber;
 
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
         while (reader.hasNext()) {
@@ -179,16 +172,17 @@ public class presentation {
                 switch (reader.getLocalName()) {
                     case "theme" -> {
                         String themeName = reader.getAttributeValue("", "name");
-                        theme.add(String.format("theme number:%s", themeNumber));
-                        theme.add(String.format("theme name:%s", themeName));
+                        newTheme.themeName = themeName;
                     }
                     case "clrScheme" -> {
                         if (themeColors.isEmpty()) {
                             HashMap<String, String> findThemeColors = new HashMap<>();
                             findThemeColors.put("srgbClr", "val");
                             themeColors = gatherChildElements(reader, "clrScheme", findThemeColors);
-                            for (String colorValue : themeColors) {
-                                System.out.println(colorValue);
+                            int counter = 0;
+                            for (String i : newTheme.themeColors.keySet()) {
+                                newTheme.themeColors.put(i, themeColors.get(counter));
+                                counter++;
                             }
                         }
                     }
@@ -198,12 +192,12 @@ public class presentation {
                         findColorElements.put("srgbClr", "val");
                         List<String> foundElements = gatherChildElements(reader, CUSTCLR_NODE, findColorElements);
                         for (int i = 0; i < foundElements.size(); i++) {
-                            theme.add(foundElements.get(i));
+                            newTheme.customColors.add(foundElements.get(i));
                         }
                     }
                     case "themeFamily" -> {
                         String themeID = reader.getAttributeValue("", "id");
-                        theme.add(String.format("themeID:%s", themeID));
+                        newTheme.themeID = themeID;
                     }
                     default -> {
                     }
@@ -212,7 +206,6 @@ public class presentation {
                 break;
             }
         }
-        return theme;
     }
     
     /**
@@ -229,7 +222,6 @@ public class presentation {
         while (reader.hasNext()) {
             int eventType = reader.next();
             if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(parentElement)) {
-                System.out.println("Reached END_ELEMENT: " + parentElement);
                 return foundElements;
             } else {
                 for (String i : childKeyValue.keySet()) {
@@ -253,9 +245,7 @@ public class presentation {
      * @param theme
      * @param tableStyleID
      */
-    public static boolean validateID(List<String> theme, String tableStyleID) {
-        String idExtract = theme.get(theme.size() - 1);
-        String themeID = idExtract.substring(idExtract.lastIndexOf(":") + 1);
+    public static boolean validateID(String themeID, String tableStyleID) {
         System.out.printf("theme ID: %s, table styles ID: %s\n", themeID, tableStyleID);
         return themeID.equals(tableStyleID);
     }
@@ -271,10 +261,14 @@ public class presentation {
      * @param destinationXML    The XML file to be replaced
      * @param xmlProcessor      The method used to modify the found XML file
      */
-    public static void writeZipOutput(String zipFilePath, String fileName, String filePath, String destinationXML, XmlProcessor xmlProcessor)
+    public static void writeZipOutput(presentation presentation, String destinationXML, XmlProcessor xmlProcessor)
             throws FileNotFoundException, ParserConfigurationException, SAXException, TransformerException {
 
         final String ZIP_TMP = "_tmp.zip";
+
+        String filePath = presentation.getFilePath();
+        String fileName = presentation.getFileName();
+        String zipFilePath = presentation.getZipPathString();
         
         File zipNew = new File(fileName + ZIP_TMP);
         ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipNew));
@@ -348,7 +342,6 @@ public class presentation {
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
 
-        // Parse the input stream as an XML document
         Document document = builder.parse(inputStream);
 
         return document;
@@ -416,15 +409,16 @@ public class presentation {
     
 // Following are helper methods
 
-/**
- * Removing exisiting table styles to start with a "clean" file.
- * Match the tableStylesXML ID to theme ID.
- * @param tableStylesXML
- * @param selection
- * @return
- */
-public static Document flushTableStyles(Document tableStylesXML, int selection) {
+    /**
+     * Removing exisiting table styles to start with a "clean" file.
+     * Match the tableStylesXML ID to theme ID.
+     * @param tableStylesXML
+     * @param selection
+     * @return
+     */
+    public static Document flushTableStyles(presentation presentation, int selection) {
         
+        Document tableStylesXML = presentation.getTableStylesXML();
         NodeList styleList = tableStylesXML.getElementsByTagName("a:tblStyleLst");
         Node styleListNode = styleList.item(0);
 
@@ -432,12 +426,10 @@ public static Document flushTableStyles(Document tableStylesXML, int selection) 
             styleListNode.removeChild(styleListNode.getFirstChild());
         }
 
-        List<String> selectedTheme = CustClrTool.themes.get(selection);
-        String IDValue = selectedTheme.get(selectedTheme.size() - 1);
-        String ID = IDValue.substring((IDValue.lastIndexOf(":") + 1));
+        String ID = presentation.getThemeID(selection);
 
-        if (styleListNode instanceof Element styleElement) { 
-                        styleElement.setAttribute("def", ID);
+        if (styleListNode instanceof Element styleElement) {
+            styleElement.setAttribute("def", ID);
         }
         return tableStylesXML;
     }
@@ -462,10 +454,7 @@ public static Document flushTableStyles(Document tableStylesXML, int selection) 
     }
 
     public static String extractFileExtension(String path) {
-
-        String fileextension = path.substring(path.lastIndexOf('.') + 1);
-
-        return fileextension;
+        return path.substring(path.lastIndexOf('.') + 1);
     }
     
     public static String extractFilename(String path) {
@@ -473,36 +462,34 @@ public static Document flushTableStyles(Document tableStylesXML, int selection) 
     }
     
     public static String extractFilePath(String path) {
-        
-        String filename = path.substring(0, path.lastIndexOf(osPathSymbol()));
-        
-        return filename;
+        return path.substring(0, path.lastIndexOf(osPathSymbol()));
     }
 
-    public void clearPresentationObject() {
-        filePath = "";
-        fileName = "";
-        fileExtension = "";
-        zipPathString = "";
-        allThemes = new String[0];
+    static public void clearPresentationObject(presentation presentation) {
+        presentation.setFilePath("");
+        presentation.setFileName("");
+        presentation.setFileExtension("");
+        presentation.setZipPathString("");
+        presentation.themeDataList = new ArrayList<>();
     }
 
     /**
-     * @param filePath      the path of the file
-     * @param fileName      the name of the file
-     * @param fileExtension the original file extension
      * @param extension     the desired extension. 1 = .zip, anything else = original extension
      */
-    public static void changeExtension(Path filePath, String fileName, String fileExtension, int extension) {
+    public static void changeExtension(presentation presentation, int extension) {
+        
+        String filePath = presentation.getFilePath();
+        String fileName = presentation.getFileName();
+        String fileExtension = presentation.getFileExtension();
 
         Path oldFile;
         String newExtension;
 
         if (extension == 1) {
-            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + "." + fileExtension);
+            oldFile = Paths.get(filePath + osPathSymbol() + fileName + "." + fileExtension);
             newExtension = ".zip";
         } else {
-            oldFile = Paths.get(filePath.toString() + osPathSymbol() + fileName + ".zip");
+            oldFile = Paths.get(filePath + osPathSymbol() + fileName + ".zip");
             newExtension = "." + fileExtension;
         }
 
@@ -564,52 +551,45 @@ public static Document flushTableStyles(Document tableStylesXML, int selection) 
         return pathDivider;
     }
 
+    public String getThemeNames(int number) {
+        return getThemeDataList().get(number).themeName;
+    }
+
+    public List<String> getThemeCustClr(int number) {
+        return getThemeDataList().get(number).customColors;
+    }
+
+    public String getThemeID(int number) {
+        return getThemeDataList().get(number).themeID;
+    }
+
     class Themedata {
 
-        private String themeName = "";
-        private String themeNumber = "";
-        private String themeID = "";
-        private HashMap<String, String> themeColors = new HashMap<>();
-        private List<String> customColors;
+        public String themeName = "";
+        public String themeNumber = "";
+        public String themeID = "";
+        public HashMap<String, String> themeColors = new HashMap<>();
+        public List<String> customColors = new ArrayList<>();
         
-        Themedata(String name) {
+        Themedata() {
             String[] currentColorName = settingsField.getThemeColors();
             for (int i = 0; i < 12; i++) {
                 themeColors.put(currentColorName[i], "");
             }
-            this.themeName = name;
         }
-
-        public String getThemeName() {
-            return themeName;
+        
+        public void printThemeData() {
+            System.out.println("Theme name: " + themeName);
+            System.out.println("Theme number: " + themeNumber);
+            System.out.println("Theme ID: " + themeID);
+            System.out.println("Theme colors: ");
+            for (String i : themeColors.keySet()) {
+                System.out.println("key: " + i + " value: " + themeColors.get(i));
+            }
+            System.out.println("Custom colors:");
+            for (String color : customColors) {
+                System.out.println(color);
+            }
         }
-
-        public void setThemeName(String themeName) {
-            this.themeName = themeName;
-        }
-
-        public String getThemeNumber() {
-            return themeNumber;
-        }
-
-        public void setThemeNumber(String themeNumber) {
-            this.themeNumber = themeNumber;
-        }
-
-        public String getThemeID() {
-            return themeID;
-        }
-
-        public void setThemeID(String themeID) {
-            this.themeID = themeID;
-        }
-
-        public List<String> getCustomColors() {
-            return customColors;
-        }
-
-        public void setCustomColors(List<String> customColors) {
-            this.customColors = customColors;
-        }        
     }
 }

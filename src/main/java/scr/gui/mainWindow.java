@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -203,12 +202,8 @@ public class mainWindow extends JFrame {
     private void eventApplyCustomColors() {
         
         try {
-            String filePath = CustClrTool.newpres.getFilePath();
-            String fileName = CustClrTool.newpres.getFileName();
-            String zipPath = CustClrTool.newpres.getZipPathString();
-
-            presentation.changeExtension(Paths.get(filePath), fileName, CustClrTool.newpres.getFileExtension(), 1);
-            presentation.writeZipOutput(zipPath, fileName, filePath, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite));
+            presentation.changeExtension(CustClrTool.newpres, 1);
+            presentation.writeZipOutput(CustClrTool.newpres, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite));
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
             eventLog.setText("An error occured while trying to write the colors to the theme.");
         }
@@ -226,7 +221,7 @@ public class mainWindow extends JFrame {
                 for (colorfield colorfield : colorfields) {
                     colorfield.clearColorField();
                 }
-                CustClrTool.newpres.clearPresentationObject();
+                presentation.clearPresentationObject(CustClrTool.newpres);
                 custClrPanel.remove(themeSelection);
                 custClrPanel.revalidate();
                 custClrPanel.repaint();
@@ -370,25 +365,29 @@ public class mainWindow extends JFrame {
 
 // Helper Methods
     private static void drawDropDown() {
-        int numberOfThemes = CustClrTool.newpres.getAllThemes().length;
+        int numberOfThemes = CustClrTool.newpres.getThemeDataList().size();
         String[] themesNumbered = new String[numberOfThemes];
 
         for (int i = 0; i < numberOfThemes; i++) {
-            themesNumbered[i] = (i + 1) + ". " + CustClrTool.newpres.getAllThemes()[i];
+            String currentThemeName = CustClrTool.newpres.getThemeNames(i);
+            themesNumbered[i] = (i + 1) + ". " + currentThemeName;
         }
 
         themeSelection = newComboBox(themesNumbered);
         themeSelection.addActionListener(select -> {
             int selection = themeSelection.getSelectedIndex();
             activateAllColorfields();
-            fillColorFields(CustClrTool.themes, selection);
+            fillColorFields(CustClrTool.newpres, selection);
             // If the selected theme ID and the ID in the tableStyles.xml are identical
             // it's very likely, that the contained table styles already are custom ones.
-            if (presentation.validateID(CustClrTool.themes.get(selection), CustClrTool.newpres.getTableStylesID())){
+            if (presentation.validateID(CustClrTool.newpres.getThemeID(selection), CustClrTool.newpres.getTableStylesID())){
                 System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
             } else {
                 System.out.println("ID INVALID! Theme ID and Table styles ID are not the same.");
-                CustClrTool.newpres.setTableStylesXML(presentation.flushTableStyles(CustClrTool.newpres.getTableStylesXML(), selection));
+                CustClrTool.newpres.setTableStylesXML(presentation.flushTableStyles(CustClrTool.newpres, selection));
+                if (CustClrTool.newpres.getTableStylesID().equals(CustClrTool.newpres.getThemeID(selection))) {
+                    System.out.println("Successfully changed IDs.");
+                }
             }
             windowTabs.setEnabledAt(1, true);
             cacheButton.setEnabled(true);
@@ -397,23 +396,20 @@ public class mainWindow extends JFrame {
         custClrPanel.add(themeSelection);
     }
         
-    public static void fillColorFields(List<List<String>> themes, int themeSelection) {
+    public static void fillColorFields(presentation currentPresentation, int themeSelection) {
         
-        List<String> selectedTheme = themes.get(themeSelection);
-        
-        String themeName = selectedTheme.get(1);
-        int index = (themeName.lastIndexOf(":")) + 1;
-        selectThemeFileName = themeName.substring(index);
+        // Storing this in class variable
+        selectThemeFileName = currentPresentation.getThemeNames(themeSelection);
+        List<String> selectThemeCustClr = currentPresentation.getThemeCustClr(themeSelection);
         
         int fieldIndex = 0;
-        // i = 2 because (0-1) is theme name and number
-        for (int i = 2; i < selectedTheme.size() - 1; i++) {
-            int getIndex = (selectedTheme.get(i).lastIndexOf(":")) + 1;
-            if (selectedTheme.get(i).contains("custClr")) {
-                String name = selectedTheme.get(i).substring(getIndex);
+        for (int i = 0; i < selectThemeCustClr.size() - 1; i++) {
+            int getIndex = (selectThemeCustClr.get(i).lastIndexOf(":")) + 1;
+            if (selectThemeCustClr.get(i).contains("custClr")) {
+                String name = selectThemeCustClr.get(i).substring(getIndex);
                 colorfields[fieldIndex].colorName.setText(name);
-            } else if (selectedTheme.get(i).contains("srgbClr")) {
-                String color = selectedTheme.get(i).substring(getIndex);
+            } else if (selectThemeCustClr.get(i).contains("srgbClr")) {
+                String color = selectThemeCustClr.get(i).substring(getIndex);
                 colorfields[fieldIndex].activateColorField.setEnabled(true);
                 colorfields[fieldIndex].activateColorField.setSelected(true);
                 colorfields[fieldIndex].colorName.setEditable(true);
