@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -55,6 +56,7 @@ public class mainWindow extends JFrame {
     public JLabel eventLog;
     static JTabbedPane windowTabs;
     settingsField testfield;
+    HashMap<String, settingsField> settingsFields = new HashMap<>();
 
     static colorfield[] colorfields;
     static colorfield[] colorfieldCache;
@@ -115,13 +117,35 @@ public class mainWindow extends JFrame {
         });
         centerPanel.add(addTableButton);
 
-        String[] elementsArray = {"whole table", "banded rows", "banded columns", "first column", "last column", "text levels"};
+        String[] elementsArray = {
+                "whole table",
+                "banded rows",
+                "banded columns",
+                "first column",
+                "last column",
+                "text levels" };
+        
+        for (String element : elementsArray) {
+            settingsField settingsfield = new settingsField(30, 90);
+            settingsfield.showSettingsField(false);    
+            settingsFields.put(element, settingsfield);
+            rightPanel.add(settingsfield.widget);
+        }
+        
         tableElements = newComboBox(elementsArray);
         tableElements.setBounds(30, 30, 240, 30);
+        tableElements.addActionListener(select -> {
+            String selection = tableElements.getSelectedItem().toString();
+            for (String settingsElement : settingsFields.keySet()) {
+                if (settingsElement.equals(selection)) {
+                    settingsFields.get(settingsElement).showSettingsField(true);
+                    System.out.println(settingsElement + " activated.");
+                } else {
+                    settingsFields.get(settingsElement).showSettingsField(false);
+                }
+            }
+        });
         rightPanel.add(tableElements);
-
-        testfield = new settingsField(30, 90);
-        rightPanel.add(testfield.widget);
     }
 
     private void custClrPanelElements() {

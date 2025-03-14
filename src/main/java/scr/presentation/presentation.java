@@ -121,7 +121,6 @@ public class presentation {
                 String type = entry.isDirectory() ? "DIR" : "FILE";
 
                 if (type.equals("FILE") && name.contains("theme")) {
-                    // implementing Themedata
                     Themedata newTheme = new Themedata();
                     extractThemeData(zipFile.getInputStream(entry), name, newTheme);
                     themeDataList.add(newTheme);
@@ -149,14 +148,6 @@ public class presentation {
         return "";
     }
 
-    /**
-     * Extracts Data from the theme selection (Theme name & 
-     * Potential existing custom colors) Split by ":"
-     * @return  All information stored in a List of strings
-     *          (0) --> Theme number (e.g. theme1)
-     *          (1) --> Theme name
-     *          (2:) -> Names and values of the custom colors
-     */
     private static void extractThemeData(InputStream inputStream, String themeNumber, Themedata newTheme)
             throws XMLStreamException {
 
@@ -255,9 +246,7 @@ public class presentation {
     /**
      * Creates a copy of the .zip converted PowerPoint file 
      * and injects the modified .xml file
-     * @param zipFilePath       Path of the .zip file
-     * @param fileName          Base name of the file
-     * @param filePath          Base path of the file
+     * @param presentation      the current presentation object
      * @param destinationXML    The XML file to be replaced
      * @param xmlProcessor      The method used to modify the found XML file
      */
@@ -320,11 +309,6 @@ public class presentation {
         zipWrite.closeEntry();
     }
     
-    /**
-     * Takes the input stream from found theme to extract XML, 
-     * load it into DOM object and further process it.
-     * @param inputStream
-     */
     public static void processTheme(InputStream inputStream, String themeSelection, ZipOutputStream zipWrite) throws IOException, ParserConfigurationException, SAXException, TransformerException {
         
         Document document = buildXMLDOM(inputStream);
@@ -412,8 +396,8 @@ public class presentation {
     /**
      * Removing exisiting table styles to start with a "clean" file.
      * Match the tableStylesXML ID to theme ID.
-     * @param tableStylesXML
-     * @param selection
+     * @param presentation  the presentation object that should have its table styles cleared
+     * @param selection     selected theme for comparison
      * @return
      */
     public static Document flushTableStyles(presentation presentation, int selection) {

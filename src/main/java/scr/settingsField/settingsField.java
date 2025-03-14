@@ -74,7 +74,6 @@ public class settingsField {
     }
 
     public settingsField(int posX, int posY) {
-
         this.widget = settingsWidget(posX, posY);
     }
 
@@ -194,6 +193,10 @@ public class settingsField {
         JComboBox<XmlValue> colorSelect = new JComboBox<>(themeColors);
         collectedValues.add(colorSelect);
         return colorSelect;
+    }
+
+    public void showSettingsField(boolean selection) {
+        this.widget.setVisible(selection);
     }
 }
 
