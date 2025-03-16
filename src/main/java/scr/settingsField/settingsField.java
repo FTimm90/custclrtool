@@ -1,6 +1,5 @@
 package scr.settingsField;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -13,47 +12,12 @@ public class settingsField {
     public static String[] getThemeColors() {
         String[] themeColorNames = new String[12];
         for (int i = 0; i < 12; i++) {
-            themeColorNames[i] = themeColors[i].getXmlValue();
+            themeColorNames[i] = XmlValue.themeColors[i].getXmlValue();
         }
         return themeColorNames;
     }
 
     private final int PANELWIDTH = 240;
-    private final String[] SIDES = { "Left", "Right", "Top", "Bottom" };
-    
-    private static final XmlValue[] lineWidths = {
-        new XmlValue("0,00pt", "0"),
-        new XmlValue("0,25pt", "3175"),
-        new XmlValue("0,50pt", "6350"),
-        new XmlValue("0,75pt", "9525"),
-        new XmlValue("1,00pt", "12700"),
-        new XmlValue("1,50pt", "28575"),
-        new XmlValue("2,25pt", "38100"),
-        new XmlValue("3,00pt", "57150"),
-        new XmlValue("4,50pt", "76200"),
-        new XmlValue("6,00pt", "104775")      
-        };
-        
-    private static final XmlValue[] themeColors = {
-        new XmlValue("Light 1", "lt1"),
-        new XmlValue("Dark 1", "dk1"),
-        new XmlValue("Light 2", "lt2"),
-        new XmlValue("Dark 2", "dk2"),
-        new XmlValue("accent 1", "accent1"),
-        new XmlValue("accent 2", "accent2"),
-        new XmlValue("accent 3", "accent3"),
-        new XmlValue("accent 4", "accent4"),
-        new XmlValue("accent 5", "accent5"),
-        new XmlValue("accent 6", "accent6"),
-        new XmlValue("Hyperlink", "hlink"),
-        new XmlValue("Followed Hyperlink", "folHlink")    
-        };
-
-    private static final XmlValue[] themeFonts = {
-        new XmlValue("Body Text", "minor"),
-        new XmlValue("Headline Text", "major"),
-        };
-
 
     public JPanel widget;
     JPanel fontPanel;
@@ -61,16 +25,13 @@ public class settingsField {
     JPanel colorPreview;
     JComboBox<XmlValue> fontSelectBox;
     JComboBox<XmlValue> colorSelectBox;
-    private List<JComboBox<XmlValue>> collectedValues = new ArrayList<>();
+    private HashMap<String, JComboBox<XmlValue>> allFields = new HashMap<>();
 
-    public List<String> getCollectedValues() {
-    List<String> xmlValues = new ArrayList<>();
-        for (JComboBox<XmlValue> value : collectedValues) {
-            XmlValue selected = (XmlValue) value.getSelectedItem();
-            System.out.printf("GUI Value: %s    XML Value: %s\n", value.getSelectedItem().toString(), selected.getXmlValue()).toString();
-            xmlValues.add(selected.getXmlValue());
-        }
-        return xmlValues;
+    public HashMap<String, JComboBox<XmlValue>> getCollectedValues() {
+        // for (String name : allFields.keySet()) {
+        //     System.out.printf("%s: %s\n", name, allFields.get(name).getSelectedItem());
+        // }
+        return allFields;
     }
 
     public settingsField(int posX, int posY) {
@@ -82,24 +43,21 @@ public class settingsField {
         widget = mainWindow.newPanel(0, 0, 0, 0, 120, 140);
         widget.setBounds(posX, posY, PANELWIDTH, 750);
 
+        // a:tcBdr
         setBordersWidget();
-
-        JPanel innerHorizontal = lineWidget(0, 0, "Inner Horizontal Border:");
-        widget.add(innerHorizontal);
-
-        JPanel innerVertical = lineWidget(0, 0, "Inner Vertical Border:");
-        widget.add(innerVertical);
 
         JPanel dividerLine = divider();
         widget.add(dividerLine);
 
-        JPanel cellColor = colorWidget(0, 0, "Cell color");
+        // a:solidFill
+        JPanel cellColor = colorWidget(0, 0, "Cell color", "solidFill");
         widget.add(cellColor);
         
-        JPanel fontSelection = fontWidget(0, 0, "Font:");
+        // a:fontRef
+        JPanel fontSelection = fontWidget(0, 0, "Font:", "fontRef");
         widget.add(fontSelection);
         
-        JPanel fontColor = colorWidget(0, 0, "Text color:");
+        JPanel fontColor = colorWidget(0, 0, "Text color:", "font color");
         widget.add(fontColor);
 
         return widget;
@@ -107,14 +65,14 @@ public class settingsField {
 
     private void setBordersWidget() {
         
-        for (String SIDE : SIDES) {
-            String borderName = String.format("%s Border:", SIDE);
-            JPanel border = lineWidget(0, 0, borderName);
-            widget.add(border);
+        for (XmlValue side : XmlValue.lineSides) {
+            String borderName = String.format("%s Border:", side);
+            JPanel border = lineWidget(0, 0, borderName, side.toString());
+            widget.add(border);            
         }
     }
 
-    private JPanel lineWidget(int posX, int posY, String lineText) {
+    private JPanel lineWidget(int posX, int posY, String lineText, String name) {
 
         linePanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 70);
 
@@ -126,17 +84,17 @@ public class settingsField {
         leftBorder.setBounds(0, 0, 100, 30);
         linePanel.add(leftBorder);
 
-        JComboBox<XmlValue> lineOne = widthSelection();        
+        JComboBox<XmlValue> lineOne = widthSelection(name + " width");        
 
         linePanel.add(lineOne);
 
-        JPanel lineColor = colorWidget(0, 0, "Line color:");
+        JPanel lineColor = colorWidget(0, 0, "Line color:", name + " color");
         linePanel.add(lineColor);
            
         return linePanel;
     }
     
-    private JPanel fontWidget(int posX, int posY, String lineText) {
+    private JPanel fontWidget(int posX, int posY, String lineText, String name) {
 
         fontPanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 50);
         
@@ -148,13 +106,13 @@ public class settingsField {
         fontLabel.setBounds(0, 0, 100, 30);
         fontPanel.add(fontLabel);
 
-        fontSelectBox = fontSelection();
+        fontSelectBox = fontSelection(name);
         fontPanel.add(fontSelectBox);
 
         return fontPanel;
     }
     
-    private JPanel colorWidget(int posX, int posY, String lineText) {
+    private JPanel colorWidget(int posX, int posY, String lineText, String name) {
 
         JPanel colorPanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 30);
 
@@ -163,7 +121,7 @@ public class settingsField {
         colorLabel.setBounds(0, 0, 100, 30);
         colorPanel.add(colorLabel);
 
-        colorSelectBox = colorSelection();
+        colorSelectBox = colorSelection(name);
         colorPanel.add(colorSelectBox);
 
         colorPreview = mainWindow.newPanel(1, 1, 1, 1, 15, 15);
@@ -177,44 +135,25 @@ public class settingsField {
         return dividerLine;
     }
     
-    private JComboBox<XmlValue> widthSelection() {
-        JComboBox<XmlValue> widthSelect = new JComboBox<>(lineWidths);
-        collectedValues.add(widthSelect);
+    private JComboBox<XmlValue> widthSelection(String name) {
+        JComboBox<XmlValue> widthSelect = new JComboBox<>(XmlValue.lineWidths);
+        allFields.put(name, widthSelect);
         return widthSelect;
     }
     
-    private JComboBox<XmlValue> fontSelection() {
-        JComboBox<XmlValue> fontSelect = new JComboBox<>(themeFonts);
-        collectedValues.add(fontSelect);
+    private JComboBox<XmlValue> fontSelection(String name) {
+        JComboBox<XmlValue> fontSelect = new JComboBox<>(XmlValue.themeFonts);
+        allFields.put(name, fontSelect);
         return fontSelect;
     }
     
-    private JComboBox<XmlValue> colorSelection() {
-        JComboBox<XmlValue> colorSelect = new JComboBox<>(themeColors);
-        collectedValues.add(colorSelect);
+    private JComboBox<XmlValue> colorSelection(String name) {
+        JComboBox<XmlValue> colorSelect = new JComboBox<>(XmlValue.themeColors);
+        allFields.put(name, colorSelect);
         return colorSelect;
     }
 
     public void showSettingsField(boolean selection) {
         this.widget.setVisible(selection);
-    }
-}
-
-class XmlValue {
-    private String displayValue;
-    private String xmlValue;
-
-    public XmlValue(String displayValue, String xmlValue) {
-        this.displayValue = displayValue;
-        this.xmlValue = xmlValue;
-    }
-
-    @Override
-    public String toString() {
-        return displayValue; 
-    }
-
-    public String getXmlValue() {
-        return xmlValue;
     }
 }

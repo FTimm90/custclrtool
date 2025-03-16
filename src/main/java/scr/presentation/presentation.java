@@ -495,7 +495,7 @@ public class presentation {
      * @param nodeName  Name of the node that should be found
      * @return          The node itself, or null if not found
      */
-    private static Node findNode(Node parent, String nodeName) {
+    public static Node findNode(Node parent, String nodeName) {
 
         NodeList childNodes = parent.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {

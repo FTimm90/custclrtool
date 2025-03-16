@@ -8,8 +8,6 @@ import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
 // TODO
-// Finish implementing theme dataclass
-// Read theme colors from presentation
 // Read existing tables from presentation (if necessary)
 // Make table UI adjustable (for each of the 6)
 // Write table into file

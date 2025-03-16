@@ -33,7 +33,9 @@ import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
 import scr.colorfield.colorfield;
 import scr.custclr.CustClrTool;
 import scr.presentation.presentation;
+import scr.settingsField.XmlValue;
 import scr.settingsField.settingsField;
+import scr.tableStyles.tableStyles;
 
 public class mainWindow extends JFrame {
     
@@ -55,7 +57,6 @@ public class mainWindow extends JFrame {
     JLabel presentationNameLabel;
     public JLabel eventLog;
     static JTabbedPane windowTabs;
-    settingsField testfield;
     HashMap<String, settingsField> settingsFields = new HashMap<>();
 
     static colorfield[] colorfields;
@@ -113,25 +114,34 @@ public class mainWindow extends JFrame {
 
         JButton addTableButton = newButton(30, 30, "Add table", "Adds another empty custom table");
         addTableButton.addActionListener(click -> {
-            testfield.getCollectedValues();
+            // printing for debugging
+            for (String currentField : settingsFields.keySet()) {
+                System.out.println("______________ " + currentField + " ______________");
+                settingsFields.get(currentField).getCollectedValues();
+                System.out.println("");
+            }
         });
         centerPanel.add(addTableButton);
 
-        String[] elementsArray = {
-                "whole table",
-                "banded rows",
-                "banded columns",
-                "first column",
-                "last column",
-                "text levels" };
-        
-        for (String element : elementsArray) {
+        JButton testButtoon = newButton(30, 90, "Save table", "Save currently opened table");
+        testButtoon.addActionListener(click -> {
+            tableStyles newTable = new tableStyles();
+            newTable.writeTableStyles(settingsFields);
+        });
+        centerPanel.add(testButtoon);
+
+        String[] elementsArray = new String[XmlValue.tableElements.length];
+
+        int counter = 0;
+        for (XmlValue element : XmlValue.tableElements) {
+            elementsArray[counter] = element.toString();
             settingsField settingsfield = new settingsField(30, 90);
-            settingsfield.showSettingsField(false);    
-            settingsFields.put(element, settingsfield);
+            settingsfield.showSettingsField(false);
+            settingsFields.put(element.toString(), settingsfield);
             rightPanel.add(settingsfield.widget);
+            counter++;
         }
-        
+
         tableElements = newComboBox(elementsArray);
         tableElements.setBounds(30, 30, 240, 30);
         tableElements.addActionListener(select -> {
