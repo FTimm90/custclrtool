@@ -67,6 +67,12 @@ public class XmlValue {
         new XmlValue("Headline Text", "major"),
     };
 
+    public static final XmlValue[] textStyle = {
+        new XmlValue("Normal", "def"),
+        new XmlValue("Bold", "b"),
+        new XmlValue("Italic", "i"),
+    };
+
     public XmlValue(String displayValue, String xmlValue) {
         this.displayValue = displayValue;
         this.xmlValue = xmlValue;

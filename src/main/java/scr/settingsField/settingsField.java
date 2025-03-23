@@ -23,14 +23,13 @@ public class settingsField {
     JPanel fontPanel;
     JPanel linePanel;
     JPanel colorPreview;
-    JComboBox<XmlValue> fontSelectBox;
-    JComboBox<XmlValue> colorSelectBox;
-    private HashMap<String, JComboBox<XmlValue>> allFields = new HashMap<>();
+    private final JPanel[] lineSides = new JPanel[6];
+    private final HashMap<String, JComboBox<XmlValue>> allFields = new HashMap<>();
 
     public HashMap<String, JComboBox<XmlValue>> getCollectedValues() {
-        // for (String name : allFields.keySet()) {
-        //     System.out.printf("%s: %s\n", name, allFields.get(name).getSelectedItem());
-        // }
+        for (String name : allFields.keySet()) {
+            System.out.printf("%s: %s\n", name, allFields.get(name).getSelectedItem());
+        }
         return allFields;
     }
 
@@ -43,8 +42,23 @@ public class settingsField {
         widget = mainWindow.newPanel(0, 0, 0, 0, 120, 140);
         widget.setBounds(posX, posY, PANELWIDTH, 750);
 
+        JComboBox<XmlValue> lineSideSelection = new JComboBox<>(XmlValue.lineSides);
+        lineSideSelection.addActionListener(click -> {
+            int selection = lineSideSelection.getSelectedIndex();
+            for (int i = 0; i < 6; i++) {
+                if (i == selection) {
+                    lineSides[i].setVisible(true);
+                    System.out.println(lineSides[i].getName() + " Selected.");
+                } else {
+                    lineSides[i].setVisible(false);
+                }
+            }
+        });
+        widget.add(lineSideSelection);
+
         // a:tcBdr
         setBordersWidget();
+        lineSides[0].setVisible(true);
 
         JPanel dividerLine = divider();
         widget.add(dividerLine);
@@ -65,28 +79,35 @@ public class settingsField {
 
     private void setBordersWidget() {
         
+        int sidesCounter = 0;
         for (XmlValue side : XmlValue.lineSides) {
             String borderName = String.format("%s Border:", side);
             JPanel border = lineWidget(0, 0, borderName, side.toString());
-            widget.add(border);            
+            border.setName(side + " Border");
+            border.setVisible(false);
+            lineSides[sidesCounter] = border;
+            widget.add(border);
+            sidesCounter++;
         }
     }
 
     private JPanel lineWidget(int posX, int posY, String lineText, String name) {
 
-        linePanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 70);
+        linePanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 110);
 
-        JPanel dividerLine = divider();
-        widget.add(dividerLine);
+        // JPanel dividerLine = divider();
+        // widget.add(dividerLine);
 
         JLabel leftBorder = mainWindow.newLabel(0, 0, "");
-        leftBorder.setText(lineText);
+        leftBorder.setText("Line width: ");
         leftBorder.setBounds(0, 0, 100, 30);
         linePanel.add(leftBorder);
 
-        JComboBox<XmlValue> lineOne = widthSelection(name + " width");        
-
+        JComboBox<XmlValue> lineOne = lineWidthSelection(name + " width");
         linePanel.add(lineOne);
+
+        JComboBox<XmlValue> lineStyle = lineStyleSelection(name);
+        linePanel.add(lineStyle);
 
         JPanel lineColor = colorWidget(0, 0, "Line color:", name + " color");
         linePanel.add(lineColor);
@@ -106,8 +127,11 @@ public class settingsField {
         fontLabel.setBounds(0, 0, 100, 30);
         fontPanel.add(fontLabel);
 
-        fontSelectBox = fontSelection(name);
+        JComboBox<XmlValue> fontSelectBox = fontSelection(name);
         fontPanel.add(fontSelectBox);
+
+        JComboBox<XmlValue> textStyleBox = textStyleSelection(name);
+        fontPanel.add(textStyleBox);
 
         return fontPanel;
     }
@@ -121,7 +145,7 @@ public class settingsField {
         colorLabel.setBounds(0, 0, 100, 30);
         colorPanel.add(colorLabel);
 
-        colorSelectBox = colorSelection(name);
+        JComboBox<XmlValue> colorSelectBox = colorSelection(name);
         colorPanel.add(colorSelectBox);
 
         colorPreview = mainWindow.newPanel(1, 1, 1, 1, 15, 15);
@@ -135,16 +159,28 @@ public class settingsField {
         return dividerLine;
     }
     
-    private JComboBox<XmlValue> widthSelection(String name) {
+    private JComboBox<XmlValue> lineWidthSelection(String name) {
         JComboBox<XmlValue> widthSelect = new JComboBox<>(XmlValue.lineWidths);
         allFields.put(name, widthSelect);
         return widthSelect;
+    }
+
+    private JComboBox<XmlValue> lineStyleSelection(String name) {
+        JComboBox<XmlValue> styleSelect = new JComboBox<>(XmlValue.lineTypes);
+        allFields.put(name, styleSelect);
+        return styleSelect;
     }
     
     private JComboBox<XmlValue> fontSelection(String name) {
         JComboBox<XmlValue> fontSelect = new JComboBox<>(XmlValue.themeFonts);
         allFields.put(name, fontSelect);
         return fontSelect;
+    }
+
+    private JComboBox<XmlValue> textStyleSelection(String name) {
+        JComboBox<XmlValue> textStyle = new JComboBox<>(XmlValue.textStyle);
+        allFields.put(name, textStyle);
+        return textStyle;
     }
     
     private JComboBox<XmlValue> colorSelection(String name) {

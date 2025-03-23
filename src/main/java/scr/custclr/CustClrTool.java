@@ -9,7 +9,7 @@ import scr.presentation.presentation;
 
 // TODO
 // Read existing tables from presentation (if necessary)
-// Make table UI adjustable (for each of the 6)
+// You can use the "name" property of swing UI elements!!
 // Write table into file
 // Add another table
 
