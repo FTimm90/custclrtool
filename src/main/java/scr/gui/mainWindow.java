@@ -4,13 +4,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -33,11 +35,9 @@ import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
 import scr.colorfield.colorfield;
 import scr.custclr.CustClrTool;
 import scr.presentation.presentation;
-import scr.settingsField.XmlValue;
-import scr.settingsField.settingsField;
 import scr.tableStyles.tableStyles;
 
-public class mainWindow extends JFrame {
+public class mainWindow extends JFrame implements FocusListener {
     
     final static Font BASE_FONT = new Font("roboto", Font.PLAIN, 11);
 
@@ -48,16 +48,23 @@ public class mainWindow extends JFrame {
     JButton loadCacheButton;
     JButton chooseFileButton;
     static JComboBox<String> themeSelection;
+    JComboBox<String> tableSelection;
     static JPanel custClrPanel;
     JPanel tablePanel;
     JPanel bottomPanel;
     JPanel rightPanel;
     JPanel centerPanel;
+    JTextField newTableName;
     JComboBox<String> tableElements;
     JLabel presentationNameLabel;
+    JButton addTableButton;
     public JLabel eventLog;
     static JTabbedPane windowTabs;
-    HashMap<String, settingsField> settingsFields = new HashMap<>();
+    List<tableStyles> tableObjects = new ArrayList<>();
+    JPanel currentSettingsPanel;
+    // temporary solution to fill the array with an empty slot
+    String[] tableNames = new String[1];
+
 
     static colorfield[] colorfields;
     static colorfield[] colorfieldCache;
@@ -108,54 +115,85 @@ public class mainWindow extends JFrame {
         rightPanel.setLayout(null);
         tablePanel.add(rightPanel, BorderLayout.EAST);
 
-        centerPanel = newPanel(0,0, 0, 0, 0, 0);
+        centerPanel = newPanel(0, 0, 0, 0, 0, 0);
         centerPanel.setLayout(null);
         tablePanel.add(centerPanel, BorderLayout.CENTER);
 
-        JButton addTableButton = newButton(30, 30, "Add table", "Adds another empty custom table");
+        addTableButton = newButton(30, 30, "Add table", "Adds another empty custom table");
         addTableButton.addActionListener(click -> {
-            // printing for debugging
-            for (String currentField : settingsFields.keySet()) {
-                System.out.println("______________ " + currentField + " ______________");
-                settingsFields.get(currentField).getCollectedValues();
-                System.out.println("");
-            }
+            eventCreateNewTable();
         });
+        addTableButton.setEnabled(false);
         centerPanel.add(addTableButton);
 
-        JButton testButtoon = newButton(30, 90, "Save table", "Save currently opened table");
-        testButtoon.addActionListener(click -> {
-            tableStyles newTable = new tableStyles();
-            newTable.writeTableStyles(settingsFields);
+        newTableName = mainWindow.newTextField(true, "Enter name for a new table style.", "Table style name");
+        newTableName.setBounds(200, 30, 300, 30);
+        newTableName.setEnabled(true);
+        newTableName.addFocusListener(this);
+        centerPanel.add(newTableName);
+
+        JButton saveTableButton = newButton(30, 500, "Save table", "Save currently opened table");
+        saveTableButton.addActionListener(click -> {
+            eventSaveTableStyles();
         });
-        centerPanel.add(testButtoon);
+        centerPanel.add(saveTableButton);
 
-        String[] elementsArray = new String[XmlValue.tableElements.length];
+        tableSelection = new JComboBox<>(tableNames);
+        tableSelection.setBounds(30, 90, 200, 30);
+        tableSelection.setEnabled(false);
+        tableSelection.addActionListener(e -> {
+            eventSwitchSelectedTable();
+        });
+        centerPanel.add(tableSelection);
+    }
 
-        int counter = 0;
-        for (XmlValue element : XmlValue.tableElements) {
-            elementsArray[counter] = element.toString();
-            settingsField settingsfield = new settingsField(30, 90);
-            settingsfield.showSettingsField(false);
-            settingsFields.put(element.toString(), settingsfield);
-            rightPanel.add(settingsfield.widget);
-            counter++;
-        }
-
-        tableElements = newComboBox(elementsArray);
+    private void drawTableSettingsCombobox(tableStyles tableObject) {
+        tableElements = newComboBox(tableStyles.elementsArray);
         tableElements.setBounds(30, 30, 240, 30);
         tableElements.addActionListener(select -> {
-            String selection = tableElements.getSelectedItem().toString();
-            for (String settingsElement : settingsFields.keySet()) {
-                if (settingsElement.equals(selection)) {
-                    settingsFields.get(settingsElement).showSettingsField(true);
-                    System.out.println(settingsElement + " activated.");
-                } else {
-                    settingsFields.get(settingsElement).showSettingsField(false);
-                }
-            }
+            setTableSettingsVisibility(tableObject);
         });
         rightPanel.add(tableElements);
+    }
+
+    private void removeTableSettingsCombobox() {
+        rightPanel.remove(tableElements);
+        tableElements = null;
+        rightPanel.revalidate();
+        rightPanel.repaint();
+    }
+
+    /**
+     * Only show the settings field elements for a specific element (tableElements)
+     */
+    private void setTableSettingsVisibility(tableStyles tableObject) {
+        String selection = tableElements.getSelectedItem().toString();
+        for (String settingsElement : tableObject.settingsFields.keySet()) {
+            if (settingsElement.equals(selection)) {
+                tableObject.settingsFields.get(settingsElement).showSettingsField(true);
+            } else {
+                tableObject.settingsFields.get(settingsElement).showSettingsField(false);
+            }
+        }
+    }
+
+    private static void printTableValues(tableStyles tableObject) {
+        for (String currentField : tableObject.settingsFields.keySet()) {
+            System.out.println("______________ " + currentField + " ______________");
+            tableObject.settingsFields.get(currentField).getCollectedValues();
+            System.out.println("");
+        }
+    }
+    
+    private void updateTableSelectionBox() {
+        tableNames = new String[0];
+        int tableCount = tableObjects.size();
+        tableNames = new String[tableCount];
+        for (int i = 0; i < tableCount; i++) {
+            tableNames[i] = tableObjects.get(i).getTableName();
+        }
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(tableNames);
+        tableSelection.setModel(model);
     }
 
     private void custClrPanelElements() {
@@ -232,6 +270,59 @@ public class mainWindow extends JFrame {
     }
     
 // On-click events
+
+    private void eventSaveTableStyles() {
+        // TODO
+    }
+
+    private void eventCreateNewTable() {
+        // printTableValues(testTable);
+
+        // Once a new table is added, the combobox needs to be rebuilt
+        if (currentSettingsPanel != null) {
+            removeTableSettingsCombobox();
+        }
+    
+        // We only want the button to be active if the textfield actually has been changed
+        addTableButton.setEnabled(false);
+
+        // create new table object & fill settings
+        tableStyles newTable = new tableStyles(newTableName.getText());
+        JPanel newTableSettings = newTable.createSettingsFields();
+        newTableSettings.setName(newTableName.getText());
+        tableObjects.add(newTable);
+        rightPanel.add(newTableSettings);
+        newTableSettings.setVisible(false);
+
+        // replace current settings field with newly created one
+        currentSettingsPanel = newTableSettings;
+
+        rightPanel.revalidate();
+        rightPanel.repaint();
+
+        tableSelection.setEnabled(true);
+        updateTableSelectionBox();
+        drawTableSettingsCombobox(newTable);
+        // makes sense to have the newly created table selected
+        tableSelection.setSelectedItem(newTableName.getText());
+
+        eventLog.setText("Created new table " + newTableName.getText() + ".");
+    }
+    
+    private void eventSwitchSelectedTable() {
+        String selectedItem = (String) tableSelection.getSelectedItem();
+        for (tableStyles table : tableObjects) {
+            JPanel settingsPanel = table.settingsElements;
+            if (table.getTableName().equals(selectedItem)) {
+                if (settingsPanel.getParent() == null) {
+                    rightPanel.add(settingsPanel);
+                }
+                table.settingsElements.setVisible(true);
+            } else {
+                table.settingsElements.setVisible(false);
+            }
+        }
+    }
 
     private void eventApplyCustomColors() {
         
@@ -472,10 +563,29 @@ public class mainWindow extends JFrame {
     }
 
     private static void activateAllColorfields() {
-        
+
         for (colorfield colorfield : colorfields) {
             colorfield.activateEntry();
             colorfield.clearColorField();
+        }
+    }
+    
+    @Override
+    public void focusGained(FocusEvent e) {
+        
+        if (e.getSource() == newTableName) {
+            if ("Enter name for a new table style.".equals(newTableName.getText()) || newTableName.getText() == null) {
+                newTableName.setText("");
+            }
+            addTableButton.setEnabled(true);
+        }
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+
+        if (e.getSource() == newTableName) {
+            // System.out.println("Lost focus! -> Works.");
         }
     }
 }

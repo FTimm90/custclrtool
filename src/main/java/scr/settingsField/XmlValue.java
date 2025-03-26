@@ -25,7 +25,6 @@ public class XmlValue {
         // new XmlValue("text levels", "")
     };
 
-    // TODO implement line types
     public static final XmlValue[] lineTypes = {
         new XmlValue("Single Line", "sng"),
         new XmlValue("Double Lines", "dbl"),

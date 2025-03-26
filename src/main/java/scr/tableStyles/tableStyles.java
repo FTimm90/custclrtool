@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.swing.JComboBox;
+import javax.swing.JPanel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -17,9 +18,14 @@ import scr.settingsField.settingsField;
 public class tableStyles {
     
     Document XMLtemplate;
-    
-    public tableStyles() {
+    private String tableName;
+    public static String[] elementsArray = new String[XmlValue.tableElements.length];
+    public HashMap<String, settingsField> settingsFields = new HashMap<>();
+    public JPanel settingsElements;
 
+    public tableStyles(String name) {
+
+        this.tableName = name;
         InputStream inputStream = tableStyles.class.getResourceAsStream("/TableStyleTemplate.xml");
 
         if (inputStream == null) {
@@ -32,14 +38,34 @@ public class tableStyles {
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                 XMLtemplate = dBuilder.parse(inputStream);
                 XMLtemplate.getDocumentElement().normalize();
-                System.out.println("Root element: " + XMLtemplate.getDocumentElement().getNodeName());
+                // System.out.println("Root element: " + XMLtemplate.getDocumentElement().getNodeName());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
+    public String getTableName() {
+        return this.tableName;
+    }
+
+    public JPanel createSettingsFields() {
+        settingsElements = new JPanel();
+        settingsElements.setBounds(30, 120, 230, 750);
+        int counter = 0;
+        for (XmlValue element : XmlValue.tableElements) {
+            elementsArray[counter] = element.toString();
+            settingsField settingsfield = new settingsField(30, 90);
+            settingsfield.showSettingsField(false);
+            settingsFields.put(element.toString(), settingsfield);
+            settingsElements.add(settingsfield.widget);
+            counter++;
+        }
+        return settingsElements;
+    }
+
     public void writeTableStyles(HashMap<String, settingsField> settingsFields) {
+        // TODO WORK IN PROGRESS
         for (XmlValue element : XmlValue.tableElements) {
             Node currentElementNode = presentation.findNode(XMLtemplate.getDocumentElement(),
                     "a:" + element.getXmlValue());

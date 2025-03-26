@@ -75,7 +75,7 @@ public class colorfield implements FocusListener {
         }
     }
     
-    public boolean validateUserInput(String inputString, boolean hexValue) {
+    public static boolean validateUserInput(String inputString, boolean hexValue) {
         
         inputString = inputString.trim();
         if (isAlnum(inputString)) {

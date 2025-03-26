@@ -39,7 +39,7 @@ public class settingsField {
 
     private JPanel settingsWidget(int posX, int posY) {
 
-        widget = mainWindow.newPanel(0, 0, 0, 0, 120, 140);
+        widget = mainWindow.newPanel(0, 0, 0, 0, 230, 700);
         widget.setBounds(posX, posY, PANELWIDTH, 750);
 
         JComboBox<XmlValue> lineSideSelection = new JComboBox<>(XmlValue.lineSides);
