@@ -64,38 +64,53 @@ public class tableStyles {
         return settingsElements;
     }
 
-    public void writeTableStyles(HashMap<String, settingsField> settingsFields) {
+    /**
+     * Writes the finished table object into the XML template DOM
+     */
+    public void writeTableStyles(tableStyles tableObject) {
         // TODO WORK IN PROGRESS
+        
+        // Iterate over the 7 elements a table style consists of
         for (XmlValue element : XmlValue.tableElements) {
+            // Pick the correct node from the XML template e.g.: a:wholeTbl
             Node currentElementNode = presentation.findNode(XMLtemplate.getDocumentElement(),
                     "a:" + element.getXmlValue());
-
-            // Pick the correct part from the hashmap
-            settingsField currentFields = settingsFields.get(element.toString());
-            HashMap<String, JComboBox<XmlValue>> allValues = currentFields.getCollectedValues();
-
-            for (String name : settingsFields.keySet()) {
-                if (name.contains("inner vertical")) {
-                    
-                } else if (name.contains("inner horizontal")) {
-                    
-                } else if (name.contains("right")) {
-                    
-                } else if (name.contains("left")) {
-                    
-                } else if (name.contains("top")) {
-                    
-                } else if (name.contains("bottom")) {
-                    
-                } else if (name.contains("font")) {
-                    
-                } else if (name.contains("solid")) {
-                    
+            // Pick the current settingsfield from the settingsfields hashmap
+            settingsField currentFields = tableObject.settingsFields.get(element.toString());
+            HashMap<String, HashMap<String, JComboBox<XmlValue>>> allElements = currentFields.getCollectedValues();
+            // Iterate over the individual settings for the elements (sides etc.)
+            for (String part : allElements.keySet()) {
+                HashMap<String, JComboBox<XmlValue>> currentElement = allElements.get(part);
+                // Find the corresponding node within the template
+                Node ElementNode = presentation.findNode(currentElementNode, part);
+                
+                switch (part) {
+                    case "top" -> {
+                        System.out.println("found top");
+                    }
+                    case "bottom" -> {
+                        System.out.println("found bottom");
+                    }
+                    case "left" -> {
+                        System.out.println("found left");
+                    }
+                    case "right" -> {
+                        System.out.println("found right");
+                    }
+                    case "insideV" -> {
+                        System.out.println("found insideV");
+                    }
+                    case "insideH" -> {
+                        System.out.println("found insideH");
+                    }
+                    case "fill" -> {
+                        System.out.println("found fill");
+                    }
+                    case "fontref" -> {
+                        System.out.println("found fontref");
+                    }
                 }
             }
-
-            // System.out.println("current element: " + element);
-            // System.out.println("found " + currentElementNode.getNodeName());
         }
     }
 }

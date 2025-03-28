@@ -15,8 +15,10 @@ public class XmlValue {
     
     public static final XmlValue[] tableElements = {
         new XmlValue("whole table", "wholeTbl"),
-        new XmlValue("banded rows", "band1H"),
-        new XmlValue("banded columns", "band1V"),
+        new XmlValue("banded rows (uneven)", "band1H"),
+        new XmlValue("banded columns (uneven)", "band1V"),
+        // new XmlValue("banded rows (even)", "band2H"), Since these are not available for activating inside PP they are not needed
+        // new XmlValue("banded columns (even)", "band2V"),
         new XmlValue("first column", "firstCol"),
         new XmlValue("last column", "lastCol"),
         new XmlValue("first row", "firstRow"),

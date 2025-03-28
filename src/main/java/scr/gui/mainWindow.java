@@ -272,7 +272,11 @@ public class mainWindow extends JFrame implements FocusListener {
 // On-click events
 
     private void eventSaveTableStyles() {
-        // TODO
+        for (tableStyles table : tableObjects) {
+            System.out.println("------ " + table.getTableName() + " ------");    
+            printTableValues(table);
+            }
+            
     }
 
     private void eventCreateNewTable() {
