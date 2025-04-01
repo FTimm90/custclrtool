@@ -1,4 +1,5 @@
 package scr.settingsField;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.JComboBox;
@@ -15,9 +16,10 @@ public class settingsField {
     JPanel fontPanel;
     JPanel linePanel;
     JPanel colorPreview;
-    private final JPanel[] lineSides = new JPanel[6];
-    private final HashMap<String, HashMap<String, JComboBox<XmlValue>>> allFields = new HashMap<>();
+    private final ArrayList<JPanel> lineSidePanels = new ArrayList<>();
 
+    private final HashMap<String, HashMap<String, JComboBox<XmlValue>>> allFields = new HashMap<>();
+    
     public final HashMap<String, JComboBox<XmlValue>> left = new HashMap<>();
     public final HashMap<String, JComboBox<XmlValue>> right = new HashMap<>();
     public final HashMap<String, JComboBox<XmlValue>> top = new HashMap<>();
@@ -27,39 +29,29 @@ public class settingsField {
     public final HashMap<String, JComboBox<XmlValue>> fill = new HashMap<>();
     public final HashMap<String, JComboBox<XmlValue>> fontRef = new HashMap<>();
 
-    public settingsField(int posX, int posY) {
-        this.widget = settingsWidget(posX, posY);
+    public settingsField(int posX, int posY, boolean insideHCheck, boolean insideVCheck) {
+        this.widget = settingsWidget(posX, posY, insideHCheck, insideVCheck);
     }
 
-    private JPanel settingsWidget(int posX, int posY) {
+    private JPanel settingsWidget(int posX, int posY, boolean insideHCheck, boolean insideVCheck) {
 
         widget = mainWindow.newPanel(0, 0, 0, 0, 230, 700);
         widget.setBounds(posX, posY, PANELWIDTH, 750);
-
-        JComboBox<XmlValue> lineSideSelection = new JComboBox<>(XmlValue.lineSides);
-        lineSideSelection.addActionListener(click -> {
-            int selection = lineSideSelection.getSelectedIndex();
-            for (int i = 0; i < 6; i++) {
-                if (i == selection) {
-                    lineSides[i].setVisible(true);
-                    System.out.println(lineSides[i].getName() + " Selected.");
-                } else {
-                    lineSides[i].setVisible(false);
-                }
-            }
-        });
-        widget.add(lineSideSelection);
 
         allFields.put("left", left);
         allFields.put("right", right);
         allFields.put("top", top);
         allFields.put("bottom", bottom);
-        allFields.put("insideH", left);
-        allFields.put("insideV", left);
+        if (insideHCheck) {
+            allFields.put("insideH", insideH);
+        }
+        if (insideVCheck) {
+            allFields.put("insideV", insideV);
+        }
 
         // a:tcBdr
-        setBordersWidget();
-        lineSides[0].setVisible(true);
+        setBordersWidget(insideHCheck, insideVCheck);
+        lineSidePanels.get(0).setVisible(true);
 
         JPanel dividerLine = divider();
         widget.add(dividerLine);
@@ -81,21 +73,65 @@ public class settingsField {
         return widget;
     }
 
-    private void setBordersWidget() {
-        
-        int sidesCounter = 0;
-        for (XmlValue side : XmlValue.lineSides) {
+    private void lineSideSelected(JComboBox<XmlValue> lineSideSelection) {
+        int selection = lineSideSelection.getSelectedIndex();
+        for (int i = 0; i < lineSidePanels.size(); i++) {
+            if (i == selection) {
+                lineSidePanels.get(i).setVisible(true);
+                System.out.println(lineSidePanels.get(i).getName() + " Selected.");
+            } else {
+                lineSidePanels.get(i).setVisible(false);
+            }
+        }
+    }
 
+    private void setBordersWidget(boolean insideHCheck, boolean insideVCheck) {
+        
+        // Placeholder for JComboBox that's created further down
+        JPanel placeholder = new JPanel();
+        widget.add(placeholder, 0);
+        
+        int sidescounter = 0;
+        ArrayList<XmlValue> tempNames = new ArrayList<>();
+
+        for (int i = 0; i < XmlValue.lineSides.length; i++) {
+
+            if ((!insideHCheck && i == 4) || (!insideVCheck && i == 5)) {
+                continue;
+            }
+
+            XmlValue side = XmlValue.lineSides[i];
             String sideName = side.getXmlValue();
             HashMap<String, JComboBox<XmlValue>> sideMap = allFields.get(sideName);
-            JPanel border = lineWidget(0, 0, sideMap);            
+            JPanel border = lineWidget(0, 0, sideMap);
 
             border.setName(side + " Border");
             border.setVisible(false);
-            lineSides[sidesCounter] = border;
+            lineSidePanels.add(border);
             widget.add(border);
-            sidesCounter++;
+
+            tempNames.add(side);
+            sidescounter++;
         }
+
+        XmlValue[] sides = new XmlValue[sidescounter];
+        for (int j = 0; j < tempNames.size(); j++) {
+            // System.out.println(tempNames.get(j));
+            sides[j] = tempNames.get(j);
+        }
+
+        JComboBox<XmlValue> lineSideSelection = new JComboBox<>(sides);
+        lineSideSelection.addActionListener(click -> {
+            lineSideSelected(lineSideSelection);
+        });
+        
+        // Replace the placeholder with the actual JComboBox
+        widget.remove(placeholder);
+        widget.add(lineSideSelection, 0); 
+        widget.revalidate();
+        widget.repaint();
+    
+    
     }
 
     private JPanel lineWidget(int posX, int posY, HashMap<String, JComboBox<XmlValue>> targetMap) {
@@ -206,6 +242,11 @@ public class settingsField {
     }
 
     public HashMap<String, HashMap<String, JComboBox<XmlValue>>> getCollectedValues() {
+        // printAllValues();
+        return allFields;
+    }
+
+    public void printAllValues() {
         for (String name : allFields.keySet()) {
             System.out.println("----------- " + name + " -----------");
             HashMap<String, JComboBox<XmlValue>> currentfield = allFields.get(name);
@@ -216,6 +257,5 @@ public class settingsField {
             }
 
         }
-        return allFields;
     }
 }

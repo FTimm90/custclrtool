@@ -180,7 +180,7 @@ public class mainWindow extends JFrame implements FocusListener {
     private static void printTableValues(tableStyles tableObject) {
         for (String currentField : tableObject.settingsFields.keySet()) {
             System.out.println("______________ " + currentField + " ______________");
-            tableObject.settingsFields.get(currentField).getCollectedValues();
+            tableObject.settingsFields.get(currentField).printAllValues();
             System.out.println("");
         }
     }
@@ -273,8 +273,11 @@ public class mainWindow extends JFrame implements FocusListener {
 
     private void eventSaveTableStyles() {
         for (tableStyles table : tableObjects) {
-            System.out.println("------ " + table.getTableName() + " ------");    
+            // System.out.println("------ " + table.getTableName() + " ------");    
             printTableValues(table);
+            // int selectedTheme = themeSelection.getSelectedIndex();
+            // String themeID = CustClrTool.newpres.getThemeID(selectedTheme);
+            // tableStyles.writeTableStyles(table, themeID);
             }
             
     }
@@ -510,9 +513,9 @@ public class mainWindow extends JFrame implements FocusListener {
             // If the selected theme ID and the ID in the tableStyles.xml are identical
             // it's very likely, that the contained table styles already are custom ones.
             if (presentation.validateID(CustClrTool.newpres.getThemeID(selection), CustClrTool.newpres.getTableStylesID())){
-                System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
+                // System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
             } else {
-                System.out.println("ID INVALID! Theme ID and Table styles ID are not the same.");
+                // System.out.println("ID INVALID! Theme ID and Table styles ID are not the same.");
                 CustClrTool.newpres.setTableStylesXML(presentation.flushTableStyles(CustClrTool.newpres, selection));
                 if (CustClrTool.newpres.getTableStylesID().equals(CustClrTool.newpres.getThemeID(selection))) {
                     System.out.println("Successfully changed IDs.");

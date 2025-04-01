@@ -10,6 +10,7 @@ import scr.presentation.presentation;
 // TODO
 // Read existing tables from presentation (if necessary)
 // Write table into file
+// Visual table representation
 
 public class CustClrTool {
     

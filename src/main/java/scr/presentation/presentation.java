@@ -124,7 +124,7 @@ public class presentation {
                     Themedata newTheme = new Themedata();
                     extractThemeData(zipFile.getInputStream(entry), name, newTheme);
                     themeDataList.add(newTheme);
-                    newTheme.printThemeData();
+                    // newTheme.printThemeData();
 
                 } else if (type.equals("FILE") && name.contains("tableStyles")) {
                     setTableStylesID(extractTableStylesID(zipFile.getInputStream(entry)));
@@ -237,7 +237,7 @@ public class presentation {
      * @param tableStyleID
      */
     public static boolean validateID(String themeID, String tableStyleID) {
-        System.out.printf("theme ID: %s, table styles ID: %s\n", themeID, tableStyleID);
+        // System.out.printf("theme ID: %s, table styles ID: %s\n", themeID, tableStyleID);
         return themeID.equals(tableStyleID);
     }
 
