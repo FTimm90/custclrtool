@@ -10,7 +10,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import scr.presentation.presentation;
 import scr.settingsField.XmlValue;
@@ -59,25 +61,31 @@ public class tableStyles {
             // Setting condition to skip specific parts of the UI if not needed
             boolean insideH = true;
             boolean insideV = true;
-            if (element.getXmlValue().equals("band1H") ||
-                element.getXmlValue().equals("firstRow") ||
-                element.getXmlValue().equals("lastRow")) {
+
+            if (element.getAttributeValue().equals("band1H") ||
+                element.getAttributeValue().equals("firstRow") ||
+                element.getAttributeValue().equals("lastRow")) {
                 // System.out.println(element.toString() + " : NO Inside Horizontal");
                 insideH = false;
             }
-            
-            if (element.getXmlValue().equals("band1V") ||
-                element.getXmlValue().equals("firstCol") ||
-                element.getXmlValue().equals("lastCol")) {
+            if (element.getAttributeValue().equals("band1V") ||
+                element.getAttributeValue().equals("firstCol") ||
+                element.getAttributeValue().equals("lastCol")) {
                 // System.out.println(element.toString() + " : NO Inside Vertical");
                 insideV = false;
             }
             
             elementsArray[counter] = element.toString();
             settingsField settingsfield = new settingsField(30, 90, insideH, insideV);
+
+            if (element.getAttributeValue().equals("wholeTbl")) {
+                settingsfield.widget.add(settingsfield.FontWidget());
+            }
+
             settingsfield.showSettingsField(false);
             settingsFields.put(element.toString(), settingsfield);
             settingsElements.add(settingsfield.widget);
+
             counter++;
         }
         return settingsElements;
@@ -86,65 +94,40 @@ public class tableStyles {
     /**
      * Writes the finished table object into the XML template DOM
      */
-    public static void writeTableStyles(tableStyles tableObject, String themeID) {
-        // TODO WORK IN PROGRESS
-        
-        // First: write the style ID and the style Name into the template
+    public static Node fillTableTemplate(tableStyles tableObject, String themeID) {
         Node templateRoot = writeTableNameID(tableObject, themeID);
-        
-        // Iterate over the 7 elements a table style consists of
+        // printXml(templateRoot, "   ");
         for (XmlValue element : XmlValue.tableElements) {
-            
-            // Pick the correct node from the XML template e.g.: a:wholeTbl
             Node currentElementNode = presentation.findNode(templateRoot,
-                    "a:" + element.getXmlValue());
-            System.out.println("-------------- " + element + " --------------");
-            
-            // Pick the current settingsfield from the settingsfields hashmap
+                    "a:" + element.getAttributeValue());
+            // System.out.println("-------------- " + element + " --------------");
             settingsField currentFields = tableObject.settingsFields.get(element.toString());
             HashMap<String, HashMap<String, JComboBox<XmlValue>>> allElements = currentFields.getCollectedValues();
-            
-            // Iterate over the individual settings for the elements (sides etc.)
+
             for (String part : allElements.keySet()) {
+                // System.out.println("+++++++++ " + part + " +++++++++");
                 HashMap<String, JComboBox<XmlValue>> currentElement = allElements.get(part);
-                
-                // Find the corresponding node within the template
+                // Find the corresponding node within the template (e.g. a:top)
                 Node ElementNode = presentation.findNode(currentElementNode, "a:" + part);
 
-                if (ElementNode != null) {
-                    System.out.println("Found " + ElementNode.getNodeName() + " in the template.");
-                } else {
-                    System.out.println("Could not find " + "a:" + part + " in the template.");
-                }
-                
-                switch (part) {
-                    case "top" -> {
-                        System.out.println("found top");
+                for (JComboBox<XmlValue> currentBox : currentElement.values()) {
+                    // Get the content of the box and split it into its elements.
+                    XmlValue boxElement = (XmlValue) currentBox.getSelectedItem();
+                    String attributeValue = boxElement.getAttributeValue();
+                    String attributeName = boxElement.getAttributeName();
+                    String tagName = boxElement.getTagName();
+
+                    Element templateNode;
+                    if (currentElementNode.getNodeName().equals("a:wholeTbl")) {
+                        templateNode = (Element) currentElementNode;
+                    } else {
+                        templateNode = (Element) presentation.findNode(ElementNode, tagName);
                     }
-                    case "bottom" -> {
-                        System.out.println("found bottom");
-                    }
-                    case "left" -> {
-                        System.out.println("found left");
-                    }
-                    case "right" -> {
-                        System.out.println("found right");
-                    }
-                    case "insideV" -> {
-                        System.out.println("found insideV");
-                    }
-                    case "insideH" -> {
-                        System.out.println("found insideH");
-                    }
-                    case "fill" -> {
-                        System.out.println("found fill");
-                    }
-                    case "fontref" -> {
-                        System.out.println("found fontref");
-                    }
+                    templateNode.setAttribute(attributeName, attributeValue);
                 }
             }
         }
+        return templateRoot;
     }
 
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
@@ -153,5 +136,44 @@ public class tableStyles {
         rootElement.setAttribute("styleId", themeID);
         rootElement.setAttribute("styleName", tableObject.getTableName());
         return templateRoot;
+    }
+
+    public static void printXml(Node node, String indent) {
+        if (node == null) return;
+
+        // Print the current node with indentation
+        System.out.println(indent + "<" + node.getNodeName());
+
+        // Print attributes if any
+        NamedNodeMap attributes = node.getAttributes();
+        if (attributes != null) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Node attribute = attributes.item(i);
+                System.out.println(indent + "  " + attribute.getNodeName() + "=\"" + attribute.getNodeValue() + "\"");
+            }
+        }
+
+        // Add closing bracket for empty elements
+        if (node.getChildNodes().getLength() == 0) {
+            System.out.println(indent + "/>");
+        } else {
+            System.out.println(indent + ">");
+        }
+
+        // Recursively print child nodes with increased indentation
+        NodeList childNodes = node.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+                printXml(childNode, indent + "  ");
+            } else if (childNode.getNodeType() == Node.TEXT_NODE && childNode.getNodeValue().trim().length() > 0) {
+                System.out.println(indent + "  " + childNode.getNodeValue().trim());
+            }
+        }
+
+        // Print closing tag for non-empty elements
+        if (node.getChildNodes().getLength() > 0) {
+            System.out.println(indent + "</" + node.getNodeName() + ">");
+        }
     }
 }

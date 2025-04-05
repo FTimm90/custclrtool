@@ -2,8 +2,9 @@ package scr.settingsField;
 
 public class XmlValue {
     private final String displayValue;
-    private final String xmlValue;
+    private final String attributeValue;
     private final String tagName;
+    private final String attributeName;
 
     public static final XmlValue[] lineSides = {
         new XmlValue("Left", "left", "a:left"),
@@ -29,56 +30,62 @@ public class XmlValue {
     };
 
     public static final XmlValue[] lineTypes = {
-        new XmlValue("Single Line", "sng", "a:ln"),
-        new XmlValue("Double Lines", "dbl", "a:ln"),
-        new XmlValue("Thick Thin Double Lines", "thickThin", "a:ln"),
-        new XmlValue("Thin Thick Double Lines", "thinThick", "a:ln"),
-        new XmlValue("Thin Thick Thin Triple Lines", "tri", "a:ln")
+        new XmlValue("Single Line", "sng", "a:ln", "cmpd"),
+        new XmlValue("Double Lines", "dbl", "a:ln", "cmpd"),
+        new XmlValue("Thick Thin Double Lines", "thickThin", "a:ln", "cmpd"),
+        new XmlValue("Thin Thick Double Lines", "thinThick", "a:ln", "cmpd"),
+        new XmlValue("Thin Thick Thin Triple Lines", "tri", "a:ln", "cmpd")
     };
     
     public static final XmlValue[] lineWidths = {
-        new XmlValue("0,00pt", "0", "a:ln"),
-        new XmlValue("0,25pt", "3175", "a:ln"),
-        new XmlValue("0,50pt", "6350", "a:ln"),
-        new XmlValue("0,75pt", "9525", "a:ln"),
-        new XmlValue("1,00pt", "12700", "a:ln"),
-        new XmlValue("1,50pt", "28575", "a:ln"),
-        new XmlValue("2,25pt", "38100", "a:ln"),
-        new XmlValue("3,00pt", "57150", "a:ln"),
-        new XmlValue("4,50pt", "76200", "a:ln"),
-        new XmlValue("6,00pt", "104775", "a:ln")      
+        new XmlValue("0,00pt", "0", "a:ln", "w"),
+        new XmlValue("0,25pt", "3175", "a:ln", "w"),
+        new XmlValue("0,50pt", "6350", "a:ln", "w"),
+        new XmlValue("0,75pt", "9525", "a:ln", "w"),
+        new XmlValue("1,00pt", "12700", "a:ln", "w"),
+        new XmlValue("1,50pt", "28575", "a:ln", "w"),
+        new XmlValue("2,25pt", "38100", "a:ln", "w"),
+        new XmlValue("3,00pt", "57150", "a:ln", "w"),
+        new XmlValue("4,50pt", "76200", "a:ln", "w"),
+        new XmlValue("6,00pt", "104775", "a:ln", "w")
     };
         
     public static final XmlValue[] themeColors = {
-        new XmlValue("Light 1", "lt1", "a:schemeClr"),
-        new XmlValue("Dark 1", "dk1", "a:schemeClr"),
-        new XmlValue("Light 2", "lt2", "a:schemeClr"),
-        new XmlValue("Dark 2", "dk2", "a:schemeClr"),
-        new XmlValue("accent 1", "accent1", "a:schemeClr"),
-        new XmlValue("accent 2", "accent2", "a:schemeClr"),
-        new XmlValue("accent 3", "accent3", "a:schemeClr"),
-        new XmlValue("accent 4", "accent4", "a:schemeClr"),
-        new XmlValue("accent 5", "accent5", "a:schemeClr"),
-        new XmlValue("accent 6", "accent6", "a:schemeClr"),
-        new XmlValue("Hyperlink", "hlink", "a:schemeClr"),
-        new XmlValue("Followed Hyperlink", "folHlink", "a:schemeClr")
+        new XmlValue("Light 1", "lt1", "a:schemeClr", "val"),
+        new XmlValue("Dark 1", "dk1", "a:schemeClr", "val"),
+        new XmlValue("Light 2", "lt2", "a:schemeClr", "val"),
+        new XmlValue("Dark 2", "dk2", "a:schemeClr", "val"),
+        new XmlValue("accent 1", "accent1", "a:schemeClr", "val"),
+        new XmlValue("accent 2", "accent2", "a:schemeClr", "val"),
+        new XmlValue("accent 3", "accent3", "a:schemeClr", "val"),
+        new XmlValue("accent 4", "accent4", "a:schemeClr", "val"),
+        new XmlValue("accent 5", "accent5", "a:schemeClr", "val"),
+        new XmlValue("accent 6", "accent6", "a:schemeClr", "val"),
+        new XmlValue("Hyperlink", "hlink", "a:schemeClr", "val"),
+        new XmlValue("Followed Hyperlink", "folHlink", "a:schemeClr", "val")
     };
 
     public static final XmlValue[] themeFonts = {
-        new XmlValue("Body Text", "minor", "a:fontRef"),
-        new XmlValue("Headline Text", "major", "a:fontRef"),
+        new XmlValue("Body Text", "minor", "a:fontRef", "idx"),
+        new XmlValue("Headline Text", "major", "a:fontRef", "idx"),
     };
 
     public static final XmlValue[] textStyle = {
-        new XmlValue("Normal", "def", "a:tcTxStyle"),
-        new XmlValue("Bold", "b", "a:tcTxStyle"),
-        new XmlValue("Italic", "i", "a:tcTxStyle"),
+        new XmlValue("Normal", "on", "a:tcTxStyle", "def"),
+        new XmlValue("Bold", "on", "a:tcTxStyle", "b"),
+        new XmlValue("Italic", "on", "a:tcTxStyle", "i"),
     };
 
     public XmlValue(String displayValue, String xmlValue, String tagName) {
+        // Not all XmlValue arrays need a tagName, so we make it optional by overloading the constructor.
+        this(displayValue, xmlValue, tagName, null); 
+    }
+    
+    public XmlValue(String displayValue, String attributeValue, String tagName, String attributeName) {
         this.displayValue = displayValue;
-        this.xmlValue = xmlValue;
+        this.attributeValue = attributeValue;
         this.tagName = tagName;
+        this.attributeName = attributeName;
     }
 
     @Override
@@ -86,11 +93,15 @@ public class XmlValue {
         return displayValue; 
     }
 
-    public String getXmlValue() {
-        return xmlValue;
+    public String getAttributeValue() {
+        return attributeValue;
     }
 
     public String getTagName() {
-        return xmlValue;
+        return tagName;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
     }
 }

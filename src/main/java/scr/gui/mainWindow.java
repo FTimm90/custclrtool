@@ -28,6 +28,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
@@ -274,17 +275,16 @@ public class mainWindow extends JFrame implements FocusListener {
     private void eventSaveTableStyles() {
         for (tableStyles table : tableObjects) {
             // System.out.println("------ " + table.getTableName() + " ------");    
-            printTableValues(table);
-            // int selectedTheme = themeSelection.getSelectedIndex();
-            // String themeID = CustClrTool.newpres.getThemeID(selectedTheme);
-            // tableStyles.writeTableStyles(table, themeID);
+            // printTableValues(table);
+            int selectedTheme = themeSelection.getSelectedIndex();
+            String themeID = CustClrTool.newpres.getThemeID(selectedTheme);
+            Node filledTemplate = tableStyles.fillTableTemplate(table, themeID);
             }
             
     }
 
     private void eventCreateNewTable() {
         // printTableValues(testTable);
-
         // Once a new table is added, the combobox needs to be rebuilt
         if (currentSettingsPanel != null) {
             removeTableSettingsCombobox();

@@ -60,17 +60,19 @@ public class settingsField {
         JPanel cellColor = colorWidget(0, 0, "Cell color", fill);
         allFields.put("fill", fill);
         widget.add(cellColor);
-        
-        // a:fontRef
+
+        return widget;
+    }
+
+    public JPanel FontWidget() {
+        JPanel parent = mainWindow.newPanel(0, 0, 0, 0, 230, 120);
         JPanel fontSelection = fontWidget(0, 0, "Font:", fontRef);
-        widget.add(fontSelection);
+        parent.add(fontSelection);
         
         JPanel fontColor = colorWidget(0, 0, "Text color:", fontRef);
         allFields.put("fontRef", fontRef);
-
-        widget.add(fontColor);
-
-        return widget;
+        parent.add(fontColor);
+        return parent;
     }
 
     private void lineSideSelected(JComboBox<XmlValue> lineSideSelection) {
@@ -78,7 +80,7 @@ public class settingsField {
         for (int i = 0; i < lineSidePanels.size(); i++) {
             if (i == selection) {
                 lineSidePanels.get(i).setVisible(true);
-                System.out.println(lineSidePanels.get(i).getName() + " Selected.");
+                // System.out.println(lineSidePanels.get(i).getName() + " Selected.");
             } else {
                 lineSidePanels.get(i).setVisible(false);
             }
@@ -101,7 +103,7 @@ public class settingsField {
             }
 
             XmlValue side = XmlValue.lineSides[i];
-            String sideName = side.getXmlValue();
+            String sideName = side.getAttributeValue();
             HashMap<String, JComboBox<XmlValue>> sideMap = allFields.get(sideName);
             JPanel border = lineWidget(0, 0, sideMap);
 
@@ -236,7 +238,7 @@ public class settingsField {
     public static String[] getThemeColors() {
         String[] themeColorNames = new String[12];
         for (int i = 0; i < 12; i++) {
-            themeColorNames[i] = XmlValue.themeColors[i].getXmlValue();
+            themeColorNames[i] = XmlValue.themeColors[i].getAttributeValue();
         }
         return themeColorNames;
     }
@@ -253,7 +255,7 @@ public class settingsField {
             for (String field : currentfield.keySet()) {
                 JComboBox<XmlValue> comboBox = currentfield.get(field);
                 XmlValue current = (XmlValue) comboBox.getSelectedItem();
-                System.out.printf("%s: %s\n", field, current.getXmlValue());
+                System.out.printf("%s: %s\n", field, current.getAttributeValue());
             }
 
         }
