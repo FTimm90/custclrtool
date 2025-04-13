@@ -28,7 +28,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
@@ -135,7 +137,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
         JButton saveTableButton = newButton(30, 500, "Save table", "Save currently opened table");
         saveTableButton.addActionListener(click -> {
-            eventSaveTableStyles();
+            eventSaveTableStyles(CustClrTool.newpres);
         });
         centerPanel.add(saveTableButton);
 
@@ -211,7 +213,7 @@ public class mainWindow extends JFrame implements FocusListener {
         
         applyButton = newButton(30, 740, "Apply", "Write the custom colors into the file.");
         applyButton.addActionListener(click -> {
-            eventApplyCustomColors();
+            eventApplyAllChanges(true, true);
             presentationNameLabel.setText("");
             cacheButton.setEnabled(false);
             eventLog.setText("Colors successfully modified.");
@@ -272,19 +274,41 @@ public class mainWindow extends JFrame implements FocusListener {
     
 // On-click events
 
-    private void eventSaveTableStyles() {
+    private void eventSaveTableStyles(presentation presentation) {
+        String themeID = CustClrTool.newpres.getThemeID(getSelectedTheme());    
+        
         for (tableStyles table : tableObjects) {
             // System.out.println("------ " + table.getTableName() + " ------");    
             // printTableValues(table);
-            int selectedTheme = themeSelection.getSelectedIndex();
-            String themeID = CustClrTool.newpres.getThemeID(selectedTheme);
             Node filledTemplate = tableStyles.fillTableTemplate(table, themeID);
-            }
-            
+            org.w3c.dom.Document tableStylesFile = presentation.getTableStylesXML();
+            appendTemplate(tableStylesFile, filledTemplate);
+            presentation.setTableStylesXML(tableStylesFile);
+            eventApplyAllChanges(false, true);
+        }
+    }
+    
+
+    /**
+     * Runs through all of the filled template and appends it to the tableStyles.xml file
+     * @param tableStylesFile
+     * @param filledTemplate
+     */
+    private void appendTemplate(Document tableStylesFile, Node filledTemplate) {
+        Node styleListNode = scr.presentation.presentation.findNode(tableStylesFile, "a:tblStyleLst");
+        
+        Node importedFirstNode = tableStylesFile.importNode(filledTemplate, true);
+        styleListNode.appendChild(importedFirstNode);
+
+        NodeList allTableStyleNodes = filledTemplate.getChildNodes();
+        for (int i = 0; i < allTableStyleNodes.getLength(); i++) {
+            Node child = allTableStyleNodes.item(i);
+            Node importedNode = tableStylesFile.importNode(child, true);
+            styleListNode.appendChild(importedNode);
+        }
     }
 
     private void eventCreateNewTable() {
-        // printTableValues(testTable);
         // Once a new table is added, the combobox needs to be rebuilt
         if (currentSettingsPanel != null) {
             removeTableSettingsCombobox();
@@ -331,13 +355,13 @@ public class mainWindow extends JFrame implements FocusListener {
         }
     }
 
-    private void eventApplyCustomColors() {
+    private void eventApplyAllChanges(boolean customColors, boolean tableStyles) {
         
         try {
             presentation.changeExtension(CustClrTool.newpres, 1);
-            presentation.writeZipOutput(CustClrTool.newpres, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite));
+            presentation.writeZipOutput(CustClrTool.newpres, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite), customColors, tableStyles);
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
-            eventLog.setText("An error occured while trying to write the colors to the theme.");
+            eventLog.setText("An error occured while trying to write changes to the file.");
         }
     }
 
@@ -450,7 +474,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
         return button;
     }
-                    
+
     public static JComboBox<String> newComboBox(String[] themes) {
 
         JComboBox<String> comboBox = new JComboBox<>(themes);
@@ -496,6 +520,11 @@ public class mainWindow extends JFrame implements FocusListener {
     }
 
 // Helper Methods
+
+    public int getSelectedTheme() {
+        return themeSelection.getSelectedIndex();
+    }
+
     private static void drawDropDown() {
         int numberOfThemes = CustClrTool.newpres.getThemeDataList().size();
         String[] themesNumbered = new String[numberOfThemes];

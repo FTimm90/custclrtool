@@ -96,38 +96,54 @@ public class tableStyles {
      */
     public static Node fillTableTemplate(tableStyles tableObject, String themeID) {
         Node templateRoot = writeTableNameID(tableObject, themeID);
-        // printXml(templateRoot, "   ");
         for (XmlValue element : XmlValue.tableElements) {
-            Node currentElementNode = presentation.findNode(templateRoot,
-                    "a:" + element.getAttributeValue());
-            // System.out.println("-------------- " + element + " --------------");
+            Node templateElementNode = presentation.findNode(templateRoot, "a:" + element.getAttributeValue());
             settingsField currentFields = tableObject.settingsFields.get(element.toString());
             HashMap<String, HashMap<String, JComboBox<XmlValue>>> allElements = currentFields.getCollectedValues();
 
             for (String part : allElements.keySet()) {
-                // System.out.println("+++++++++ " + part + " +++++++++");
                 HashMap<String, JComboBox<XmlValue>> currentElement = allElements.get(part);
-                // Find the corresponding node within the template (e.g. a:top)
-                Node ElementNode = presentation.findNode(currentElementNode, "a:" + part);
+                Node elementNode = presentation.findNode(templateElementNode, "a:" + part);
 
                 for (JComboBox<XmlValue> currentBox : currentElement.values()) {
-                    // Get the content of the box and split it into its elements.
                     XmlValue boxElement = (XmlValue) currentBox.getSelectedItem();
                     String attributeValue = boxElement.getAttributeValue();
                     String attributeName = boxElement.getAttributeName();
                     String tagName = boxElement.getTagName();
 
-                    Element templateNode;
-                    if (currentElementNode.getNodeName().equals("a:wholeTbl")) {
-                        templateNode = (Element) currentElementNode;
-                    } else {
-                        templateNode = (Element) presentation.findNode(ElementNode, tagName);
-                    }
+                    Node foundNode = findNode(templateElementNode, elementNode, tagName);
+
+                    Element templateNode = (Element) foundNode;
                     templateNode.setAttribute(attributeName, attributeValue);
                 }
             }
         }
         return templateRoot;
+    }
+
+    private static Node findNode(Node templateElementNode, Node elementNode, String tagName) {
+        if (isSpecialCase(templateElementNode, elementNode, tagName)) {
+            return handleSpecialCase(templateElementNode, tagName);
+        }
+        return presentation.findNode(elementNode, tagName);
+    }
+
+    private static boolean isSpecialCase(Node templateElementNode, Node elementNode, String tagName) {
+        return templateElementNode.getNodeName().equals("a:wholeTbl")
+                && elementNode.getNodeName().equals("a:fontRef")
+                && (tagName.equals("a:schemeClr")
+                || tagName.equals("a:fontRef")
+                || tagName.equals("a:tcTxStyle"));
+    }
+
+    private static Node handleSpecialCase(Node templateElementNode, String tagName) {
+        Node tcTxStyleNode = presentation.findNode(templateElementNode, "a:tcTxStyle");
+        return switch (tagName) {
+            case "a:schemeClr" -> presentation.findNode(tcTxStyleNode, "a:schemeClr");
+            case "a:fontRef" -> presentation.findNode(tcTxStyleNode, "a:fontRef");
+            case "a:tcTxStyle" -> tcTxStyleNode;
+            default -> null;
+        };
     }
 
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
@@ -145,13 +161,7 @@ public class tableStyles {
         System.out.println(indent + "<" + node.getNodeName());
 
         // Print attributes if any
-        NamedNodeMap attributes = node.getAttributes();
-        if (attributes != null) {
-            for (int i = 0; i < attributes.getLength(); i++) {
-                Node attribute = attributes.item(i);
-                System.out.println(indent + "  " + attribute.getNodeName() + "=\"" + attribute.getNodeValue() + "\"");
-            }
-        }
+        printAttributes(node, indent);
 
         // Add closing bracket for empty elements
         if (node.getChildNodes().getLength() == 0) {
@@ -174,6 +184,16 @@ public class tableStyles {
         // Print closing tag for non-empty elements
         if (node.getChildNodes().getLength() > 0) {
             System.out.println(indent + "</" + node.getNodeName() + ">");
+        }
+    }
+
+    private static void printAttributes(Node node, String indent) {
+        NamedNodeMap attributes = node.getAttributes();
+        if (attributes != null) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Node attribute = attributes.item(i);
+                System.out.println(indent + "  " + attribute.getNodeName() + "=\"" + attribute.getNodeValue() + "\"");
+            }
         }
     }
 }

@@ -124,7 +124,6 @@ public class presentation {
                     Themedata newTheme = new Themedata();
                     extractThemeData(zipFile.getInputStream(entry), name, newTheme);
                     themeDataList.add(newTheme);
-                    // newTheme.printThemeData();
 
                 } else if (type.equals("FILE") && name.contains("tableStyles")) {
                     setTableStylesID(extractTableStylesID(zipFile.getInputStream(entry)));
@@ -250,7 +249,7 @@ public class presentation {
      * @param destinationXML    The XML file to be replaced
      * @param xmlProcessor      The method used to modify the found XML file
      */
-    public static void writeZipOutput(presentation presentation, String destinationXML, XmlProcessor xmlProcessor)
+    public static void writeZipOutput(presentation presentation, String destinationXML, XmlProcessor xmlProcessor, boolean customColors, boolean tableStyles)
             throws FileNotFoundException, ParserConfigurationException, SAXException, TransformerException {
 
         final String ZIP_TMP = "_tmp.zip";
@@ -272,15 +271,15 @@ public class presentation {
 
                 InputStream inputStream = zipFile.getInputStream(entry);
 
-                if (type.equals("FILE") && name.contains(destinationXML)) {
+                // TODO we need to adapt this to use it EITHER for custom colors OR table styles
+                if (customColors && type.equals("FILE") && name.contains(destinationXML)) {
                     xmlProcessor.process(inputStream, destinationXML, zipWrite);
-                } else if (type.equals("FILE") && name.contains("tableStyles.xml")) {
+                } else if (tableStyles && type.equals("FILE") && name.contains("tableStyles.xml")) {
                     writeZipEntry(CustClrTool.newpres.getTableStylesXML(), "ppt/tableStyles.xml", zipWrite);
                 }
                 else {
                     insertZipEntry(entry, zipWrite, inputStream);
                 }
-                
             }
             zipWrite.close();
         } catch (IOException ex) {
@@ -309,6 +308,16 @@ public class presentation {
         zipWrite.closeEntry();
     }
     
+    /**
+     * Takes the inputStream, builds an XMLDOM from it, removes any existing customcolors and inserts the new ones.
+     * @param inputStream
+     * @param themeSelection
+     * @param zipWrite
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws TransformerException
+     */
     public static void processTheme(InputStream inputStream, String themeSelection, ZipOutputStream zipWrite) throws IOException, ParserConfigurationException, SAXException, TransformerException {
         
         Document document = buildXMLDOM(inputStream);
@@ -545,6 +554,11 @@ public class presentation {
 
     public String getThemeID(int number) {
         return getThemeDataList().get(number).themeID;
+    }
+
+    public HashMap<String, String> getSelectedThemeColors() {
+        int selectedTheme = CustClrTool.mainGUI.getSelectedTheme();
+        return CustClrTool.newpres.getThemeDataList().get(selectedTheme).themeColors;
     }
 
     class Themedata {

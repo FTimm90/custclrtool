@@ -1,11 +1,14 @@
 package scr.settingsField;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import scr.custclr.CustClrTool;
 import scr.gui.mainWindow;
 
 public class settingsField {
@@ -19,6 +22,7 @@ public class settingsField {
     private final ArrayList<JPanel> lineSidePanels = new ArrayList<>();
 
     private final HashMap<String, HashMap<String, JComboBox<XmlValue>>> allFields = new HashMap<>();
+    private final HashMap<String, JPanel> previewFields = new HashMap<>();
     
     public final HashMap<String, JComboBox<XmlValue>> left = new HashMap<>();
     public final HashMap<String, JComboBox<XmlValue>> right = new HashMap<>();
@@ -118,7 +122,6 @@ public class settingsField {
 
         XmlValue[] sides = new XmlValue[sidescounter];
         for (int j = 0; j < tempNames.size(); j++) {
-            // System.out.println(tempNames.get(j));
             sides[j] = tempNames.get(j);
         }
 
@@ -185,17 +188,28 @@ public class settingsField {
     private JPanel colorWidget(int posX, int posY, String lineText, HashMap<String, JComboBox<XmlValue>> targetMap) {
 
         JPanel colorPanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 30);
-
+        
         JLabel colorLabel = mainWindow.newLabel(0, 0, "");
         colorLabel.setText(lineText);
         colorLabel.setBounds(0, 0, 100, 30);
         colorPanel.add(colorLabel);
 
+        String previewID = UUID.randomUUID().toString();
+        colorPreview = mainWindow.newPanel(1, 1, 1, 1, 15, 15);
+        previewFields.put(previewID, colorPreview);
+
         JComboBox<XmlValue> colorSelectBox = colorSelection();
+        colorSelectBox.addActionListener(select -> {
+            XmlValue boxSelection = (XmlValue) colorSelectBox.getSelectedItem();
+            HashMap<String, String> themeColors = CustClrTool.newpres.getSelectedThemeColors();
+            String selectedColor = themeColors.get(boxSelection.getAttributeValue());
+            JPanel previewPanel = previewFields.get(previewID);
+            previewPanel.setBackground(Color.decode("#" + selectedColor.substring(selectedColor.indexOf(":") + 1)));
+            colorPanel.repaint();
+        });
+
         targetMap.put("val", colorSelectBox);
         colorPanel.add(colorSelectBox);
-
-        colorPreview = mainWindow.newPanel(1, 1, 1, 1, 15, 15);
         colorPanel.add(colorPreview);
 
         return colorPanel;
@@ -244,7 +258,6 @@ public class settingsField {
     }
 
     public HashMap<String, HashMap<String, JComboBox<XmlValue>>> getCollectedValues() {
-        // printAllValues();
         return allFields;
     }
 
