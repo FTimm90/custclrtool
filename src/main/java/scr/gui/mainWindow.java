@@ -30,7 +30,6 @@ import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
@@ -135,6 +134,14 @@ public class mainWindow extends JFrame implements FocusListener {
         newTableName.addFocusListener(this);
         centerPanel.add(newTableName);
 
+        JButton testButton = newButton(30, 300, "", "");
+        testButton.addActionListener(click -> {
+            tableStyles.printXml(CustClrTool.newpres.getTableStylesXML(), "  ");
+
+        });
+        centerPanel.add(testButton);
+
+
         JButton saveTableButton = newButton(30, 500, "Save table", "Save currently opened table");
         saveTableButton.addActionListener(click -> {
             eventSaveTableStyles(CustClrTool.newpres);
@@ -180,6 +187,7 @@ public class mainWindow extends JFrame implements FocusListener {
         }
     }
 
+    // TODO for Debugging
     private static void printTableValues(tableStyles tableObject) {
         for (String currentField : tableObject.settingsFields.keySet()) {
             System.out.println("______________ " + currentField + " ______________");
@@ -278,8 +286,6 @@ public class mainWindow extends JFrame implements FocusListener {
         String themeID = CustClrTool.newpres.getThemeID(getSelectedTheme());    
         
         for (tableStyles table : tableObjects) {
-            // System.out.println("------ " + table.getTableName() + " ------");    
-            // printTableValues(table);
             Node filledTemplate = tableStyles.fillTableTemplate(table, themeID);
             org.w3c.dom.Document tableStylesFile = presentation.getTableStylesXML();
             appendTemplate(tableStylesFile, filledTemplate);
@@ -297,15 +303,8 @@ public class mainWindow extends JFrame implements FocusListener {
     private void appendTemplate(Document tableStylesFile, Node filledTemplate) {
         Node styleListNode = scr.presentation.presentation.findNode(tableStylesFile, "a:tblStyleLst");
         
-        Node importedFirstNode = tableStylesFile.importNode(filledTemplate, true);
-        styleListNode.appendChild(importedFirstNode);
-
-        NodeList allTableStyleNodes = filledTemplate.getChildNodes();
-        for (int i = 0; i < allTableStyleNodes.getLength(); i++) {
-            Node child = allTableStyleNodes.item(i);
-            Node importedNode = tableStylesFile.importNode(child, true);
-            styleListNode.appendChild(importedNode);
-        }
+        Node importedTemplate = tableStylesFile.importNode(filledTemplate, true);
+        styleListNode.appendChild(importedTemplate);
     }
 
     private void eventCreateNewTable() {
@@ -542,9 +541,9 @@ public class mainWindow extends JFrame implements FocusListener {
             // If the selected theme ID and the ID in the tableStyles.xml are identical
             // it's very likely, that the contained table styles already are custom ones.
             if (presentation.validateID(CustClrTool.newpres.getThemeID(selection), CustClrTool.newpres.getTableStylesID())){
-                // System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
+                System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
             } else {
-                // System.out.println("ID INVALID! Theme ID and Table styles ID are not the same.");
+                System.out.println("ID INVALID! Theme ID and Table styles ID are not the same.");
                 CustClrTool.newpres.setTableStylesXML(presentation.flushTableStyles(CustClrTool.newpres, selection));
                 if (CustClrTool.newpres.getTableStylesID().equals(CustClrTool.newpres.getThemeID(selection))) {
                     System.out.println("Successfully changed IDs.");

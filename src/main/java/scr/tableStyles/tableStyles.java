@@ -121,6 +121,10 @@ public class tableStyles {
         return templateRoot;
     }
 
+    private static void readTableStyle() {
+        //TODO 
+    }
+
     private static Node findNode(Node templateElementNode, Node elementNode, String tagName) {
         if (isSpecialCase(templateElementNode, elementNode, tagName)) {
             return handleSpecialCase(templateElementNode, tagName);
@@ -154,6 +158,7 @@ public class tableStyles {
         return templateRoot;
     }
 
+    // TODO For debugging
     public static void printXml(Node node, String indent) {
         if (node == null) return;
 

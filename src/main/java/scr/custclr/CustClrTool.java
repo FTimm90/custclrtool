@@ -9,12 +9,15 @@ import scr.presentation.presentation;
 
 // TODO
 // Read existing tables from presentation (if necessary)
+//  -> Only if IDs are matching
+//  -> Upon selecting a theme? OR switching tabs
 // Visual table representation
 
 public class CustClrTool {
     
     public static presentation newpres;
     public static mainWindow mainGUI;
+
     public static void main(String[] args) {
         FlatOneDarkIJTheme.setup();
         SwingUtilities.invokeLater(() -> {

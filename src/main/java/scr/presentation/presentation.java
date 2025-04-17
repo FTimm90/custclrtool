@@ -147,6 +147,25 @@ public class presentation {
         return "";
     }
 
+    private static void extractExistingTableStyles(Document tableStyleFile) {
+        String namespaceURI = "http://schemas.openxmlformats.org/drawingml/2006/main";
+        String localName = "tblStyle";
+
+        NodeList tableStyleNodes = tableStyleFile.getElementsByTagNameNS(namespaceURI, localName);
+
+        for (int i = 0; i < tableStyleNodes.getLength(); i++) {
+            // Iterate over all existing tableStyles
+            Node tableStyleNode = tableStyleNodes.item(i);
+            // Extract style ID
+            Element nodeElement = (Element) tableStyleNode;
+            String styleID = nodeElement.getAttribute("styleId");
+
+            // TODO Compare to theme ID
+            // TODO Delete if no match
+            // TODO Else read all into new table style UI Element
+        }
+    }
+
     private static void extractThemeData(InputStream inputStream, String themeNumber, Themedata newTheme)
             throws XMLStreamException {
 
@@ -576,6 +595,7 @@ public class presentation {
             }
         }
         
+        // TODO for Debugging
         public void printThemeData() {
             System.out.println("Theme name: " + themeName);
             System.out.println("Theme number: " + themeNumber);

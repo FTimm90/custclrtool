@@ -261,6 +261,7 @@ public class settingsField {
         return allFields;
     }
 
+    // TODO for debugging
     public void printAllValues() {
         for (String name : allFields.keySet()) {
             System.out.println("----------- " + name + " -----------");
