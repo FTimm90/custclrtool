@@ -147,7 +147,7 @@ public class presentation {
         return "";
     }
 
-    private static void extractExistingTableStyles(Document tableStyleFile) {
+    public static void extractExistingTableStyles(Document tableStyleFile) {
         String namespaceURI = "http://schemas.openxmlformats.org/drawingml/2006/main";
         String localName = "tblStyle";
 
@@ -159,9 +159,9 @@ public class presentation {
             // Extract style ID
             Element nodeElement = (Element) tableStyleNode;
             String styleID = nodeElement.getAttribute("styleId");
-
-            // TODO Compare to theme ID
-            // TODO Delete if no match
+            String styleName = nodeElement.getAttribute("styleName");
+            System.out.println("Style ID: " + styleID);
+            System.out.println("Style Name: " + styleName);
             // TODO Else read all into new table style UI Element
         }
     }
@@ -251,11 +251,10 @@ public class presentation {
     /**
      * If the ID of the selected theme is equal to the ID in the tableStyles.xml
      * it is very likely, that potentially existing table styles are custom.
-     * @param theme
+     * @param themeID
      * @param tableStyleID
      */
     public static boolean validateID(String themeID, String tableStyleID) {
-        // System.out.printf("theme ID: %s, table styles ID: %s\n", themeID, tableStyleID);
         return themeID.equals(tableStyleID);
     }
 
@@ -290,7 +289,6 @@ public class presentation {
 
                 InputStream inputStream = zipFile.getInputStream(entry);
 
-                // TODO we need to adapt this to use it EITHER for custom colors OR table styles
                 if (customColors && type.equals("FILE") && name.contains(destinationXML)) {
                     xmlProcessor.process(inputStream, destinationXML, zipWrite);
                 } else if (tableStyles && type.equals("FILE") && name.contains("tableStyles.xml")) {
@@ -422,21 +420,18 @@ public class presentation {
 // Following are helper methods
 
     /**
-     * Removing exisiting table styles to start with a "clean" file.
      * Match the tableStylesXML ID to theme ID.
-     * @param presentation  the presentation object that should have its table styles cleared
+     * If there are any pre-existing table styles in the file they get matched
+     * to the ID of the selected theme.
+     * @param presentation  the presentation object that should have its tableStyles ID matched to theme ID
      * @param selection     selected theme for comparison
      * @return
      */
-    public static Document flushTableStyles(presentation presentation, int selection) {
+    public static Document matchIDs(presentation presentation, int selection) {
         
         Document tableStylesXML = presentation.getTableStylesXML();
         NodeList styleList = tableStylesXML.getElementsByTagName("a:tblStyleLst");
         Node styleListNode = styleList.item(0);
-
-        while (styleListNode.hasChildNodes()) {
-            styleListNode.removeChild(styleListNode.getFirstChild());
-        }
 
         String ID = presentation.getThemeID(selection);
 

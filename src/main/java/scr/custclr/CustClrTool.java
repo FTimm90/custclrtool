@@ -9,9 +9,10 @@ import scr.presentation.presentation;
 
 // TODO
 // Read existing tables from presentation (if necessary)
-//  -> Only if IDs are matching
-//  -> Upon selecting a theme? OR switching tabs
+// "Remove table" button
+// "No color" for cell fill
 // Visual table representation
+// Create a styleguide and match everything to it.
 
 public class CustClrTool {
     

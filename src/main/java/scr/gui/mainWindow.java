@@ -24,6 +24,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -108,6 +109,21 @@ public class mainWindow extends JFrame implements FocusListener {
         windowTabs.setEnabledAt(1, false);
         this.add(windowTabs);
 
+        windowTabs.addChangeListener((ChangeEvent e) -> {
+            int selectedIndex = windowTabs.getSelectedIndex();
+            if (selectedIndex == 0) {
+                System.out.println("Custom colors tab selected");
+            } else if (selectedIndex == 1) {
+                System.out.println("Table styles tab selected");
+                // Check if theme ID matches table styles ID. If not, match it.
+                int selection = themeSelection.getSelectedIndex();
+                if (!presentation.validateID(CustClrTool.newpres.getThemeID(selection),
+                        CustClrTool.newpres.getTableStylesID())) {
+                    CustClrTool.newpres.setTableStylesXML(presentation.matchIDs(CustClrTool.newpres, selection));
+                } 
+            }
+        });
+
         custClrPanelElements();
         tablePanelElements();
     }
@@ -136,8 +152,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
         JButton testButton = newButton(30, 300, "", "");
         testButton.addActionListener(click -> {
-            tableStyles.printXml(CustClrTool.newpres.getTableStylesXML(), "  ");
-
+            presentation.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
         });
         centerPanel.add(testButton);
 
@@ -538,17 +553,6 @@ public class mainWindow extends JFrame implements FocusListener {
             int selection = themeSelection.getSelectedIndex();
             activateAllColorfields();
             fillColorFields(CustClrTool.newpres, selection);
-            // If the selected theme ID and the ID in the tableStyles.xml are identical
-            // it's very likely, that the contained table styles already are custom ones.
-            if (presentation.validateID(CustClrTool.newpres.getThemeID(selection), CustClrTool.newpres.getTableStylesID())){
-                System.out.println("ID VALID! Theme ID and Table styles ID are the same.");
-            } else {
-                System.out.println("ID INVALID! Theme ID and Table styles ID are not the same.");
-                CustClrTool.newpres.setTableStylesXML(presentation.flushTableStyles(CustClrTool.newpres, selection));
-                if (CustClrTool.newpres.getTableStylesID().equals(CustClrTool.newpres.getThemeID(selection))) {
-                    System.out.println("Successfully changed IDs.");
-                }
-            }
             windowTabs.setEnabledAt(1, true);
             cacheButton.setEnabled(true);
             applyButton.setEnabled(true);
