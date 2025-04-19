@@ -51,6 +51,7 @@ public class XmlValue {
     };
         
     public static final XmlValue[] themeColors = {
+        // TODO Add option for "no color".
         new XmlValue("Light 1", "lt1", "a:schemeClr", "val"),
         new XmlValue("Dark 1", "dk1", "a:schemeClr", "val"),
         new XmlValue("Light 2", "lt2", "a:schemeClr", "val"),

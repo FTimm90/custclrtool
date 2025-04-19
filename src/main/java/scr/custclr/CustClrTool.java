@@ -9,7 +9,6 @@ import scr.presentation.presentation;
 
 // TODO
 // Read existing tables from presentation (if necessary)
-// "Remove table" button
 // "No color" for cell fill
 // Visual table representation
 // Create a styleguide and match everything to it.

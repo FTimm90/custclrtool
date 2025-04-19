@@ -76,6 +76,9 @@ public class presentation {
         this.zipPathString = zipPath;
     }
     
+    /**
+     * Contains all themes found in the presentation file.
+     */
     private List<Themedata> themeDataList = new ArrayList<>();
     public List<Themedata> getThemeDataList() {
         return themeDataList;

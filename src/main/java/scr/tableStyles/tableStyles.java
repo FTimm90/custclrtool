@@ -63,31 +63,35 @@ public class tableStyles {
             boolean insideV = true;
 
             if (element.getAttributeValue().equals("band1H") ||
-                element.getAttributeValue().equals("firstRow") ||
-                element.getAttributeValue().equals("lastRow")) {
-                // System.out.println(element.toString() + " : NO Inside Horizontal");
+                    element.getAttributeValue().equals("firstRow") ||
+                    element.getAttributeValue().equals("lastRow")) {
                 insideH = false;
             }
             if (element.getAttributeValue().equals("band1V") ||
-                element.getAttributeValue().equals("firstCol") ||
-                element.getAttributeValue().equals("lastCol")) {
-                // System.out.println(element.toString() + " : NO Inside Vertical");
+                    element.getAttributeValue().equals("firstCol") ||
+                    element.getAttributeValue().equals("lastCol")) {
                 insideV = false;
             }
-            
+
             elementsArray[counter] = element.toString();
             settingsField settingsfield = new settingsField(30, 90, insideH, insideV);
+            settingsfield.showSettingsField(false);
 
             if (element.getAttributeValue().equals("wholeTbl")) {
                 settingsfield.widget.add(settingsfield.FontWidget());
+                // Generally we don't want the settingsfields to be visible,
+                // only wholeTbl should be visible on creation so that 
+                // the panel is not empty.
+                settingsfield.showSettingsField(true);
+
             }
 
-            settingsfield.showSettingsField(false);
             settingsFields.put(element.toString(), settingsfield);
             settingsElements.add(settingsfield.widget);
 
             counter++;
         }
+
         return settingsElements;
     }
 
@@ -95,6 +99,7 @@ public class tableStyles {
      * Writes the finished table object into the XML template DOM
      */
     public static Node fillTableTemplate(tableStyles tableObject, String themeID) {
+        
         Node templateRoot = writeTableNameID(tableObject, themeID);
         for (XmlValue element : XmlValue.tableElements) {
             Node templateElementNode = presentation.findNode(templateRoot, "a:" + element.getAttributeValue());
@@ -126,6 +131,7 @@ public class tableStyles {
     }
 
     private static Node findNode(Node templateElementNode, Node elementNode, String tagName) {
+        
         if (isSpecialCase(templateElementNode, elementNode, tagName)) {
             return handleSpecialCase(templateElementNode, tagName);
         }
@@ -133,6 +139,7 @@ public class tableStyles {
     }
 
     private static boolean isSpecialCase(Node templateElementNode, Node elementNode, String tagName) {
+        
         return templateElementNode.getNodeName().equals("a:wholeTbl")
                 && elementNode.getNodeName().equals("a:fontRef")
                 && (tagName.equals("a:schemeClr")
@@ -141,6 +148,7 @@ public class tableStyles {
     }
 
     private static Node handleSpecialCase(Node templateElementNode, String tagName) {
+        
         Node tcTxStyleNode = presentation.findNode(templateElementNode, "a:tcTxStyle");
         return switch (tagName) {
             case "a:schemeClr" -> presentation.findNode(tcTxStyleNode, "a:schemeClr");
@@ -151,6 +159,7 @@ public class tableStyles {
     }
 
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
+        
         Node templateRoot = XMLtemplate.getDocumentElement();
         Element rootElement = (Element) templateRoot;
         rootElement.setAttribute("styleId", themeID);
@@ -160,6 +169,7 @@ public class tableStyles {
 
     // TODO For debugging
     public static void printXml(Node node, String indent) {
+        
         if (node == null) return;
 
         // Print the current node with indentation
@@ -193,6 +203,7 @@ public class tableStyles {
     }
 
     private static void printAttributes(Node node, String indent) {
+        
         NamedNodeMap attributes = node.getAttributes();
         if (attributes != null) {
             for (int i = 0; i < attributes.getLength(); i++) {

@@ -9,6 +9,7 @@ import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -49,8 +50,10 @@ public class mainWindow extends JFrame implements FocusListener {
     static JButton applyButton;
     static JButton cacheButton;
     JButton loadCacheButton;
-    JButton chooseFileButton;
     static JComboBox<String> themeSelection;
+    /**
+     * Selection (combo) box storing the names of all existing table styles.
+     */
     JComboBox<String> tableSelection;
     static JPanel custClrPanel;
     JPanel tablePanel;
@@ -58,14 +61,30 @@ public class mainWindow extends JFrame implements FocusListener {
     JPanel rightPanel;
     JPanel centerPanel;
     JTextField newTableName;
+    /**
+     * Table elements are the 8 pieces a table style is made out of.
+     */
     JComboBox<String> tableElements;
     JLabel presentationNameLabel;
     JButton addTableButton;
+    /**
+     * At the very bottom of the GUI messages appear to fill the user in on what's happening.
+     */
     public JLabel eventLog;
     static JTabbedPane windowTabs;
+    /**
+     * Stores all the table styles. These are use for constructing the output file.
+     */
     List<tableStyles> tableObjects = new ArrayList<>();
+    /**
+     * Stores the settings panels in <Table Name, Settings> pairs.
+     */
+    HashMap<String, JPanel> settingsPanels = new HashMap<>();
     JPanel currentSettingsPanel;
-    // temporary solution to fill the array with an empty slot
+    /**
+     * Upon first generation of the table selection box we need an array
+     * containing something, even if it's initially empty.
+     */
     String[] tableNames = new String[1];
 
 
@@ -73,6 +92,7 @@ public class mainWindow extends JFrame implements FocusListener {
     static colorfield[] colorfieldCache;
                                 
     public mainWindow() {
+        
         JFrame window = new JFrame();
 
         // Settings
@@ -110,25 +130,18 @@ public class mainWindow extends JFrame implements FocusListener {
         this.add(windowTabs);
 
         windowTabs.addChangeListener((ChangeEvent e) -> {
-            int selectedIndex = windowTabs.getSelectedIndex();
-            if (selectedIndex == 0) {
-                System.out.println("Custom colors tab selected");
-            } else if (selectedIndex == 1) {
-                System.out.println("Table styles tab selected");
-                // Check if theme ID matches table styles ID. If not, match it.
-                int selection = themeSelection.getSelectedIndex();
-                if (!presentation.validateID(CustClrTool.newpres.getThemeID(selection),
-                        CustClrTool.newpres.getTableStylesID())) {
-                    CustClrTool.newpres.setTableStylesXML(presentation.matchIDs(CustClrTool.newpres, selection));
-                } 
-            }
+            eventSwitchTabs();
         });
 
         custClrPanelElements();
         tablePanelElements();
     }
 
+    /**
+     * Contains all UI elements for the table style tab.
+     */
     private void tablePanelElements() {
+        
         rightPanel = newPanel(0, 1, 0, 0, 300, 0);
         rightPanel.setLayout(null);
         tablePanel.add(rightPanel, BorderLayout.EAST);
@@ -139,10 +152,21 @@ public class mainWindow extends JFrame implements FocusListener {
 
         addTableButton = newButton(30, 30, "Add table", "Adds another empty custom table");
         addTableButton.addActionListener(click -> {
-            eventCreateNewTable();
+            eventCreateNewTable(newTableName.getText());
+            newTableName.setText("");
+            tableSelection.requestFocusInWindow();
         });
+
         addTableButton.setEnabled(false);
         centerPanel.add(addTableButton);
+
+        JButton removeTableButton = newButton(850, 30, "Remove table", "Remove current table style");
+        removeTableButton.addActionListener(click -> {
+            eventRemoveCurrentTable();
+        });
+        //  TODO find correct place to activate this.
+        // removeTableButton.setEnabled(false);
+        centerPanel.add(removeTableButton);
 
         newTableName = mainWindow.newTextField(true, "Enter name for a new table style.", "Table style name");
         newTableName.setBounds(200, 30, 300, 30);
@@ -167,12 +191,13 @@ public class mainWindow extends JFrame implements FocusListener {
         tableSelection.setBounds(30, 90, 200, 30);
         tableSelection.setEnabled(false);
         tableSelection.addActionListener(e -> {
-            eventSwitchSelectedTable();
+            eventSwitchSelectedTable((String) tableSelection.getSelectedItem());
         });
         centerPanel.add(tableSelection);
     }
 
     private void drawTableSettingsCombobox(tableStyles tableObject) {
+        
         tableElements = newComboBox(tableStyles.elementsArray);
         tableElements.setBounds(30, 30, 240, 30);
         tableElements.addActionListener(select -> {
@@ -182,6 +207,7 @@ public class mainWindow extends JFrame implements FocusListener {
     }
 
     private void removeTableSettingsCombobox() {
+        
         rightPanel.remove(tableElements);
         tableElements = null;
         rightPanel.revalidate();
@@ -192,6 +218,7 @@ public class mainWindow extends JFrame implements FocusListener {
      * Only show the settings field elements for a specific element (tableElements)
      */
     private void setTableSettingsVisibility(tableStyles tableObject) {
+        
         String selection = tableElements.getSelectedItem().toString();
         for (String settingsElement : tableObject.settingsFields.keySet()) {
             if (settingsElement.equals(selection)) {
@@ -204,6 +231,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
     // TODO for Debugging
     private static void printTableValues(tableStyles tableObject) {
+        
         for (String currentField : tableObject.settingsFields.keySet()) {
             System.out.println("______________ " + currentField + " ______________");
             tableObject.settingsFields.get(currentField).printAllValues();
@@ -211,19 +239,12 @@ public class mainWindow extends JFrame implements FocusListener {
         }
     }
     
-    private void updateTableSelectionBox() {
-        tableNames = new String[0];
-        int tableCount = tableObjects.size();
-        tableNames = new String[tableCount];
-        for (int i = 0; i < tableCount; i++) {
-            tableNames[i] = tableObjects.get(i).getTableName();
-        }
-        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(tableNames);
-        tableSelection.setModel(model);
-    }
-
+    /**
+     * Contains all UI elements for the Custom color tab.
+     */
     private void custClrPanelElements() {
-        chooseFileButton = newButton(30, 30, "Choose File", "Click to select a file from your computer.");
+        
+        JButton chooseFileButton = newButton(30, 30, "Choose File", "Click to select a file from your computer.");
         chooseFileButton.addActionListener(click -> {
             eventFileSelection();
         });
@@ -262,15 +283,18 @@ public class mainWindow extends JFrame implements FocusListener {
         custClrPanel.add(loadCacheButton);
     }
 
+    /**
+     * Builds the 10x5 table of colorfields on the UI.
+     */
     private void buildColorFields() {
 
-        int column = 30;
-        int row = 150;
+        int columnDistance = 30;
+        int rowDistance = 150;
 
         colorfields = new colorfield[50];
 
         for (int i = 0; i < 50; i++) {
-            colorfield colorWidget = new colorfield(column, row);
+            colorfield colorWidget = new colorfield(columnDistance, rowDistance);
             colorfields[i] = colorWidget;
             custClrPanel.add(colorWidget.widget);
             colorWidget.activateColorField.addActionListener((ActionEvent check) -> {
@@ -287,17 +311,68 @@ public class mainWindow extends JFrame implements FocusListener {
             });
 
             if ((i + 1) % 10 == 0) {
-                column = 30;
-                row += 115;
+                columnDistance = 30;
+                rowDistance += 115;
             } else {
-                column += 125;
+                columnDistance += 125;
             }
         }
     }
     
 // On-click events
 
+    /**
+     * If the user wants to switch to the "tablestyles tab"
+     * the table styles ID is matched with the theme ID.
+     */
+    private void eventSwitchTabs() {
+        
+        int selectedIndex = windowTabs.getSelectedIndex();
+        if (selectedIndex == 0) {
+            System.out.println("Custom colors tab selected");
+        } else if (selectedIndex == 1) {
+            System.out.println("Table styles tab selected");
+            // Check if theme ID matches table styles ID. If not, match it.
+            int selection = themeSelection.getSelectedIndex();
+            if (!presentation.validateID(CustClrTool.newpres.getThemeID(selection),
+                    CustClrTool.newpres.getTableStylesID())) {
+                CustClrTool.newpres.setTableStylesXML(presentation.matchIDs(CustClrTool.newpres, selection));
+            }
+        }
+    }
+    
+    private void eventRemoveCurrentTable() {
+        
+        String currentPanelName = (String) tableSelection.getSelectedItem();
+        JPanel currentPanel = settingsPanels.get(currentPanelName);
+        
+        tableSelection.remove(currentPanel);
+        for (tableStyles style : tableObjects) {
+            if (style.getTableName().equals(currentPanelName)) {
+                tableObjects.remove(style);
+                break;
+            }
+        }
+        rightPanel.remove(currentPanel);
+        updateTableSelectionBox();
+
+        if (!tableObjects.isEmpty()) {
+            // If a table is removed and there are still entries left,
+            // just select the first one to make sure a valid entry is selected. 
+            String firstObject = tableObjects.get(0).getTableName();
+            tableSelection.setSelectedItem(firstObject);
+            eventSwitchSelectedTable((String) tableSelection.getSelectedItem());
+        }
+        eventLog.setText("Removed table " + currentPanelName + ".");
+    }
+
+    /**
+     * Takes all table style objects, appends them to the table styles XML
+     * and saves the changes into the file.
+     * @param presentation
+     */
     private void eventSaveTableStyles(presentation presentation) {
+        
         String themeID = CustClrTool.newpres.getThemeID(getSelectedTheme());    
         
         for (tableStyles table : tableObjects) {
@@ -308,7 +383,6 @@ public class mainWindow extends JFrame implements FocusListener {
             eventApplyAllChanges(false, true);
         }
     }
-    
 
     /**
      * Runs through all of the filled template and appends it to the tableStyles.xml file
@@ -316,25 +390,27 @@ public class mainWindow extends JFrame implements FocusListener {
      * @param filledTemplate
      */
     private void appendTemplate(Document tableStylesFile, Node filledTemplate) {
-        Node styleListNode = scr.presentation.presentation.findNode(tableStylesFile, "a:tblStyleLst");
         
+        Node styleListNode = scr.presentation.presentation.findNode(tableStylesFile, "a:tblStyleLst");
         Node importedTemplate = tableStylesFile.importNode(filledTemplate, true);
         styleListNode.appendChild(importedTemplate);
     }
 
-    private void eventCreateNewTable() {
+    private void eventCreateNewTable(String tableName) {
+        
         // Once a new table is added, the combobox needs to be rebuilt
         if (currentSettingsPanel != null) {
             removeTableSettingsCombobox();
         }
-    
+
         // We only want the button to be active if the textfield actually has been changed
         addTableButton.setEnabled(false);
 
         // create new table object & fill settings
-        tableStyles newTable = new tableStyles(newTableName.getText());
+        tableStyles newTable = new tableStyles(tableName);
         JPanel newTableSettings = newTable.createSettingsFields();
-        newTableSettings.setName(newTableName.getText());
+        newTableSettings.setName(tableName);
+        settingsPanels.put(tableName, newTableSettings);
         tableObjects.add(newTable);
         rightPanel.add(newTableSettings);
         newTableSettings.setVisible(false);
@@ -354,11 +430,29 @@ public class mainWindow extends JFrame implements FocusListener {
         eventLog.setText("Created new table " + newTableName.getText() + ".");
     }
     
-    private void eventSwitchSelectedTable() {
-        String selectedItem = (String) tableSelection.getSelectedItem();
+    /**
+     * Updates the content of the table selection combobox if a new one is added.
+     */
+    private void updateTableSelectionBox() {
+        
+        tableNames = new String[0];
+        int tableCount = tableObjects.size();
+        tableNames = new String[tableCount];
+        for (int i = 0; i < tableCount; i++) {
+            tableNames[i] = tableObjects.get(i).getTableName();
+        }
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(tableNames);
+        tableSelection.setModel(model);
+    }
+    
+    /**
+     * Show selected table, hide all others.
+     */
+    private void eventSwitchSelectedTable(String selectedTable) {
+        
         for (tableStyles table : tableObjects) {
             JPanel settingsPanel = table.settingsElements;
-            if (table.getTableName().equals(selectedItem)) {
+            if (table.getTableName().equals(selectedTable)) {
                 if (settingsPanel.getParent() == null) {
                     rightPanel.add(settingsPanel);
                 }
@@ -414,6 +508,9 @@ public class mainWindow extends JFrame implements FocusListener {
         }
     }
 
+    /**
+     * Save current color fields in memory to apply to a different theme or file.
+     */
     private static colorfield[] eventCacheColorFields() {
         
         colorfieldCache = new colorfield[50];
@@ -431,6 +528,9 @@ public class mainWindow extends JFrame implements FocusListener {
         return colorfieldCache;
     }
     
+    /**
+     * Apply colors cached to the current theme or file.
+     */
     private static void eventApplyCachedColors() {
 
         for (int i = 0; i < colorfields.length; i++) {
@@ -446,10 +546,7 @@ public class mainWindow extends JFrame implements FocusListener {
 // UI Elements
 
     private static Border newBorder(int top, int left, int bottom, int right) {
-        
-        Border generalBorder = BorderFactory.createMatteBorder(top, left, bottom, right, Color.LIGHT_GRAY);
-        
-        return generalBorder;
+        return BorderFactory.createMatteBorder(top, left, bottom, right, Color.LIGHT_GRAY);
     }
                     
     public static JPanel newPanel(int borderTop,
@@ -492,7 +589,6 @@ public class mainWindow extends JFrame implements FocusListener {
     public static JComboBox<String> newComboBox(String[] themes) {
 
         JComboBox<String> comboBox = new JComboBox<>(themes);
-
         comboBox.setBounds(30, 90, 245, 30);
 
         return comboBox;
@@ -540,6 +636,7 @@ public class mainWindow extends JFrame implements FocusListener {
     }
 
     private static void drawDropDown() {
+
         int numberOfThemes = CustClrTool.newpres.getThemeDataList().size();
         String[] themesNumbered = new String[numberOfThemes];
 
@@ -560,6 +657,11 @@ public class mainWindow extends JFrame implements FocusListener {
         custClrPanel.add(themeSelection);
     }
         
+    /**
+     * Fills the UI Colorfields with the colors from selected theme.
+     * @param currentPresentation
+     * @param themeSelection
+     */
     public static void fillColorFields(presentation currentPresentation, int themeSelection) {
         
         // Storing this in class variable
@@ -586,6 +688,9 @@ public class mainWindow extends JFrame implements FocusListener {
         }
     }
     
+    /**
+     * Fetches all custom colors from the colorfields that are marked as active.
+     */
     public static List<String[]> fetchColors() {
         
         List<String[]> fetchedColors = new ArrayList<>();
@@ -624,7 +729,7 @@ public class mainWindow extends JFrame implements FocusListener {
     public void focusLost(FocusEvent e) {
 
         if (e.getSource() == newTableName) {
-            // System.out.println("Lost focus! -> Works.");
+            // System.out.println("New Table name field focus lost.");
         }
     }
 }
