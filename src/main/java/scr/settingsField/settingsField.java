@@ -33,6 +33,10 @@ public class settingsField {
     public final HashMap<String, JComboBox<XmlValue>> fill = new HashMap<>();
     public final HashMap<String, JComboBox<XmlValue>> fontRef = new HashMap<>();
 
+    public HashMap<String, HashMap<String, JComboBox<XmlValue>>> getAllFields() {
+        return allFields;
+    }
+
     public settingsField(int posX, int posY, boolean insideHCheck, boolean insideVCheck) {
         this.widget = settingsWidget(posX, posY, insideHCheck, insideVCheck);
     }

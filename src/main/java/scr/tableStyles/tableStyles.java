@@ -14,6 +14,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import scr.custclr.CustClrTool;
 import scr.presentation.presentation;
 import scr.settingsField.XmlValue;
 import scr.settingsField.settingsField;
@@ -24,6 +25,11 @@ public class tableStyles {
     private String tableName;
     public static String[] elementsArray = new String[XmlValue.tableElements.length];
     public HashMap<String, settingsField> settingsFields = new HashMap<>();
+
+    public settingsField getSettingsField(String name) {
+        return settingsFields.get(name);
+    }
+
     public JPanel settingsElements;
 
     public tableStyles(String name) {
@@ -53,6 +59,7 @@ public class tableStyles {
     }
 
     public JPanel createSettingsFields() {
+        
         settingsElements = new JPanel();
         settingsElements.setBounds(30, 120, 230, 750);
         int counter = 0;
@@ -99,7 +106,7 @@ public class tableStyles {
      * Writes the finished table object into the XML template DOM
      */
     public static Node fillTableTemplate(tableStyles tableObject, String themeID) {
-        
+
         Node templateRoot = writeTableNameID(tableObject, themeID);
         for (XmlValue element : XmlValue.tableElements) {
             Node templateElementNode = presentation.findNode(templateRoot, "a:" + element.getAttributeValue());
@@ -126,8 +133,68 @@ public class tableStyles {
         return templateRoot;
     }
 
-    private static void readTableStyle() {
-        //TODO 
+    public static void extractExistingTableStyles(Document tableStylesFile) {
+        
+        String namespaceURI = "http://schemas.openxmlformats.org/drawingml/2006/main";
+        String localName = "tblStyle";
+
+        NodeList tableStyleNodes = tableStylesFile.getElementsByTagNameNS(namespaceURI, localName);
+
+        for (int i = 0; i < tableStyleNodes.getLength(); i++) {
+            // Iterate over all existing tableStyles
+            Node tableStyleNode = tableStyleNodes.item(i);
+            Element nodeElement = (Element) tableStyleNode;
+            String styleName = nodeElement.getAttribute("styleName");
+            CustClrTool.mainGUI.eventCreateNewTable(styleName);
+            tableStyles currentTable = CustClrTool.mainGUI.getTableObject(styleName);
+            if (currentTable == null) {
+                System.err.println("Table object not found.");
+            } else {
+                fillTableObject(tableStyleNode, currentTable);
+            }
+        }
+    }
+
+    /**
+     * Change the components of the table styles GUI elements to match the input table Style.
+     * @param tableStyleNode
+     * @param currentTable
+     */
+    private static void fillTableObject(Node tableStyleNode, tableStyles currentTable) {
+        // TODO -> This works so far. We just need to find the right moment for this to take place AND the correct settingsfields to show.
+        // TODO ALSO Check if fonts shenanigans work!
+        for (XmlValue tableElement : XmlValue.tableElements) {
+            // Iterate over all table elements (whole table, ...)
+            // Get the Element from the tableStyleNode(loaded table style) and the currentTable
+            Node elementNode = presentation.findNode(tableStyleNode, "a:" + tableElement.getAttributeValue());
+            if (elementNode == null) {
+                continue;
+            }
+            settingsField elementField = currentTable.getSettingsField(tableElement.toString());
+            // Get the parts of the settingsfield (comboboxes) & iterate over them
+            HashMap<String, HashMap<String, JComboBox<XmlValue>>> parts = elementField.getAllFields();
+            for (String part : parts.keySet()) {
+                // Part = left, right, top ...
+                Node partNode = presentation.findNode(elementNode, "a:" + part);
+                if (partNode == null) {
+                    continue;
+                }
+                HashMap<String, JComboBox<XmlValue>> element = parts.get(part);
+                for (String boxName : element.keySet()) {
+                    // Iterating over the individual Comboboxes in the Hashmap
+                    JComboBox<XmlValue> comboBox = element.get(boxName);
+                    XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
+                    Node valueNode = presentation.findNode(partNode, comboBoxSelection.getTagName());
+                    if (valueNode == null) {
+                        continue;
+                    }
+                    Element attribute = (Element) valueNode;
+                    String foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
+                    XmlValue attributeAsXmlValue = XmlValue.findValue(foundAttribute);
+                    comboBox.setSelectedItem(attributeAsXmlValue);
+                } 
+            }
+        }
     }
 
     private static Node findNode(Node templateElementNode, Node elementNode, String tagName) {

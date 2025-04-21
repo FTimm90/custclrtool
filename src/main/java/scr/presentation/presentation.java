@@ -150,25 +150,6 @@ public class presentation {
         return "";
     }
 
-    public static void extractExistingTableStyles(Document tableStyleFile) {
-        String namespaceURI = "http://schemas.openxmlformats.org/drawingml/2006/main";
-        String localName = "tblStyle";
-
-        NodeList tableStyleNodes = tableStyleFile.getElementsByTagNameNS(namespaceURI, localName);
-
-        for (int i = 0; i < tableStyleNodes.getLength(); i++) {
-            // Iterate over all existing tableStyles
-            Node tableStyleNode = tableStyleNodes.item(i);
-            // Extract style ID
-            Element nodeElement = (Element) tableStyleNode;
-            String styleID = nodeElement.getAttribute("styleId");
-            String styleName = nodeElement.getAttribute("styleName");
-            System.out.println("Style ID: " + styleID);
-            System.out.println("Style Name: " + styleName);
-            // TODO Else read all into new table style UI Element
-        }
-    }
-
     private static void extractThemeData(InputStream inputStream, String themeNumber, Themedata newTheme)
             throws XMLStreamException {
 

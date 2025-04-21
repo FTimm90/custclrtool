@@ -76,10 +76,24 @@ public class mainWindow extends JFrame implements FocusListener {
      * Stores all the table styles. These are use for constructing the output file.
      */
     List<tableStyles> tableObjects = new ArrayList<>();
+
+    public tableStyles getTableObject(String tableName) {
+        for (tableStyles tableObject : tableObjects) {
+            if (tableObject.getTableName().equals(tableName))
+                return tableObject;
+        }
+        return null;
+    }
+
     /**
      * Stores the settings panels in <Table Name, Settings> pairs.
      */
     HashMap<String, JPanel> settingsPanels = new HashMap<>();
+    
+    public JPanel getSettingsPanel(String panelName) {
+        return settingsPanels.get(panelName);
+    }
+    
     JPanel currentSettingsPanel;
     /**
      * Upon first generation of the table selection box we need an array
@@ -176,12 +190,12 @@ public class mainWindow extends JFrame implements FocusListener {
 
         JButton testButton = newButton(30, 300, "", "");
         testButton.addActionListener(click -> {
-            presentation.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
+            tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
         });
         centerPanel.add(testButton);
 
 
-        JButton saveTableButton = newButton(30, 500, "Save table", "Save currently opened table");
+        JButton saveTableButton = newButton(30, 500, "Save tables", "Save all table styles into opene file.");
         saveTableButton.addActionListener(click -> {
             eventSaveTableStyles(CustClrTool.newpres);
         });
@@ -396,7 +410,7 @@ public class mainWindow extends JFrame implements FocusListener {
         styleListNode.appendChild(importedTemplate);
     }
 
-    private void eventCreateNewTable(String tableName) {
+    public void eventCreateNewTable(String tableName) {
         
         // Once a new table is added, the combobox needs to be rebuilt
         if (currentSettingsPanel != null) {
@@ -732,4 +746,5 @@ public class mainWindow extends JFrame implements FocusListener {
             // System.out.println("New Table name field focus lost.");
         }
     }
+
 }

@@ -1,5 +1,8 @@
 package scr.settingsField;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class XmlValue {
     private final String displayValue;
     private final String attributeValue;
@@ -77,6 +80,8 @@ public class XmlValue {
         new XmlValue("Italic", "on", "a:tcTxStyle", "i"),
     };
 
+    private static final List<XmlValue[]> ALLVALUES = new ArrayList<>();
+
     public XmlValue(String displayValue, String xmlValue, String tagName) {
         // Not all XmlValue arrays need a tagName, so we make it optional by overloading the constructor.
         this(displayValue, xmlValue, tagName, null); 
@@ -87,6 +92,38 @@ public class XmlValue {
         this.attributeValue = attributeValue;
         this.tagName = tagName;
         this.attributeName = attributeName;
+    }
+
+    public static XmlValue findValue(String AttributeValueName) {
+        
+        if (ALLVALUES.isEmpty()) {
+            // Only fill if not filled yet.
+            fillAllValues();
+        }
+
+        for (XmlValue[] array : ALLVALUES) {
+            for (XmlValue current : array) {
+                if (current.toString().equals(AttributeValueName)
+                    || current.getAttributeValue().equals(AttributeValueName)
+                    // Can't use this one since not every XmlValue has it
+                    // || current.getAttributeName().equals(AttributeValueName)
+                    || current.getTagName().equals(AttributeValueName)) {
+                    return current;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void fillAllValues() {
+        
+        ALLVALUES.add(lineSides);
+        ALLVALUES.add(themeColors);
+        ALLVALUES.add(themeFonts);
+        ALLVALUES.add(textStyle);
+        ALLVALUES.add(lineWidths);
+        ALLVALUES.add(lineTypes);
+        ALLVALUES.add(tableElements);
     }
 
     @Override
