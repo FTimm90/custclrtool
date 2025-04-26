@@ -65,19 +65,30 @@ public class settingsField {
         widget.add(dividerLine);
 
         // a:solidFill
-        JPanel cellColor = colorWidget(0, 0, "Cell color", fill);
+        JPanel cellColor = colorWidget(0, 0, "cell color", fill);
         allFields.put("fill", fill);
         widget.add(cellColor);
 
         return widget;
     }
 
+    /**
+     * @param part left, right, top, bottom, fill, insideV, insideH, frontRef
+     * @param boxName XmlValue attribute name
+     * @param newValue
+     */
+    public void setComboBox(String part, String boxName,  XmlValue newValue) {
+        HashMap<String, JComboBox<XmlValue>> boxMap = allFields.get(part);
+        JComboBox<XmlValue> boxSelect = boxMap.get(boxName);
+        boxSelect.setSelectedItem(newValue);
+    }
+
     public JPanel FontWidget() {
         JPanel parent = mainWindow.newPanel(0, 0, 0, 0, 230, 120);
-        JPanel fontSelection = fontWidget(0, 0, "Font:", fontRef);
+        JPanel fontSelection = fontWidget(0, 0, "font", fontRef);
         parent.add(fontSelection);
         
-        JPanel fontColor = colorWidget(0, 0, "Text color:", fontRef);
+        JPanel fontColor = colorWidget(0, 0, "text color", fontRef);
         allFields.put("fontRef", fontRef);
         parent.add(fontColor);
         return parent;
@@ -153,14 +164,14 @@ public class settingsField {
         linePanel.add(leftBorder);
 
         JComboBox<XmlValue> lineOne = lineWidthSelection();
-        targetMap.put("w", lineOne);
+        targetMap.put("line width", lineOne);
         linePanel.add(lineOne);
 
         JComboBox<XmlValue> lineStyle = lineStyleSelection();
-        targetMap.put("cmpd", lineStyle);
+        targetMap.put("line style", lineStyle);
         linePanel.add(lineStyle);
 
-        JPanel lineColor = colorWidget(0, 0, "Line color:", targetMap);
+        JPanel lineColor = colorWidget(0, 0, "line color", targetMap);
         linePanel.add(lineColor);
            
         return linePanel;
@@ -179,11 +190,11 @@ public class settingsField {
         fontPanel.add(fontLabel);
 
         JComboBox<XmlValue> fontSelectBox = fontSelection();
-        targetMap.put("idx", fontSelectBox);
+        targetMap.put(lineText, fontSelectBox);
         fontPanel.add(fontSelectBox);
 
         JComboBox<XmlValue> textStyleBox = textStyleSelection();
-        targetMap.put("tcTxStyle", textStyleBox);
+        targetMap.put("text style", textStyleBox);
         fontPanel.add(textStyleBox);
 
         return fontPanel;
@@ -212,7 +223,7 @@ public class settingsField {
             colorPanel.repaint();
         });
 
-        targetMap.put("val", colorSelectBox);
+        targetMap.put(lineText, colorSelectBox);
         colorPanel.add(colorSelectBox);
         colorPanel.add(colorPreview);
 

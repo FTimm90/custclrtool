@@ -134,7 +134,7 @@ public class tableStyles {
     }
 
     public static void extractExistingTableStyles(Document tableStylesFile) {
-        
+
         String namespaceURI = "http://schemas.openxmlformats.org/drawingml/2006/main";
         String localName = "tblStyle";
 
@@ -152,72 +152,81 @@ public class tableStyles {
             } else {
                 fillTableObject(tableStyleNode, currentTable);
             }
+            if (i == tableStyleNodes.getLength()) {
+                // Show the most recently created table style
+                CustClrTool.mainGUI.eventSwitchSelectedTable(styleName);
+            }
         }
     }
 
     /**
      * Change the components of the table styles GUI elements to match the input table Style.
-     * @param tableStyleNode
-     * @param currentTable
+     * @param tableStyleNode <a:tblStyle> node from the tableStyles.xml of the loaded PowerPoint file.
+     * @param currentTable table style object from the GUI.
      */
     private static void fillTableObject(Node tableStyleNode, tableStyles currentTable) {
-        // TODO -> This works so far. We just need to find the right moment for this to take place AND the correct settingsfields to show.
-        // TODO ALSO Check if fonts shenanigans work!
+
         for (XmlValue tableElement : XmlValue.tableElements) {
-            // Iterate over all table elements (whole table, ...)
-            // Get the Element from the tableStyleNode(loaded table style) and the currentTable
-            Node elementNode = presentation.findNode(tableStyleNode, "a:" + tableElement.getAttributeValue());
-            if (elementNode == null) {
-                continue;
-            }
+            Node elementNode = presentation.findNode(tableStyleNode, tableElement.getTagName());
             settingsField elementField = currentTable.getSettingsField(tableElement.toString());
-            // Get the parts of the settingsfield (comboboxes) & iterate over them
             HashMap<String, HashMap<String, JComboBox<XmlValue>>> parts = elementField.getAllFields();
+
             for (String part : parts.keySet()) {
-                // Part = left, right, top ...
+                // Part = left, right, top, bottom, fill, insideV, insideH
                 Node partNode = presentation.findNode(elementNode, "a:" + part);
-                if (partNode == null) {
-                    continue;
-                }
                 HashMap<String, JComboBox<XmlValue>> element = parts.get(part);
+
                 for (String boxName : element.keySet()) {
-                    // Iterating over the individual Comboboxes in the Hashmap
+                    // Box names: cell color, line style, line width, line color, text style, text color, font
                     JComboBox<XmlValue> comboBox = element.get(boxName);
                     XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
-                    Node valueNode = presentation.findNode(partNode, comboBoxSelection.getTagName());
-                    if (valueNode == null) {
-                        continue;
-                    }
+                    Node valueNode = findNode(elementNode, partNode, comboBoxSelection.getTagName());
                     Element attribute = (Element) valueNode;
-                    String foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
+                    String foundAttribute;
+
+                    if (boxName.equals("text style")) {
+                        // For "text style" we cannot use the AttributeValue, 
+                        // since that's always "on".
+                        foundAttribute = comboBoxSelection.toString();
+                    } else {
+                        foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
+                    }
+
                     XmlValue attributeAsXmlValue = XmlValue.findValue(foundAttribute);
-                    comboBox.setSelectedItem(attributeAsXmlValue);
-                } 
+                    elementField.setComboBox(part, boxName, attributeAsXmlValue);
+                }
             }
         }
     }
 
-    private static Node findNode(Node templateElementNode, Node elementNode, String tagName) {
+    /**
+     * Special version of the findNode method to handle some special cases
+     * @param currentTablePart the node containing the special case
+     * @param fontRefNode the node that should be searched
+     * @param searchTag the tag that is beeing searched for
+     * @return
+     */
+    private static Node findNode(Node currentTablePart, Node fontRefNode, String searchTag) {
         
-        if (isSpecialCase(templateElementNode, elementNode, tagName)) {
-            return handleSpecialCase(templateElementNode, tagName);
+        if (isSpecialCase(currentTablePart, fontRefNode, searchTag)) {
+            return handleSpecialCase(currentTablePart, searchTag);
         }
-        return presentation.findNode(elementNode, tagName);
+        return presentation.findNode(fontRefNode, searchTag);
     }
 
-    private static boolean isSpecialCase(Node templateElementNode, Node elementNode, String tagName) {
+    private static boolean isSpecialCase(Node currentTablePart, Node fontRefNode, String searchTag) {
         
-        return templateElementNode.getNodeName().equals("a:wholeTbl")
-                && elementNode.getNodeName().equals("a:fontRef")
-                && (tagName.equals("a:schemeClr")
-                || tagName.equals("a:fontRef")
-                || tagName.equals("a:tcTxStyle"));
+        return currentTablePart.getNodeName().equals("a:wholeTbl")
+                && fontRefNode.getNodeName().equals("a:fontRef")
+                && (searchTag.equals("a:schemeClr")
+                || searchTag.equals("a:fontRef")
+                || searchTag.equals("a:tcTxStyle"));
     }
 
-    private static Node handleSpecialCase(Node templateElementNode, String tagName) {
+    private static Node handleSpecialCase(Node currentTablePart, String searchTag) {
         
-        Node tcTxStyleNode = presentation.findNode(templateElementNode, "a:tcTxStyle");
-        return switch (tagName) {
+        Node tcTxStyleNode = presentation.findNode(currentTablePart, "a:tcTxStyle");
+        return switch (searchTag) {
             case "a:schemeClr" -> presentation.findNode(tcTxStyleNode, "a:schemeClr");
             case "a:fontRef" -> presentation.findNode(tcTxStyleNode, "a:fontRef");
             case "a:tcTxStyle" -> tcTxStyleNode;

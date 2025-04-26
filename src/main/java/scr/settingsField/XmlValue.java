@@ -105,6 +105,7 @@ public class XmlValue {
             for (XmlValue current : array) {
                 if (current.toString().equals(AttributeValueName)
                     || current.getAttributeValue().equals(AttributeValueName)
+                    || current.toString().equals(AttributeValueName)
                     // Can't use this one since not every XmlValue has it
                     // || current.getAttributeName().equals(AttributeValueName)
                     || current.getTagName().equals(AttributeValueName)) {
@@ -116,14 +117,15 @@ public class XmlValue {
     }
 
     private static void fillAllValues() {
-        
-        ALLVALUES.add(lineSides);
+
+        // Probably don't need these two as they are mostly just for building the UI
+        // ALLVALUES.add(lineSides);
+        // ALLVALUES.add(tableElements);
         ALLVALUES.add(themeColors);
         ALLVALUES.add(themeFonts);
         ALLVALUES.add(textStyle);
         ALLVALUES.add(lineWidths);
         ALLVALUES.add(lineTypes);
-        ALLVALUES.add(tableElements);
     }
 
     @Override

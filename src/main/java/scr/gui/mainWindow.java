@@ -190,7 +190,11 @@ public class mainWindow extends JFrame implements FocusListener {
 
         JButton testButton = newButton(30, 300, "", "");
         testButton.addActionListener(click -> {
+            // TODO: Bug here. If we extract multiple table styles, the first one to be extracted does not properly work. 
+            // TODO: Seems to have a UI Bug. The settings for "whole table" are shown no matter what element is selected.
             tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
+            setTableSettingsVisibility(tableObjects.get(0));
+            tableSelection.setSelectedIndex(0);
         });
         centerPanel.add(testButton);
 
@@ -462,7 +466,7 @@ public class mainWindow extends JFrame implements FocusListener {
     /**
      * Show selected table, hide all others.
      */
-    private void eventSwitchSelectedTable(String selectedTable) {
+    public void eventSwitchSelectedTable(String selectedTable) {
         
         for (tableStyles table : tableObjects) {
             JPanel settingsPanel = table.settingsElements;
