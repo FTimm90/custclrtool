@@ -260,8 +260,8 @@ public class settingsField {
         return colorSelect;
     }
 
-    public void showSettingsField(boolean selection) {
-        this.widget.setVisible(selection);
+    public void showSettingsField(boolean visible) {
+        this.widget.setVisible(visible);
     }
 
     public static String[] getThemeColors() {

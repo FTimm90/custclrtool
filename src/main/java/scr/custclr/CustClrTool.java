@@ -8,7 +8,6 @@ import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
 // TODO
-// Read existing tables from presentation (if necessary)
 // "No color" for cell fill
 // Visual table representation
 // Create a styleguide and match everything to it.

@@ -25,6 +25,8 @@ public class tableStyles {
     private String tableName;
     public static String[] elementsArray = new String[XmlValue.tableElements.length];
     public HashMap<String, settingsField> settingsFields = new HashMap<>();
+        
+    final private static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
     public settingsField getSettingsField(String name) {
         return settingsFields.get(name);
@@ -133,12 +135,18 @@ public class tableStyles {
         return templateRoot;
     }
 
+    public static boolean hasExistingStyles(Document tableStylesFile) {
+
+        String localName = "tblStyle";
+        NodeList tableStyleNodes = tableStylesFile.getElementsByTagNameNS(NAMESPACE, localName);
+
+        return tableStyleNodes.getLength() > 0;
+    }
+    
     public static void extractExistingTableStyles(Document tableStylesFile) {
 
-        String namespaceURI = "http://schemas.openxmlformats.org/drawingml/2006/main";
         String localName = "tblStyle";
-
-        NodeList tableStyleNodes = tableStylesFile.getElementsByTagNameNS(namespaceURI, localName);
+        NodeList tableStyleNodes = tableStylesFile.getElementsByTagNameNS(NAMESPACE, localName);
 
         for (int i = 0; i < tableStyleNodes.getLength(); i++) {
             // Iterate over all existing tableStyles
@@ -151,10 +159,6 @@ public class tableStyles {
                 System.err.println("Table object not found.");
             } else {
                 fillTableObject(tableStyleNode, currentTable);
-            }
-            if (i == tableStyleNodes.getLength()) {
-                // Show the most recently created table style
-                CustClrTool.mainGUI.eventSwitchSelectedTable(styleName);
             }
         }
     }

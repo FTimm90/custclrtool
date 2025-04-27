@@ -61,11 +61,9 @@ public class mainWindow extends JFrame implements FocusListener {
     JPanel rightPanel;
     JPanel centerPanel;
     JTextField newTableName;
-    /**
-     * Table elements are the 8 pieces a table style is made out of.
-     */
-    JComboBox<String> tableElements;
+
     JLabel presentationNameLabel;
+    JButton removeTableButton;
     JButton addTableButton;
     /**
      * At the very bottom of the GUI messages appear to fill the user in on what's happening.
@@ -84,6 +82,8 @@ public class mainWindow extends JFrame implements FocusListener {
         }
         return null;
     }
+
+    List<JComboBox<String>> tableElementSelection = new ArrayList<>();
 
     /**
      * Stores the settings panels in <Table Name, Settings> pairs.
@@ -174,12 +174,11 @@ public class mainWindow extends JFrame implements FocusListener {
         addTableButton.setEnabled(false);
         centerPanel.add(addTableButton);
 
-        JButton removeTableButton = newButton(850, 30, "Remove table", "Remove current table style");
+        removeTableButton = newButton(850, 30, "Remove table", "Remove current table style");
         removeTableButton.addActionListener(click -> {
             eventRemoveCurrentTable();
         });
-        //  TODO find correct place to activate this.
-        // removeTableButton.setEnabled(false);
+        removeTableButton.setEnabled(false);
         centerPanel.add(removeTableButton);
 
         newTableName = mainWindow.newTextField(true, "Enter name for a new table style.", "Table style name");
@@ -189,12 +188,8 @@ public class mainWindow extends JFrame implements FocusListener {
         centerPanel.add(newTableName);
 
         JButton testButton = newButton(30, 300, "", "");
-        testButton.addActionListener(click -> {
-            // TODO: Bug here. If we extract multiple table styles, the first one to be extracted does not properly work. 
-            // TODO: Seems to have a UI Bug. The settings for "whole table" are shown no matter what element is selected.
-            tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
-            setTableSettingsVisibility(tableObjects.get(0));
-            tableSelection.setSelectedIndex(0);
+        testButton.addActionListener((ActionEvent click) -> {
+
         });
         centerPanel.add(testButton);
 
@@ -210,33 +205,44 @@ public class mainWindow extends JFrame implements FocusListener {
         tableSelection.setEnabled(false);
         tableSelection.addActionListener(e -> {
             eventSwitchSelectedTable((String) tableSelection.getSelectedItem());
+            setTableElementsBoxVisibility((String) tableSelection.getSelectedItem());
         });
         centerPanel.add(tableSelection);
     }
 
     private void drawTableSettingsCombobox(tableStyles tableObject) {
-        
-        tableElements = newComboBox(tableStyles.elementsArray);
+
+        String name = tableObject.getTableName() + "Box";
+        JComboBox<String> tableElements = newComboBox(tableStyles.elementsArray);
         tableElements.setBounds(30, 30, 240, 30);
+        tableElements.setName(name);
         tableElements.addActionListener(select -> {
-            setTableSettingsVisibility(tableObject);
+            setTableSettingsVisibility(tableObject, tableElements);
         });
+        tableElementSelection.add(tableElements);
         rightPanel.add(tableElements);
     }
+    
+    /**
+     * Show only the combobox (tableElements selection) for a specific table.
+     */
+    private void setTableElementsBoxVisibility(String tableName) {
 
-    private void removeTableSettingsCombobox() {
-        
-        rightPanel.remove(tableElements);
-        tableElements = null;
-        rightPanel.revalidate();
-        rightPanel.repaint();
+        String boxName = tableName + "Box";
+        for (int i = 0; i < tableElementSelection.size(); i++) {
+            if (tableElementSelection.get(i).getName().equals(boxName)) {
+                tableElementSelection.get(i).setVisible(true);
+            } else {
+                tableElementSelection.get(i).setVisible(false);
+            }
+        }
     }
 
     /**
-     * Only show the settings field elements for a specific element (tableElements)
+     * Only show a specific settings element (tableElements) (whole table, banded rows, ...)
      */
-    private void setTableSettingsVisibility(tableStyles tableObject) {
-        
+    private void setTableSettingsVisibility(tableStyles tableObject, JComboBox<String> tableElements) {
+
         String selection = tableElements.getSelectedItem().toString();
         for (String settingsElement : tableObject.settingsFields.keySet()) {
             if (settingsElement.equals(selection)) {
@@ -245,6 +251,16 @@ public class mainWindow extends JFrame implements FocusListener {
                 tableObject.settingsFields.get(settingsElement).showSettingsField(false);
             }
         }
+    }
+    
+    private JComboBox<String> getTableElementsBox(String boxName) {
+        for (int i = 0; i < tableElementSelection.size(); i++) {
+            String elementBoxName = tableElementSelection.get(i).getName();
+            if (elementBoxName.equals(boxName)) {
+                return tableElementSelection.get(i);
+            }
+        }
+        return null;
     }
 
     // TODO for Debugging
@@ -356,6 +372,14 @@ public class mainWindow extends JFrame implements FocusListener {
                     CustClrTool.newpres.getTableStylesID())) {
                 CustClrTool.newpres.setTableStylesXML(presentation.matchIDs(CustClrTool.newpres, selection));
             }
+            
+            if (tableStyles.hasExistingStyles(CustClrTool.newpres.getTableStylesXML())) {
+                // Extract existing table styles if present
+                tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
+                tableStyles firstTable = tableObjects.get(0);
+                setTableSettingsVisibility(firstTable, getTableElementsBox(firstTable.getTableName() + "Box"));
+                tableSelection.setSelectedIndex(0);
+            }
         }
     }
     
@@ -380,6 +404,9 @@ public class mainWindow extends JFrame implements FocusListener {
             String firstObject = tableObjects.get(0).getTableName();
             tableSelection.setSelectedItem(firstObject);
             eventSwitchSelectedTable((String) tableSelection.getSelectedItem());
+            setTableElementsBoxVisibility((String) tableSelection.getSelectedItem());
+        } else {
+            removeTableButton.setEnabled(false);
         }
         eventLog.setText("Removed table " + currentPanelName + ".");
     }
@@ -416,11 +443,6 @@ public class mainWindow extends JFrame implements FocusListener {
 
     public void eventCreateNewTable(String tableName) {
         
-        // Once a new table is added, the combobox needs to be rebuilt
-        if (currentSettingsPanel != null) {
-            removeTableSettingsCombobox();
-        }
-
         // We only want the button to be active if the textfield actually has been changed
         addTableButton.setEnabled(false);
 
@@ -444,6 +466,8 @@ public class mainWindow extends JFrame implements FocusListener {
         drawTableSettingsCombobox(newTable);
         // makes sense to have the newly created table selected
         tableSelection.setSelectedItem(newTableName.getText());
+
+        removeTableButton.setEnabled(true);
 
         eventLog.setText("Created new table " + newTableName.getText() + ".");
     }
