@@ -66,7 +66,8 @@ public class XmlValue {
         new XmlValue("accent 5", "accent5", "a:schemeClr", "val"),
         new XmlValue("accent 6", "accent6", "a:schemeClr", "val"),
         new XmlValue("Hyperlink", "hlink", "a:schemeClr", "val"),
-        new XmlValue("Followed Hyperlink", "folHlink", "a:schemeClr", "val")
+        new XmlValue("Followed Hyperlink", "folHlink", "a:schemeClr", "val"),
+        new XmlValue("No Color", "none", "a:schemeClr", "none")
     };
 
     public static final XmlValue[] themeFonts = {

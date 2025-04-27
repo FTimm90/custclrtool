@@ -219,7 +219,12 @@ public class settingsField {
             HashMap<String, String> themeColors = CustClrTool.newpres.getSelectedThemeColors();
             String selectedColor = themeColors.get(boxSelection.getAttributeValue());
             JPanel previewPanel = previewFields.get(previewID);
-            previewPanel.setBackground(Color.decode("#" + selectedColor.substring(selectedColor.indexOf(":") + 1)));
+            if (selectedColor == null) {
+                // "No Color" selected
+                previewPanel.setBackground(new Color(255, 255, 255));
+            } else {
+                previewPanel.setBackground(Color.decode("#" + selectedColor.substring(selectedColor.indexOf(":") + 1)));
+            }
             colorPanel.repaint();
         });
 

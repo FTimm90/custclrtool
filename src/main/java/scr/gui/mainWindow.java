@@ -31,7 +31,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
@@ -371,14 +373,29 @@ public class mainWindow extends JFrame implements FocusListener {
             if (!presentation.validateID(CustClrTool.newpres.getThemeID(selection),
                     CustClrTool.newpres.getTableStylesID())) {
                 CustClrTool.newpres.setTableStylesXML(presentation.matchIDs(CustClrTool.newpres, selection));
-            }
-            
-            if (tableStyles.hasExistingStyles(CustClrTool.newpres.getTableStylesXML())) {
-                // Extract existing table styles if present
-                tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
-                tableStyles firstTable = tableObjects.get(0);
-                setTableSettingsVisibility(firstTable, getTableElementsBox(firstTable.getTableName() + "Box"));
-                tableSelection.setSelectedIndex(0);
+                eventLog.setText("IDs matched.");
+                if (tableStyles.hasExistingStyles(CustClrTool.newpres.getTableStylesXML())) {
+                    // If there are table styles, but the IDs do not match it's best to remove them.
+                    Document tableStylesDoc = CustClrTool.newpres.getTableStylesXML();
+                    Element tableStyleNodes = tableStylesDoc.getDocumentElement();
+
+                    // Flush <a:tblStyleLst>
+                    NodeList childNodes = tableStyleNodes.getChildNodes();
+                    while (childNodes.getLength() > 0) {
+                        tableStyleNodes.removeChild(childNodes.item(0));
+                    }
+
+                    eventLog.setText("Existing table styles removed.");
+                }
+            } else {
+                if (tableStyles.hasExistingStyles(CustClrTool.newpres.getTableStylesXML())) {
+                    // Extract existing table styles if present.
+                    tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
+                    tableStyles firstTable = tableObjects.get(0);
+                    setTableSettingsVisibility(firstTable, getTableElementsBox(firstTable.getTableName() + "Box"));
+                    tableSelection.setSelectedIndex(0);
+                    eventLog.setText("Existing table styles read.");
+                }
             }
         }
     }

@@ -430,7 +430,7 @@ public class presentation {
      * @param rootElement
      * @param nodeName
      */
-    private static void removeNode(Element rootElement, String nodeName) {
+    public static void removeNode(Element rootElement, String nodeName) {
         NodeList rootNode = rootElement.getChildNodes();
         for (int i = 0; i < rootNode.getLength(); i++) {
             Node childNode = rootNode.item(i);

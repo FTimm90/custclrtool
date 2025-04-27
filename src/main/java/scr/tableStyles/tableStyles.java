@@ -121,14 +121,20 @@ public class tableStyles {
 
                 for (JComboBox<XmlValue> currentBox : currentElement.values()) {
                     XmlValue boxElement = (XmlValue) currentBox.getSelectedItem();
+                    
                     String attributeValue = boxElement.getAttributeValue();
                     String attributeName = boxElement.getAttributeName();
                     String tagName = boxElement.getTagName();
 
                     Node foundNode = findNode(templateElementNode, elementNode, tagName);
-
                     Element templateNode = (Element) foundNode;
-                    templateNode.setAttribute(attributeName, attributeValue);
+
+                    // Handle case if the color is set to "No Color".
+                    if (boxElement.getAttributeValue().equals("none") && boxElement.getTagName().equals("a:schemeClr")) {
+                        templateNode.removeAttribute(attributeName);
+                    } else {
+                        templateNode.setAttribute(attributeName, attributeValue);
+                    }
                 }
             }
         }
@@ -185,18 +191,24 @@ public class tableStyles {
                     JComboBox<XmlValue> comboBox = element.get(boxName);
                     XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
                     Node valueNode = findNode(elementNode, partNode, comboBoxSelection.getTagName());
-                    Element attribute = (Element) valueNode;
-                    String foundAttribute;
-
-                    if (boxName.equals("text style")) {
-                        // For "text style" we cannot use the AttributeValue, 
-                        // since that's always "on".
-                        foundAttribute = comboBoxSelection.toString();
+                    
+                    XmlValue attributeAsXmlValue;
+                    if (valueNode.getNodeName().equals("a:schemeClr") && !valueNode.hasAttributes()) {
+                        attributeAsXmlValue = XmlValue.findValue("No Color");
                     } else {
-                        foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
+                        Element attribute = (Element) valueNode;
+                        String foundAttribute;
+
+                        if (boxName.equals("text style")) {
+                            // For "text style" we cannot use the AttributeValue, 
+                            // since that's always "on".
+                            foundAttribute = comboBoxSelection.toString();
+                        } else {
+                            foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
+                        }
+                        attributeAsXmlValue = XmlValue.findValue(foundAttribute);
                     }
 
-                    XmlValue attributeAsXmlValue = XmlValue.findValue(foundAttribute);
                     elementField.setComboBox(part, boxName, attributeAsXmlValue);
                 }
             }
@@ -228,7 +240,7 @@ public class tableStyles {
     }
 
     private static Node handleSpecialCase(Node currentTablePart, String searchTag) {
-        
+
         Node tcTxStyleNode = presentation.findNode(currentTablePart, "a:tcTxStyle");
         return switch (searchTag) {
             case "a:schemeClr" -> presentation.findNode(tcTxStyleNode, "a:schemeClr");
@@ -237,7 +249,7 @@ public class tableStyles {
             default -> null;
         };
     }
-
+    
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
         
         Node templateRoot = XMLtemplate.getDocumentElement();
