@@ -63,7 +63,7 @@ public class mainWindow extends JFrame implements FocusListener {
     JPanel rightPanel;
     JPanel centerPanel;
     JTextField newTableName;
-
+    tableVis tableVis;
     JLabel presentationNameLabel;
     JButton removeTableButton;
     JButton addTableButton;
@@ -189,14 +189,10 @@ public class mainWindow extends JFrame implements FocusListener {
         newTableName.addFocusListener(this);
         centerPanel.add(newTableName);
 
-        JButton testButton = newButton(30, 300, "", "");
-        testButton.addActionListener((ActionEvent click) -> {
+        tableVis = new tableVis(30, 200);
+        centerPanel.add(tableVis.tableFrame);
 
-        });
-        centerPanel.add(testButton);
-
-
-        JButton saveTableButton = newButton(30, 500, "Save tables", "Save all table styles into opene file.");
+        JButton saveTableButton = newButton(30, 740, "Save tables", "Save all table styles into opened file.");
         saveTableButton.addActionListener(click -> {
             eventSaveTableStyles(CustClrTool.newpres);
         });
@@ -253,6 +249,7 @@ public class mainWindow extends JFrame implements FocusListener {
                 tableObject.settingsFields.get(settingsElement).showSettingsField(false);
             }
         }
+        tableVis.highlightElement(selection);
     }
     
     private JComboBox<String> getTableElementsBox(String boxName) {

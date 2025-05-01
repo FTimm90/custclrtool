@@ -23,7 +23,7 @@ public class tableStyles {
     
     private static Document XMLtemplate;
     private String tableName;
-    public static String[] elementsArray = new String[XmlValue.tableElements.length];
+    public static String[] elementsArray = new String[XmlValue.TABLEELEMENTS.length];
     public HashMap<String, settingsField> settingsFields = new HashMap<>();
         
     final private static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -65,7 +65,7 @@ public class tableStyles {
         settingsElements = new JPanel();
         settingsElements.setBounds(30, 120, 230, 750);
         int counter = 0;
-        for (XmlValue element : XmlValue.tableElements) {
+        for (XmlValue element : XmlValue.TABLEELEMENTS) {
 
             // Setting condition to skip specific parts of the UI if not needed
             boolean insideH = true;
@@ -110,7 +110,7 @@ public class tableStyles {
     public static Node fillTableTemplate(tableStyles tableObject, String themeID) {
 
         Node templateRoot = writeTableNameID(tableObject, themeID);
-        for (XmlValue element : XmlValue.tableElements) {
+        for (XmlValue element : XmlValue.TABLEELEMENTS) {
             Node templateElementNode = presentation.findNode(templateRoot, "a:" + element.getAttributeValue());
             settingsField currentFields = tableObject.settingsFields.get(element.toString());
             HashMap<String, HashMap<String, JComboBox<XmlValue>>> allElements = currentFields.getCollectedValues();
@@ -176,7 +176,7 @@ public class tableStyles {
      */
     private static void fillTableObject(Node tableStyleNode, tableStyles currentTable) {
 
-        for (XmlValue tableElement : XmlValue.tableElements) {
+        for (XmlValue tableElement : XmlValue.TABLEELEMENTS) {
             Node elementNode = presentation.findNode(tableStyleNode, tableElement.getTagName());
             settingsField elementField = currentTable.getSettingsField(tableElement.toString());
             HashMap<String, HashMap<String, JComboBox<XmlValue>>> parts = elementField.getAllFields();

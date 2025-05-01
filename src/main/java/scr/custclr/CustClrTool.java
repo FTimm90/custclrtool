@@ -8,7 +8,7 @@ import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
 // TODO
-// "No color" for cell fill
+// Is "remove node" necessary?
 // Visual table representation
 // Create a styleguide and match everything to it.
 

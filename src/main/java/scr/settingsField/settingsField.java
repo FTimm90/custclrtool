@@ -115,13 +115,13 @@ public class settingsField {
         int sidescounter = 0;
         ArrayList<XmlValue> tempNames = new ArrayList<>();
 
-        for (int i = 0; i < XmlValue.lineSides.length; i++) {
+        for (int i = 0; i < XmlValue.LINESIDES.length; i++) {
 
             if ((!insideHCheck && i == 4) || (!insideVCheck && i == 5)) {
                 continue;
             }
 
-            XmlValue side = XmlValue.lineSides[i];
+            XmlValue side = XmlValue.LINESIDES[i];
             String sideName = side.getAttributeValue();
             HashMap<String, JComboBox<XmlValue>> sideMap = allFields.get(sideName);
             JPanel border = lineWidget(0, 0, sideMap);
@@ -241,27 +241,27 @@ public class settingsField {
     }
     
     private JComboBox<XmlValue> lineWidthSelection() {
-        JComboBox<XmlValue> widthSelect = new JComboBox<>(XmlValue.lineWidths);
+        JComboBox<XmlValue> widthSelect = new JComboBox<>(XmlValue.LINEWIDTHS);
         return widthSelect;
     }
 
     private JComboBox<XmlValue> lineStyleSelection() {
-        JComboBox<XmlValue> styleSelect = new JComboBox<>(XmlValue.lineTypes);
+        JComboBox<XmlValue> styleSelect = new JComboBox<>(XmlValue.LINETYPES);
         return styleSelect;
     }
     
     private JComboBox<XmlValue> fontSelection() {
-        JComboBox<XmlValue> fontSelect = new JComboBox<>(XmlValue.themeFonts);
+        JComboBox<XmlValue> fontSelect = new JComboBox<>(XmlValue.THEMEFONTS);
         return fontSelect;
     }
 
     private JComboBox<XmlValue> textStyleSelection() {
-        JComboBox<XmlValue> textStyle = new JComboBox<>(XmlValue.textStyle);
+        JComboBox<XmlValue> textStyle = new JComboBox<>(XmlValue.TEXTSTYLE);
         return textStyle;
     }
     
     private JComboBox<XmlValue> colorSelection() {
-        JComboBox<XmlValue> colorSelect = new JComboBox<>(XmlValue.themeColors);
+        JComboBox<XmlValue> colorSelect = new JComboBox<>(XmlValue.THEMECOLORS);
         return colorSelect;
     }
 
@@ -272,7 +272,7 @@ public class settingsField {
     public static String[] getThemeColors() {
         String[] themeColorNames = new String[12];
         for (int i = 0; i < 12; i++) {
-            themeColorNames[i] = XmlValue.themeColors[i].getAttributeValue();
+            themeColorNames[i] = XmlValue.THEMECOLORS[i].getAttributeValue();
         }
         return themeColorNames;
     }

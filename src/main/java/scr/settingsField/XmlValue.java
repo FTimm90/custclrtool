@@ -9,7 +9,7 @@ public class XmlValue {
     private final String tagName;
     private final String attributeName;
 
-    public static final XmlValue[] lineSides = {
+    public static final XmlValue[] LINESIDES = {
         new XmlValue("Left", "left", "a:left"),
         new XmlValue("Right", "right", "a:right"),
         new XmlValue("Top", "top", "a:top"),
@@ -18,7 +18,7 @@ public class XmlValue {
         new XmlValue("Inner Vertical", "insideV", "a:insideV"),
     };
     
-    public static final XmlValue[] tableElements = {
+    public static final XmlValue[] TABLEELEMENTS = {
         new XmlValue("whole table", "wholeTbl", "a:wholeTbl"),
         new XmlValue("banded rows (uneven)", "band1H", "a:band1H"),
         new XmlValue("banded columns (uneven)", "band1V", "a:band1V"),
@@ -32,7 +32,7 @@ public class XmlValue {
         // new XmlValue("text levels", "")
     };
 
-    public static final XmlValue[] lineTypes = {
+    public static final XmlValue[] LINETYPES = {
         new XmlValue("Single Line", "sng", "a:ln", "cmpd"),
         new XmlValue("Double Lines", "dbl", "a:ln", "cmpd"),
         new XmlValue("Thick Thin Double Lines", "thickThin", "a:ln", "cmpd"),
@@ -40,7 +40,7 @@ public class XmlValue {
         new XmlValue("Thin Thick Thin Triple Lines", "tri", "a:ln", "cmpd")
     };
     
-    public static final XmlValue[] lineWidths = {
+    public static final XmlValue[] LINEWIDTHS = {
         new XmlValue("0,00pt", "0", "a:ln", "w"),
         new XmlValue("0,25pt", "3175", "a:ln", "w"),
         new XmlValue("0,50pt", "6350", "a:ln", "w"),
@@ -53,8 +53,7 @@ public class XmlValue {
         new XmlValue("6,00pt", "104775", "a:ln", "w")
     };
         
-    public static final XmlValue[] themeColors = {
-        // TODO Add option for "no color".
+    public static final XmlValue[] THEMECOLORS = {
         new XmlValue("Light 1", "lt1", "a:schemeClr", "val"),
         new XmlValue("Dark 1", "dk1", "a:schemeClr", "val"),
         new XmlValue("Light 2", "lt2", "a:schemeClr", "val"),
@@ -70,12 +69,12 @@ public class XmlValue {
         new XmlValue("No Color", "none", "a:schemeClr", "none")
     };
 
-    public static final XmlValue[] themeFonts = {
+    public static final XmlValue[] THEMEFONTS = {
         new XmlValue("Body Text", "minor", "a:fontRef", "idx"),
         new XmlValue("Headline Text", "major", "a:fontRef", "idx"),
     };
 
-    public static final XmlValue[] textStyle = {
+    public static final XmlValue[] TEXTSTYLE = {
         new XmlValue("Normal", "on", "a:tcTxStyle", "def"),
         new XmlValue("Bold", "on", "a:tcTxStyle", "b"),
         new XmlValue("Italic", "on", "a:tcTxStyle", "i"),
@@ -122,11 +121,11 @@ public class XmlValue {
         // Probably don't need these two as they are mostly just for building the UI
         // ALLVALUES.add(lineSides);
         // ALLVALUES.add(tableElements);
-        ALLVALUES.add(themeColors);
-        ALLVALUES.add(themeFonts);
-        ALLVALUES.add(textStyle);
-        ALLVALUES.add(lineWidths);
-        ALLVALUES.add(lineTypes);
+        ALLVALUES.add(THEMECOLORS);
+        ALLVALUES.add(THEMEFONTS);
+        ALLVALUES.add(TEXTSTYLE);
+        ALLVALUES.add(LINEWIDTHS);
+        ALLVALUES.add(LINETYPES);
     }
 
     @Override
