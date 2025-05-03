@@ -9,11 +9,11 @@ import scr.presentation.presentation;
 
 // TODO
 // Is "remove node" necessary?
-// Visual table representation
+// If you repeatedly click the "table styles" tab, the tables get read into it again and again.
 // Create a styleguide and match everything to it.
 
 public class CustClrTool {
-    
+
     public static presentation newpres;
     public static mainWindow mainGUI;
 
@@ -23,9 +23,9 @@ public class CustClrTool {
             mainGUI = new mainWindow();
         });
     }
-    
+
     public static void readPresentation() {
-        
+
         presentation.changeExtension(newpres, 1);
         newpres.setZipPathString(newpres.getFilePath() + presentation.osPathSymbol() + newpres.getFileName() + ".zip");
         newpres.extractXMLData(newpres.getZipPathString());
@@ -35,9 +35,9 @@ public class CustClrTool {
     public static presentation createNewPresentation(String presentationPath,
                                                     String presentationExtension,
                                                     String presentationName) {
-        
+
         newpres = new presentation();
-        newpres.setFileExtension(presentationExtension);        
+        newpres.setFileExtension(presentationExtension);
         newpres.setFilePath(presentationPath);
         newpres.setFileName(presentationName);
         return newpres;

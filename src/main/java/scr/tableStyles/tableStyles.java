@@ -20,12 +20,12 @@ import scr.settingsField.XmlValue;
 import scr.settingsField.settingsField;
 
 public class tableStyles {
-    
+
     private static Document XMLtemplate;
-    private String tableName;
+    private final String TABLENAME;
     public static String[] elementsArray = new String[XmlValue.TABLEELEMENTS.length];
     public HashMap<String, settingsField> settingsFields = new HashMap<>();
-        
+
     final private static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
     public settingsField getSettingsField(String name) {
@@ -36,7 +36,7 @@ public class tableStyles {
 
     public tableStyles(String name) {
 
-        this.tableName = name;
+        this.TABLENAME = name;
         InputStream inputStream = tableStyles.class.getResourceAsStream("/TableStyleTemplate.xml");
 
         if (inputStream == null) {
@@ -56,12 +56,12 @@ public class tableStyles {
         }
     }
 
-    public String getTableName() {
-        return this.tableName;
+    public String getTABLENAME() {
+        return this.TABLENAME;
     }
 
     public JPanel createSettingsFields() {
-        
+
         settingsElements = new JPanel();
         settingsElements.setBounds(30, 120, 230, 750);
         int counter = 0;
@@ -89,7 +89,7 @@ public class tableStyles {
             if (element.getAttributeValue().equals("wholeTbl")) {
                 settingsfield.widget.add(settingsfield.FontWidget());
                 // Generally we don't want the settingsfields to be visible,
-                // only wholeTbl should be visible on creation so that 
+                // only wholeTbl should be visible on creation so that
                 // the panel is not empty.
                 settingsfield.showSettingsField(true);
 
@@ -121,7 +121,7 @@ public class tableStyles {
 
                 for (JComboBox<XmlValue> currentBox : currentElement.values()) {
                     XmlValue boxElement = (XmlValue) currentBox.getSelectedItem();
-                    
+
                     String attributeValue = boxElement.getAttributeValue();
                     String attributeName = boxElement.getAttributeName();
                     String tagName = boxElement.getTagName();
@@ -148,7 +148,7 @@ public class tableStyles {
 
         return tableStyleNodes.getLength() > 0;
     }
-    
+
     public static void extractExistingTableStyles(Document tableStylesFile) {
 
         String localName = "tblStyle";
@@ -191,7 +191,7 @@ public class tableStyles {
                     JComboBox<XmlValue> comboBox = element.get(boxName);
                     XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
                     Node valueNode = findNode(elementNode, partNode, comboBoxSelection.getTagName());
-                    
+
                     XmlValue attributeAsXmlValue;
                     if (valueNode.getNodeName().equals("a:schemeClr") && !valueNode.hasAttributes()) {
                         attributeAsXmlValue = XmlValue.findValue("No Color");
@@ -200,7 +200,7 @@ public class tableStyles {
                         String foundAttribute;
 
                         if (boxName.equals("text style")) {
-                            // For "text style" we cannot use the AttributeValue, 
+                            // For "text style" we cannot use the AttributeValue,
                             // since that's always "on".
                             foundAttribute = comboBoxSelection.toString();
                         } else {
@@ -223,7 +223,7 @@ public class tableStyles {
      * @return
      */
     private static Node findNode(Node currentTablePart, Node fontRefNode, String searchTag) {
-        
+
         if (isSpecialCase(currentTablePart, fontRefNode, searchTag)) {
             return handleSpecialCase(currentTablePart, searchTag);
         }
@@ -231,7 +231,7 @@ public class tableStyles {
     }
 
     private static boolean isSpecialCase(Node currentTablePart, Node fontRefNode, String searchTag) {
-        
+
         return currentTablePart.getNodeName().equals("a:wholeTbl")
                 && fontRefNode.getNodeName().equals("a:fontRef")
                 && (searchTag.equals("a:schemeClr")
@@ -249,19 +249,19 @@ public class tableStyles {
             default -> null;
         };
     }
-    
+
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
-        
+
         Node templateRoot = XMLtemplate.getDocumentElement();
         Element rootElement = (Element) templateRoot;
         rootElement.setAttribute("styleId", themeID);
-        rootElement.setAttribute("styleName", tableObject.getTableName());
+        rootElement.setAttribute("styleName", tableObject.getTABLENAME());
         return templateRoot;
     }
 
     // TODO For debugging
     public static void printXml(Node node, String indent) {
-        
+
         if (node == null) return;
 
         // Print the current node with indentation
@@ -295,7 +295,7 @@ public class tableStyles {
     }
 
     private static void printAttributes(Node node, String indent) {
-        
+
         NamedNodeMap attributes = node.getAttributes();
         if (attributes != null) {
             for (int i = 0; i < attributes.getLength(); i++) {
