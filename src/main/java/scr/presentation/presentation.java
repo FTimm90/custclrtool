@@ -54,7 +54,7 @@ public class presentation {
     private String fileName = "";
     public String getFileName() {
         return fileName;
-    }    
+    }
     public void setFileName(String name) {
         this.fileName = name;
     }
@@ -75,7 +75,7 @@ public class presentation {
     public void setZipPathString(String zipPath) {
         this.zipPathString = zipPath;
     }
-    
+
     /**
      * Contains all themes found in the presentation file.
      */
@@ -91,7 +91,7 @@ public class presentation {
     public void setTableStylesID(String ID) {
         tableStylesID = ID;
     }
-    
+
     private Document tableStylesXML;
     public Document getTableStylesXML() {
         return tableStylesXML;
@@ -102,11 +102,11 @@ public class presentation {
 
     final static String CUSTCLR_NODE = "custClrLst";
     final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
-    
+
 // The following block handles file INPUT
 
     /**
-     * Processes the contents of the .zip version of the presentation file 
+     * Processes the contents of the .zip version of the presentation file
      * to extract information about existing custom colors
      * @param zipFilePath   The path to the zipfile converted from the pptx.
      * @return              Returns a nested list with the extracted
@@ -164,19 +164,13 @@ public class presentation {
             if (eventType == XMLStreamReader.START_ELEMENT) {
                 switch (reader.getLocalName()) {
                     case "theme" -> {
-                        String themeName = reader.getAttributeValue("", "name");
-                        newTheme.themeName = themeName;
+                        newTheme.themeName = reader.getAttributeValue("", "name");
                     }
                     case "clrScheme" -> {
-                        if (themeColors.isEmpty()) {
-                            HashMap<String, String> findThemeColors = new HashMap<>();
-                            findThemeColors.put("srgbClr", "val");
-                            themeColors = gatherChildElements(reader, "clrScheme", findThemeColors);
-                            int counter = 0;
-                            for (String i : newTheme.themeColors.keySet()) {
-                                newTheme.themeColors.put(i, themeColors.get(counter));
-                                counter++;
-                            }
+                        try {
+                            gatherThemeColors(reader, newTheme.themeColors);
+                        } catch (IndexOutOfBoundsException e) {
+                            CustClrTool.mainGUI.eventLog.setText("Error reading theme colors from " + newTheme.themeName + ", please make sure they are defined properly.");
                         }
                     }
                     case CUSTCLR_NODE -> {
@@ -200,7 +194,7 @@ public class presentation {
             }
         }
     }
-    
+
     /**
      * @param reader Opened XML file.
      * @param parentElement Find child elements within the scope of this.
@@ -209,8 +203,8 @@ public class presentation {
      * @throws XMLStreamException
      */
     private static List<String> gatherChildElements(XMLStreamReader reader, String parentElement,
-            HashMap<String, String> childKeyValue) throws XMLStreamException {
-        
+        HashMap<String, String> childKeyValue) throws XMLStreamException {
+
         List<String> foundElements = new ArrayList<>();
         while (reader.hasNext()) {
             int eventType = reader.next();
@@ -231,7 +225,41 @@ public class presentation {
         }
         return foundElements;
     }
-    
+
+    /**
+     * @param reader        Opened XML file.
+     * @param themeMap      Themecolor HashMap to be filled.
+     * @throws XMLStreamException
+     */
+    private static void gatherThemeColors(XMLStreamReader reader, HashMap<String, String> themeMap) throws XMLStreamException {
+
+        while (reader.hasNext()) {
+            int eventType = reader.next();
+            if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals("clrScheme")) {
+                return;
+            } else {
+                String currentElement = reader.getLocalName();
+                if (themeMap.containsKey(currentElement) && eventType == XMLStreamReader.START_ELEMENT) {
+                    while (reader.hasNext()) {
+                        eventType = reader.next();
+                        if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("srgbClr")) {
+                            System.out.println("found color: " + currentElement);
+                            String val = reader.getAttributeValue(null, "val");
+                            themeMap.put(currentElement, val);
+                            break;
+                        }
+                        if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("sysClr")) {
+                            System.out.println("found color: " + currentElement);
+                            String val = reader.getAttributeValue(null, "lastClr");
+                            themeMap.put(currentElement, val);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * If the ID of the selected theme is equal to the ID in the tableStyles.xml
      * it is very likely, that potentially existing table styles are custom.
@@ -245,7 +273,7 @@ public class presentation {
 // The following block handles file OUTPUT
 
     /**
-     * Creates a copy of the .zip converted PowerPoint file 
+     * Creates a copy of the .zip converted PowerPoint file
      * and injects the modified .xml file
      * @param presentation      the current presentation object
      * @param destinationXML    The XML file to be replaced
@@ -259,7 +287,7 @@ public class presentation {
         String filePath = presentation.getFilePath();
         String fileName = presentation.getFileName();
         String zipFilePath = presentation.getZipPathString();
-        
+
         File zipNew = new File(fileName + ZIP_TMP);
         ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipNew));
 
@@ -289,7 +317,7 @@ public class presentation {
         }
         replaceOldFile(fileName, filePath);
     }
-    
+
     /**
      * Helper method to write .zip entries from InputStream (old file) into
      * ZipOutPutStream (new file)
@@ -299,7 +327,7 @@ public class presentation {
      */
     public static void insertZipEntry(ZipEntry entry, ZipOutputStream zipWrite, InputStream inputStream)
             throws IOException {
-        
+
         zipWrite.putNextEntry(entry);
         byte[] buffer = new byte[1024];
         int len;
@@ -308,7 +336,7 @@ public class presentation {
         }
         zipWrite.closeEntry();
     }
-    
+
     /**
      * Takes the inputStream, builds an XMLDOM from it, removes any existing customcolors and inserts the new ones.
      * @param inputStream
@@ -320,10 +348,10 @@ public class presentation {
      * @throws TransformerException
      */
     public static void processTheme(InputStream inputStream, String themeSelection, ZipOutputStream zipWrite) throws IOException, ParserConfigurationException, SAXException, TransformerException {
-        
+
         Document document = buildXMLDOM(inputStream);
         Element rootElement = document.getDocumentElement();
-        
+
         removeNode(rootElement, CUSTCLR_NODE);
 
         writeThemeXML(document, themeSelection, zipWrite);
@@ -331,7 +359,7 @@ public class presentation {
 
     private static Document buildXMLDOM(InputStream inputStream)
             throws SAXException, IOException, ParserConfigurationException {
-        
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -344,7 +372,7 @@ public class presentation {
     /**
      * Builds the XML structure for adding new custom colors and writes them into the XMl document
      * @param document  XML Document object.
-     * @throws IOException 
+     * @throws IOException
      */
     private static void writeThemeXML(Document document, String themeSelection, ZipOutputStream zipWrite)
             throws ParserConfigurationException, TransformerException, IOException {
@@ -362,20 +390,20 @@ public class presentation {
         String outputName = "ppt/theme/" + themeSelection + ".xml";
         writeZipEntry(document, outputName, zipWrite);
     }
-    
+
     private static void writeZipEntry(Document document, String outputName, ZipOutputStream zipWrite)
             throws TransformerFactoryConfigurationError, TransformerConfigurationException, TransformerException,
             IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); 
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(document);
-        StreamResult result = new StreamResult(outputStream); 
+        StreamResult result = new StreamResult(outputStream);
         transformer.transform(source, result);
 
         ZipEntry zipEntry = new ZipEntry(outputName);
         zipEntry.setSize(outputStream.size());
-        zipEntry.setTime(System.currentTimeMillis()); 
+        zipEntry.setTime(System.currentTimeMillis());
 
         zipWrite.putNextEntry(zipEntry);
         zipWrite.write(outputStream.toByteArray());
@@ -383,7 +411,7 @@ public class presentation {
     }
 
     /**
-     * Create a single new custom color node to insert into theme.xml. 
+     * Create a single new custom color node to insert into theme.xml.
      * Needs a <a:custClrLst> parent element.
      * @param document  XML DOM document theme.xml to add the custom colors to
      * @param name      Name of the custom color
@@ -400,7 +428,7 @@ public class presentation {
 
         return custClrElement;
     }
-    
+
 // Following are helper methods
 
     /**
@@ -412,7 +440,7 @@ public class presentation {
      * @return
      */
     public static Document matchIDs(presentation presentation, int selection) {
-        
+
         Document tableStylesXML = presentation.getTableStylesXML();
         NodeList styleList = tableStylesXML.getElementsByTagName("a:tblStyleLst");
         Node styleListNode = styleList.item(0);
@@ -447,11 +475,11 @@ public class presentation {
     public static String extractFileExtension(String path) {
         return path.substring(path.lastIndexOf('.') + 1);
     }
-    
+
     public static String extractFilename(String path) {
         return path.substring(path.lastIndexOf(osPathSymbol()) + 1, path.lastIndexOf('.'));
     }
-    
+
     public static String extractFilePath(String path) {
         return path.substring(0, path.lastIndexOf(osPathSymbol()));
     }
@@ -468,7 +496,7 @@ public class presentation {
      * @param extension     the desired extension. 1 = .zip, anything else = original extension
      */
     public static void changeExtension(presentation presentation, int extension) {
-        
+
         String filePath = presentation.getFilePath();
         String fileName = presentation.getFileName();
         String fileExtension = presentation.getFileExtension();
@@ -494,9 +522,9 @@ public class presentation {
         }
 
     }
-    
+
     /**
-     * Helper method to find a specific child node based on a parent node 
+     * Helper method to find a specific child node based on a parent node
      * and its name as a string.
      * @param parent    Parent node
      * @param nodeName  Name of the node that should be found
@@ -518,9 +546,9 @@ public class presentation {
         }
         return null;
     }
-    
+
     private static void replaceOldFile(String oldFile, String filePath) {
-        
+
         String oldFilePath = filePath + osPathSymbol() + oldFile + ".zip";
         File oldZip = new File(oldFilePath);
         oldZip.delete();
@@ -566,14 +594,14 @@ public class presentation {
         public String themeID = "";
         public HashMap<String, String> themeColors = new HashMap<>();
         public List<String> customColors = new ArrayList<>();
-        
+
         Themedata() {
             String[] currentColorName = settingsField.getThemeColors();
             for (int i = 0; i < 12; i++) {
                 themeColors.put(currentColorName[i], "");
             }
         }
-        
+
         // TODO for Debugging
         public void printThemeData() {
             System.out.println("Theme name: " + themeName);

@@ -49,6 +49,8 @@ public class mainWindow extends JFrame implements FocusListener {
 
     public static String selectThemeFileName;
 
+    private boolean stylesHaveBeenExtracted = false;
+
     static JButton applyButton;
     static JButton cacheButton;
     JButton loadCacheButton;
@@ -361,6 +363,7 @@ public class mainWindow extends JFrame implements FocusListener {
     private void eventSwitchTabs() {
 
         int selectedIndex = windowTabs.getSelectedIndex();
+
         if (selectedIndex == 0) {
             System.out.println("Custom colors tab selected");
         } else if (selectedIndex == 1) {
@@ -384,15 +387,17 @@ public class mainWindow extends JFrame implements FocusListener {
 
                     eventLog.setText("Existing table styles removed.");
                 }
-            } else {
-                if (tableStyles.hasExistingStyles(CustClrTool.newpres.getTableStylesXML())) {
-                    // Extract existing table styles if present.
-                    tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
-                    tableStyles firstTable = tableObjects.get(0);
-                    setTableSettingsVisibility(firstTable, getTableElementsBox(firstTable.getTABLENAME() + "Box"));
-                    tableSelection.setSelectedIndex(0);
-                    eventLog.setText("Existing table styles read.");
-                }
+            }
+
+            if (tableStyles.hasExistingStyles(CustClrTool.newpres.getTableStylesXML())
+                && !stylesHaveBeenExtracted) {
+                // Extract existing table styles if present.
+                tableStyles.extractExistingTableStyles(CustClrTool.newpres.getTableStylesXML());
+                tableStyles firstTable = tableObjects.get(0);
+                setTableSettingsVisibility(firstTable, getTableElementsBox(firstTable.getTABLENAME() + "Box"));
+                tableSelection.setSelectedIndex(0);
+                eventLog.setText("Existing table styles read.");
+                stylesHaveBeenExtracted = true;
             }
         }
     }
