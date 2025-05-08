@@ -589,7 +589,7 @@ public class presentation {
         return CustClrTool.newpres.getThemeDataList().get(selectedTheme).themeColors;
     }
 
-    class Themedata {
+    public class Themedata {
 
         public String themeName = "";
         public String themeNumber = "";

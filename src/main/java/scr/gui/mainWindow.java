@@ -733,13 +733,14 @@ public class mainWindow extends JFrame implements FocusListener {
         List<String> selectThemeCustClr = currentPresentation.getThemeCustClr(themeSelection);
 
         int fieldIndex = 0;
-        for (int i = 0; i < selectThemeCustClr.size() - 1; i++) {
-            int getIndex = (selectThemeCustClr.get(i).lastIndexOf(":")) + 1;
-            if (selectThemeCustClr.get(i).contains("custClr")) {
-                String name = selectThemeCustClr.get(i).substring(getIndex);
+        for (String customColor : selectThemeCustClr) {
+            int getIndex = (customColor.lastIndexOf(":")) + 1;
+
+            if (customColor.contains("custClr")) {
+                String name = customColor.substring(getIndex);
                 colorfields[fieldIndex].colorName.setText(name);
-            } else if (selectThemeCustClr.get(i).contains("srgbClr")) {
-                String color = selectThemeCustClr.get(i).substring(getIndex);
+            } else if (customColor.contains("srgbClr")) {
+                String color = customColor.substring(getIndex);
                 colorfields[fieldIndex].activateColorField.setEnabled(true);
                 colorfields[fieldIndex].activateColorField.setSelected(true);
                 colorfields[fieldIndex].colorName.setEditable(true);
@@ -748,7 +749,6 @@ public class mainWindow extends JFrame implements FocusListener {
                 colorfields[fieldIndex].colorValue.setEditable(true);
                 fieldIndex++;
             }
-
         }
     }
 
