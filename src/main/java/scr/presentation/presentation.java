@@ -228,8 +228,7 @@ public class presentation {
 
     /**
      * @param reader        Opened XML file.
-     * @param themeMap      Themecolor HashMap to be filled.
-     * @throws XMLStreamException
+     * @param themeMap      Theme color HashMap to be filled.
      */
     private static void gatherThemeColors(XMLStreamReader reader, HashMap<String, String> themeMap) throws XMLStreamException {
 
@@ -243,13 +242,11 @@ public class presentation {
                     while (reader.hasNext()) {
                         eventType = reader.next();
                         if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("srgbClr")) {
-                            System.out.println("found color: " + currentElement);
                             String val = reader.getAttributeValue(null, "val");
                             themeMap.put(currentElement, val);
                             break;
                         }
                         if (eventType == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("sysClr")) {
-                            System.out.println("found color: " + currentElement);
                             String val = reader.getAttributeValue(null, "lastClr");
                             themeMap.put(currentElement, val);
                             break;
@@ -287,6 +284,7 @@ public class presentation {
         String filePath = presentation.getFilePath();
         String fileName = presentation.getFileName();
         String zipFilePath = presentation.getZipPathString();
+        String presentationExtension = "." + presentation.getFileExtension();
 
         File zipNew = new File(fileName + ZIP_TMP);
         ZipOutputStream zipWrite = new ZipOutputStream(new FileOutputStream(zipNew));
@@ -315,7 +313,7 @@ public class presentation {
             System.err.println(ex);
             CustClrTool.mainGUI.eventLog.setText("Failed to create new Zipfile.");
         }
-        replaceOldFile(fileName, filePath);
+        replaceOldFile(fileName, filePath, presentationExtension);
     }
 
     /**
@@ -381,8 +379,8 @@ public class presentation {
 
         Element listElement = document.createElementNS(NAMESPACE, "a:custClrLst");
         List<String[]> userColors = mainWindow.fetchColors();
-        for (int i = 0; i < userColors.size(); i++) {
-            Element newElement = createCustClrElement(document, userColors.get(i)[0], userColors.get(i)[1]);
+        for (String[] userColor : userColors) {
+            Element newElement = createCustClrElement(document, userColor[0], userColor[1]);
             listElement.appendChild(newElement);
         }
 
@@ -547,13 +545,13 @@ public class presentation {
         return null;
     }
 
-    private static void replaceOldFile(String oldFile, String filePath) {
+    private static void replaceOldFile(String oldFile, String filePath, String extension) {
 
         String oldFilePath = filePath + osPathSymbol() + oldFile + ".zip";
         File oldZip = new File(oldFilePath);
         oldZip.delete();
 
-        String newFilePath = filePath + osPathSymbol() + oldFile + ".pptx";
+        String newFilePath = filePath + osPathSymbol() + oldFile + extension;
         File newZip = new File(oldFile + "_tmp.zip");
         newZip.renameTo(new File(newFilePath));
     }
@@ -580,6 +578,10 @@ public class presentation {
 
     public String getThemeID(int number) {
         return getThemeDataList().get(number).themeID;
+    }
+
+    public String getThemeNumber(int number) {
+        return getThemeDataList().get(number).themeNumber;
     }
 
     public HashMap<String, String> getSelectedThemeColors() {

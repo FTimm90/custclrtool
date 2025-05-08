@@ -9,8 +9,9 @@ import scr.presentation.presentation;
 
 // TODO
 // Is "remove node" necessary?
-// If you repeatedly click the "table styles" tab, the tables get read into it again and again.
 // Create a styleguide and match everything to it.
+// READING Custom colors doesn't really work. I assume it has to do with the color NAME (since it works with all colors that dont have one)
+// table is broken -> template OK?
 
 public class CustClrTool {
 

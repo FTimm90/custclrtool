@@ -48,6 +48,7 @@ public class mainWindow extends JFrame implements FocusListener {
     final static Font BASE_FONT = new Font("roboto", Font.PLAIN, 11);
 
     public static String selectThemeFileName;
+    public static String selectThemeNumber;
 
     private boolean stylesHaveBeenExtracted = false;
 
@@ -292,7 +293,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
         applyButton = newButton(30, 740, "Apply", "Write the custom colors into the file.");
         applyButton.addActionListener(click -> {
-            eventApplyAllChanges(true, true);
+            eventApplyAllChanges(true, false);
             presentationNameLabel.setText("");
             cacheButton.setEnabled(false);
             eventLog.setText("Colors successfully modified.");
@@ -365,9 +366,9 @@ public class mainWindow extends JFrame implements FocusListener {
         int selectedIndex = windowTabs.getSelectedIndex();
 
         if (selectedIndex == 0) {
-            System.out.println("Custom colors tab selected");
+//            System.out.println("Custom colors tab selected");
         } else if (selectedIndex == 1) {
-            System.out.println("Table styles tab selected");
+//            System.out.println("Table styles tab selected");
             // Check if theme ID matches table styles ID. If not, match it.
             int selection = themeSelection.getSelectedIndex();
             if (!presentation.validateID(CustClrTool.newpres.getThemeID(selection),
@@ -528,7 +529,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
         try {
             presentation.changeExtension(CustClrTool.newpres, 1);
-            presentation.writeZipOutput(CustClrTool.newpres, selectThemeFileName, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite), customColors, tableStyles);
+            presentation.writeZipOutput(CustClrTool.newpres, selectThemeNumber, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite), customColors, tableStyles);
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
             eventLog.setText("An error occured while trying to write changes to the file.");
         }
@@ -727,6 +728,8 @@ public class mainWindow extends JFrame implements FocusListener {
 
         // Storing this in class variable
         selectThemeFileName = currentPresentation.getThemeNames(themeSelection);
+        selectThemeNumber = currentPresentation.getThemeNumber(themeSelection);
+
         List<String> selectThemeCustClr = currentPresentation.getThemeCustClr(themeSelection);
 
         int fieldIndex = 0;
@@ -759,7 +762,7 @@ public class mainWindow extends JFrame implements FocusListener {
             if (colorfield.activateColorField.isSelected()) {
                 String[] addcolor = new String[2];
                 addcolor[0] = colorfield.colorName.getText().trim();
-                addcolor[1] = colorfield.colorValue.getText().trim();
+                addcolor[1] = colorfield.colorValue.getText().trim().toUpperCase();
                 fetchedColors.add(addcolor);
             }
         }
