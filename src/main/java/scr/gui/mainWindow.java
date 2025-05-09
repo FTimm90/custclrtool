@@ -434,19 +434,59 @@ public class mainWindow extends JFrame implements FocusListener {
     /**
      * Takes all table style objects, appends them to the table styles XML
      * and saves the changes into the file.
-     * @param presentation
+     * @param presentationObject
      */
-    private void eventSaveTableStyles(presentation presentation) {
+    private void eventSaveTableStyles(presentation presentationObject) {
 
         String themeID = CustClrTool.newpres.getThemeID(getSelectedTheme());
+        org.w3c.dom.Document tableStylesFile = presentationObject.getTableStylesXML();
 
         for (tableStyles table : tableObjects) {
             Node filledTemplate = tableStyles.fillTableTemplate(table, themeID);
-            org.w3c.dom.Document tableStylesFile = presentation.getTableStylesXML();
+            if (tableStyles.hasExistingStyles(tableStylesFile)) {
+                removeDuplicateTableStyles(presentationObject, tableStylesFile, tableNames);
+            }
+
             appendTemplate(tableStylesFile, filledTemplate);
-            presentation.setTableStylesXML(tableStylesFile);
+            presentationObject.setTableStylesXML(tableStylesFile);
             eventApplyAllChanges(false, true);
         }
+    }
+
+    /**
+     * Checks if any of the table styles that should be written into the file already
+     * exist, based on the name. If so, the version from the file gets removed before
+     * the new one gets written into it. Making sure existing table styles get replaced
+     * rather than added multiple times.
+     * @param tableStylesFile table styles from the XML file
+     * @param stylesArray array of table styles (from the UI)
+     */
+    private void removeDuplicateTableStyles(presentation presentationObject, Document tableStylesFile, String[] stylesArray) {
+        String localName = "tblStyle";
+        NodeList tableStyleNodes = tableStylesFile.getElementsByTagNameNS(tableStyles.NAMESPACE, localName);
+
+        List<Node> nodesToRemove = new ArrayList<>();
+
+        for (int i = 0; i < tableStyleNodes.getLength(); i++) {
+            Node node = tableStyleNodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element currentStyle = (Element) node;
+                String styleName = currentStyle.getAttribute("styleName");
+                for (String s : stylesArray) {
+                    if (s.equals(styleName)) {
+                        nodesToRemove.add(node);
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (Node node : nodesToRemove) {
+            if (node.getParentNode() != null) {
+                node.getParentNode().removeChild(node);
+            }
+        }
+        presentationObject.setTableStylesXML(tableStylesFile);
     }
 
     /**

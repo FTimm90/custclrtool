@@ -26,7 +26,7 @@ public class tableStyles {
     public static String[] elementsArray = new String[XmlValue.TABLEELEMENTS.length];
     public HashMap<String, settingsField> settingsFields = new HashMap<>();
 
-    final private static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
+    public final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
     public settingsField getSettingsField(String name) {
         return settingsFields.get(name);
@@ -86,14 +86,7 @@ public class tableStyles {
             settingsField settingsfield = new settingsField(30, 90, insideH, insideV);
             settingsfield.showSettingsField(false);
 
-            if (element.getAttributeValue().equals("wholeTbl")) {
-                settingsfield.widget.add(settingsfield.FontWidget());
-                // Generally we don't want the settingsfields to be visible,
-                // only wholeTbl should be visible on creation so that
-                // the panel is not empty.
-                settingsfield.showSettingsField(true);
-
-            }
+            settingsfield.widget.add(settingsfield.FontWidget());
 
             settingsFields.put(element.toString(), settingsfield);
             settingsElements.add(settingsfield.widget);
@@ -112,6 +105,7 @@ public class tableStyles {
         Node templateRoot = writeTableNameID(tableObject, themeID);
         for (XmlValue element : XmlValue.TABLEELEMENTS) {
             Node templateElementNode = presentation.findNode(templateRoot, "a:" + element.getAttributeValue());
+
             settingsField currentFields = tableObject.settingsFields.get(element.toString());
             HashMap<String, HashMap<String, JComboBox<XmlValue>>> allElements = currentFields.getCollectedValues();
 
@@ -224,16 +218,15 @@ public class tableStyles {
      */
     private static Node findNode(Node currentTablePart, Node fontRefNode, String searchTag) {
 
-        if (isSpecialCase(currentTablePart, fontRefNode, searchTag)) {
+        if (isSpecialCase(fontRefNode, searchTag)) {
             return handleSpecialCase(currentTablePart, searchTag);
         }
         return presentation.findNode(fontRefNode, searchTag);
     }
 
-    private static boolean isSpecialCase(Node currentTablePart, Node fontRefNode, String searchTag) {
+    private static boolean isSpecialCase(Node fontRefNode, String searchTag) {
 
-        return currentTablePart.getNodeName().equals("a:wholeTbl")
-                && fontRefNode.getNodeName().equals("a:fontRef")
+        return fontRefNode.getNodeName().equals("a:fontRef")
                 && (searchTag.equals("a:schemeClr")
                 || searchTag.equals("a:fontRef")
                 || searchTag.equals("a:tcTxStyle"));

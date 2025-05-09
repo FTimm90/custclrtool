@@ -10,8 +10,8 @@ import scr.presentation.presentation;
 // TODO
 // Is "remove node" necessary?
 // Create a styleguide and match everything to it.
-// READING Custom colors doesn't really work. I assume it has to do with the color NAME (since it works with all colors that dont have one)
-// table is broken -> template OK?
+// Storing custom colors in an array list, maybe not great. Maybe change to a HashMap
+// For some reason, the cell background for "whole table" doesn't save
 
 public class CustClrTool {
 
