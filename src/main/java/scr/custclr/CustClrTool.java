@@ -11,7 +11,7 @@ import scr.presentation.presentation;
 // Is "remove node" necessary?
 // Create a styleguide and match everything to it.
 // Storing custom colors in an array list, maybe not great. Maybe change to a HashMap
-// For some reason, the cell background for "whole table" doesn't save
+// Maybe check/remove tables by ID rather than name??
 
 public class CustClrTool {
 

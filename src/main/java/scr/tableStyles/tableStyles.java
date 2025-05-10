@@ -93,7 +93,6 @@ public class tableStyles {
 
             counter++;
         }
-
         return settingsElements;
     }
 
@@ -120,8 +119,17 @@ public class tableStyles {
                     String attributeName = boxElement.getAttributeName();
                     String tagName = boxElement.getTagName();
 
-                    Node foundNode = findNode(templateElementNode, elementNode, tagName);
+                    Node foundNode;
+                    if (tagName.equals("a:schemeClr")
+                            && templateElementNode.getNodeName().equals("a:wholeTbl")
+                            && elementNode.getNodeName().equals("a:fill")) {
+                        foundNode = presentation.findNode(elementNode, tagName);
+                    } else {
+                        foundNode = findNode(templateElementNode, elementNode, tagName);
+                    }
+
                     Element templateNode = (Element) foundNode;
+
 
                     // Handle case if the color is set to "No Color".
                     if (boxElement.getAttributeValue().equals("none") && boxElement.getTagName().equals("a:schemeClr")) {
@@ -210,21 +218,20 @@ public class tableStyles {
     }
 
     /**
-     * Special version of the findNode method to handle some special cases
+     * Special version of the findNode method to find the <a:fontRef> node in the correct place.
      * @param currentTablePart the node containing the special case
-     * @param fontRefNode the node that should be searched
+     * @param fontRefNode the node that should be searched in
      * @param searchTag the tag that is beeing searched for
-     * @return
      */
     private static Node findNode(Node currentTablePart, Node fontRefNode, String searchTag) {
 
-        if (isSpecialCase(fontRefNode, searchTag)) {
-            return handleSpecialCase(currentTablePart, searchTag);
+        if (isFontNode(fontRefNode, searchTag)) {
+            return handleTextStyleCase(currentTablePart, searchTag);
         }
         return presentation.findNode(fontRefNode, searchTag);
     }
 
-    private static boolean isSpecialCase(Node fontRefNode, String searchTag) {
+    private static boolean isFontNode(Node fontRefNode, String searchTag) {
 
         return fontRefNode.getNodeName().equals("a:fontRef")
                 && (searchTag.equals("a:schemeClr")
@@ -232,9 +239,14 @@ public class tableStyles {
                 || searchTag.equals("a:tcTxStyle"));
     }
 
-    private static Node handleSpecialCase(Node currentTablePart, String searchTag) {
+    private static Node handleTextStyleCase(Node currentTablePart, String searchTag) {
 
         Node tcTxStyleNode = presentation.findNode(currentTablePart, "a:tcTxStyle");
+        if (tcTxStyleNode == null) {
+            System.err.println("Could not find a:tcTxStyle in " + currentTablePart.getNodeName());
+            return null;
+        }
+
         return switch (searchTag) {
             case "a:schemeClr" -> presentation.findNode(tcTxStyleNode, "a:schemeClr");
             case "a:fontRef" -> presentation.findNode(tcTxStyleNode, "a:fontRef");
