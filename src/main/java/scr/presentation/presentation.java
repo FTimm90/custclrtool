@@ -100,6 +100,12 @@ public class presentation {
         tableStylesXML = tableStyles;
     }
 
+    private Document slideMaster;
+    public Document getSlideMaster() { return slideMaster; }
+    public void setSlideMaster(Document newSlideMaster) {
+        slideMaster = newSlideMaster;
+    }
+
     final static String CUSTCLR_NODE = "custClrLst";
     final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
@@ -131,6 +137,8 @@ public class presentation {
                 } else if (type.equals("FILE") && name.contains("tableStyles")) {
                     setTableStylesID(extractTableStylesID(zipFile.getInputStream(entry)));
                     setTableStylesXML(buildXMLDOM(zipFile.getInputStream(entry)));
+                } else if (type.equals("FILE") && name.equals("ppt/slideMasters/slideMaster1.xml")) {
+                    setSlideMaster(buildXMLDOM(zipFile.getInputStream(entry)));
                 }
             }
         } catch (IOException | XMLStreamException | SAXException | ParserConfigurationException ex) {
@@ -303,6 +311,11 @@ public class presentation {
                     xmlProcessor.process(inputStream, destinationXML, zipWrite);
                 } else if (tableStyles && type.equals("FILE") && name.contains("tableStyles.xml")) {
                     writeZipEntry(CustClrTool.newpres.getTableStylesXML(), "ppt/tableStyles.xml", zipWrite);
+                } else if (tableStyles && type.equals("FILE") && name.equals("ppt/slideMasters/slideMaster1.xml")) {
+                    // Only match the master/table text levels when saving the file.
+                    Document adjustedTextLevels = setTextLevels(CustClrTool.newpres.getSlideMaster());
+                    CustClrTool.newpres.setSlideMaster(adjustedTextLevels);
+                    writeZipEntry(CustClrTool.newpres.getSlideMaster(), "ppt/slideMasters/slideMaster1.xml", zipWrite);
                 }
                 else {
                     insertZipEntry(entry, zipWrite, inputStream);
@@ -428,6 +441,33 @@ public class presentation {
     }
 
 // Following are helper methods
+
+    private static Document setTextLevels(Document slideMaster) {
+//        TODO
+//        -> Remove all existing <a:otherStyles>
+//        -> Copy textlevels
+//        -> Append textlevels to otherStyles
+//        Currently none of this works...
+
+        Element baseNode = slideMaster.getDocumentElement();
+        // Flush <a:otherStyles>
+        NodeList test = baseNode.getChildNodes();
+        for (int i = 0; i < test.getLength(); i++) {
+            if (test.item(i).getNodeName().equals("a:otherStyles")) {
+                System.out.println("Found the a:otherStyles while looping through all children.");
+            }
+        }
+//nope
+        Node otherStyles = findNode(baseNode, "otherStyles");
+        if (otherStyles != null) {
+            System.out.println("Found the a:otherStyles node.");
+            NodeList childNodes = baseNode.getChildNodes();
+            while (childNodes.getLength() > 0) {
+                otherStyles.removeChild(childNodes.item(0));
+            }
+        }
+        return slideMaster;
+    }
 
     /**
      * Match the tableStylesXML ID to theme ID.

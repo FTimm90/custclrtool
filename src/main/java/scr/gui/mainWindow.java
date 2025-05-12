@@ -484,13 +484,14 @@ public class mainWindow extends JFrame implements FocusListener {
         for (Node node : nodesToRemove) {
             if (node.getParentNode() != null) {
                 node.getParentNode().removeChild(node);
+                eventLog.setText("Table style overwritten.");
             }
         }
         presentationObject.setTableStylesXML(tableStylesFile);
     }
 
     /**
-     * Runs through all of the filled template and appends it to the tableStyles.xml file
+     * Runs through the filled template and appends it to the tableStyles.xml file
      * @param tableStylesFile
      * @param filledTemplate
      */
