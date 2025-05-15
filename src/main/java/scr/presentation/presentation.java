@@ -106,6 +106,11 @@ public class presentation {
         slideMaster = newSlideMaster;
     }
 
+    /**
+     * Needs to be set to true once the text styles are copied and reset to false after saving.
+     */
+    public boolean textStylesCopied = false;
+
     final static String CUSTCLR_NODE = "custClrLst";
     final static String NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
@@ -311,11 +316,12 @@ public class presentation {
                     xmlProcessor.process(inputStream, destinationXML, zipWrite);
                 } else if (tableStyles && type.equals("FILE") && name.contains("tableStyles.xml")) {
                     writeZipEntry(CustClrTool.newpres.getTableStylesXML(), "ppt/tableStyles.xml", zipWrite);
-                } else if (tableStyles && type.equals("FILE") && name.equals("ppt/slideMasters/slideMaster1.xml")) {
+                } else if (tableStyles && type.equals("FILE") && name.equals("ppt/slideMasters/slideMaster1.xml") && !presentation.textStylesCopied) {
                     // Only match the master/table text levels when saving the file.
                     Document adjustedTextLevels = setTextLevels(CustClrTool.newpres.getSlideMaster());
                     CustClrTool.newpres.setSlideMaster(adjustedTextLevels);
                     writeZipEntry(CustClrTool.newpres.getSlideMaster(), "ppt/slideMasters/slideMaster1.xml", zipWrite);
+                    presentation.textStylesCopied = true;
                 }
                 else {
                     insertZipEntry(entry, zipWrite, inputStream);
@@ -443,29 +449,43 @@ public class presentation {
 // Following are helper methods
 
     private static Document setTextLevels(Document slideMaster) {
-//        TODO
-//        -> Remove all existing <a:otherStyles>
-//        -> Copy textlevels
-//        -> Append textlevels to otherStyles
-//        Currently none of this works...
 
         Element baseNode = slideMaster.getDocumentElement();
-        // Flush <a:otherStyles>
-        NodeList test = baseNode.getChildNodes();
-        for (int i = 0; i < test.getLength(); i++) {
-            if (test.item(i).getNodeName().equals("a:otherStyles")) {
-                System.out.println("Found the a:otherStyles while looping through all children.");
-            }
+        Node txStyles = findNode(baseNode, "p:txStyles");
+        if (txStyles == null) {
+            throw new IllegalStateException("txStyles node not found");
         }
-//nope
-        Node otherStyles = findNode(baseNode, "otherStyles");
-        if (otherStyles != null) {
-            System.out.println("Found the a:otherStyles node.");
-            NodeList childNodes = baseNode.getChildNodes();
-            while (childNodes.getLength() > 0) {
-                otherStyles.removeChild(childNodes.item(0));
-            }
+
+        // Pick the text levels from the master.
+        Node bodyStyle = findNode(txStyles, "p:bodyStyle");
+        if (bodyStyle == null) {
+            throw new IllegalStateException("bodyStyle node not found");
         }
+
+        // Remove existing text styles.
+        Node otherStyles = findNode(txStyles, "p:otherStyle");
+        if (otherStyles == null) {
+            throw new IllegalStateException("otherStyle node not found");
+        }
+
+        NodeList childNodes = otherStyles.getChildNodes();
+        // Collect nodes to be removed
+        List<Node> nodesToRemove = new ArrayList<>();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            nodesToRemove.add(childNodes.item(i));
+        }
+
+        // Remove collected nodes
+        for (Node node : nodesToRemove) {
+            otherStyles.removeChild(node);
+        }
+
+        // Append cloned text levels to otherStyles
+        for (int j = 0; j < bodyStyle.getChildNodes().getLength(); j++) {
+            Node clonedNode = bodyStyle.getChildNodes().item(j).cloneNode(true);
+            otherStyles.appendChild(clonedNode);
+        }
+
         return slideMaster;
     }
 

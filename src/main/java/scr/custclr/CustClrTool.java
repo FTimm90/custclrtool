@@ -11,8 +11,6 @@ import scr.presentation.presentation;
 // Is "remove node" necessary?
 // Create a styleguide and match everything to it.
 // Storing custom colors in an array list, maybe not great. Maybe change to a HashMap
-// Text levels: <p:txStyles> -> <p:bodyStyle> -> <a:lvl1pPr ... > ... <a:lvl9pPr...>
-// Just copy these over. In the "slideMaster1.xml" into the <p:otherStyle> tag
 
 public class CustClrTool {
 

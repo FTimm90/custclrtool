@@ -451,6 +451,7 @@ public class mainWindow extends JFrame implements FocusListener {
             presentationObject.setTableStylesXML(tableStylesFile);
             eventApplyAllChanges(false, true);
         }
+        presentationObject.textStylesCopied = false;
     }
 
     /**
