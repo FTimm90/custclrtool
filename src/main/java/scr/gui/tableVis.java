@@ -6,7 +6,7 @@ import java.awt.GridLayout;
 import javax.swing.JPanel;
 
 public class tableVis {
-    
+
     private final int CELLHEIGHT = 40;
     private final int CELLWIDTH = 110;
     private final int BORDERWITH = 1;
@@ -25,18 +25,15 @@ public class tableVis {
     public tableVis(int posX, int posY) {
         this.tableFrame = table(posX, posY);
     }
-    
+
     private JPanel table(int posX, int posY) {
-        
+
         int tableHeight = CELLHEIGHT * ROWS;
         int tableWidth = CELLWIDTH * COLUMNS;
-        
+
         tableFrame = mainWindow.newPanel(0, 0, 0, 0, tableWidth, tableHeight);
         tableFrame.setBounds(posX, posY, tableWidth, tableHeight);
         tableFrame.setLayout(new GridLayout(ROWS, COLUMNS));
-
-        Color testColor = new Color(255, 0, 0);
-        tableFrame.setBackground(testColor);
 
         for (int i = 0; i < COLUMNS; i++) {
             for (int j = 0; j < ROWS; j++) {
@@ -62,7 +59,7 @@ public class tableVis {
             }
         }
     }
-    
+
     private void highlightBandedRows() {
         for (int i = 0; i < COLUMNS; i++) {
             for (int j = 0; j < ROWS; j++) {
@@ -95,7 +92,7 @@ public class tableVis {
             TABLE[i][ROWS - 1].setBackground(HIGHLIGHTCOLOR);
         }
     }
-    
+
     private void highlightFirstRow() {
         for (int i = 0; i < ROWS; i++) {
             TABLE[0][i].setBackground(HIGHLIGHTCOLOR);
@@ -109,7 +106,7 @@ public class tableVis {
     }
 
     public void highlightElement(String tableElement) {
-        
+
         setColorWholeTbl(BACKGROUNDCOLOR);
 
         switch (tableElement) {

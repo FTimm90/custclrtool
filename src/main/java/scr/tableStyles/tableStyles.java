@@ -2,6 +2,7 @@ package scr.tableStyles;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Objects;
 
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -42,8 +43,6 @@ public class tableStyles {
         if (inputStream == null) {
             System.err.println("Resource not found!");
         } else {
-            // Use the InputStream to parse the XML
-            // ... (your XML parsing code using inputStream) ...
             try {
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -110,11 +109,13 @@ public class tableStyles {
 
             for (String part : allElements.keySet()) {
                 HashMap<String, JComboBox<XmlValue>> currentElement = allElements.get(part);
+                assert templateElementNode != null;
                 Node elementNode = presentation.findNode(templateElementNode, "a:" + part);
 
                 for (JComboBox<XmlValue> currentBox : currentElement.values()) {
                     XmlValue boxElement = (XmlValue) currentBox.getSelectedItem();
 
+                    assert boxElement != null;
                     String attributeValue = boxElement.getAttributeValue();
                     String attributeName = boxElement.getAttributeName();
                     String tagName = boxElement.getTagName();
@@ -122,14 +123,14 @@ public class tableStyles {
                     Node foundNode;
                     if (tagName.equals("a:schemeClr")
                             && templateElementNode.getNodeName().equals("a:wholeTbl")
-                            && elementNode.getNodeName().equals("a:fill")) {
+                            && Objects.requireNonNull(elementNode).getNodeName().equals("a:fill")) {
                         foundNode = presentation.findNode(elementNode, tagName);
                     } else {
                         foundNode = findNode(templateElementNode, elementNode, tagName);
                     }
 
                     Element templateNode = (Element) foundNode;
-
+                    assert templateNode != null;
 
                     // Handle case if the color is set to "No Color".
                     if (boxElement.getAttributeValue().equals("none") && boxElement.getTagName().equals("a:schemeClr")) {
@@ -185,6 +186,7 @@ public class tableStyles {
 
             for (String part : parts.keySet()) {
                 // Part = left, right, top, bottom, fill, insideV, insideH
+                assert elementNode != null;
                 Node partNode = presentation.findNode(elementNode, "a:" + part);
                 HashMap<String, JComboBox<XmlValue>> element = parts.get(part);
 
@@ -192,6 +194,7 @@ public class tableStyles {
                     // Box names: cell color, line style, line width, line color, text style, text color, font
                     JComboBox<XmlValue> comboBox = element.get(boxName);
                     XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
+                    assert comboBoxSelection != null;
                     Node valueNode = findNode(elementNode, partNode, comboBoxSelection.getTagName());
 
                     XmlValue attributeAsXmlValue;
@@ -257,10 +260,9 @@ public class tableStyles {
 
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
 
-        Node templateRoot = XMLtemplate.getDocumentElement();
-        Element rootElement = (Element) templateRoot;
-        rootElement.setAttribute("styleId", themeID);
-        rootElement.setAttribute("styleName", tableObject.getTABLENAME());
+        Element templateRoot = XMLtemplate.getDocumentElement();
+        templateRoot.setAttribute("styleId", themeID);
+        templateRoot.setAttribute("styleName", tableObject.getTABLENAME());
         return templateRoot;
     }
 
@@ -288,7 +290,7 @@ public class tableStyles {
             Node childNode = childNodes.item(i);
             if (childNode.getNodeType() == Node.ELEMENT_NODE) {
                 printXml(childNode, indent + "  ");
-            } else if (childNode.getNodeType() == Node.TEXT_NODE && childNode.getNodeValue().trim().length() > 0) {
+            } else if (childNode.getNodeType() == Node.TEXT_NODE && !childNode.getNodeValue().trim().isEmpty()) {
                 System.out.println(indent + "  " + childNode.getNodeValue().trim());
             }
         }

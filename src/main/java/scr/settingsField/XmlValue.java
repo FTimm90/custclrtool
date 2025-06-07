@@ -17,7 +17,7 @@ public class XmlValue {
         new XmlValue("Inner Horizontal", "insideH", "a:insideH"),
         new XmlValue("Inner Vertical", "insideV", "a:insideV"),
     };
-    
+
     public static final XmlValue[] TABLEELEMENTS = {
         new XmlValue("whole table", "wholeTbl", "a:wholeTbl"),
         new XmlValue("banded rows (uneven)", "band1H", "a:band1H"),
@@ -28,7 +28,7 @@ public class XmlValue {
         new XmlValue("last column", "lastCol", "a:lastCol"),
         new XmlValue("first row", "firstRow", "a:firstRow"),
         new XmlValue("last row", "lastRow", "a:lastRow"),
-        // TODO look into definition of textlevels 
+        // TODO look into definition of textlevels
         // new XmlValue("text levels", "")
     };
 
@@ -39,7 +39,7 @@ public class XmlValue {
         new XmlValue("Thin Thick Double Lines", "thinThick", "a:ln", "cmpd"),
         new XmlValue("Thin Thick Thin Triple Lines", "tri", "a:ln", "cmpd")
     };
-    
+
     public static final XmlValue[] LINEWIDTHS = {
         new XmlValue("0,00pt", "0", "a:ln", "w"),
         new XmlValue("0,25pt", "3175", "a:ln", "w"),
@@ -52,7 +52,7 @@ public class XmlValue {
         new XmlValue("4,50pt", "76200", "a:ln", "w"),
         new XmlValue("6,00pt", "104775", "a:ln", "w")
     };
-        
+
     public static final XmlValue[] THEMECOLORS = {
         new XmlValue("Light 1", "lt1", "a:schemeClr", "val"),
         new XmlValue("Dark 1", "dk1", "a:schemeClr", "val"),
@@ -84,9 +84,9 @@ public class XmlValue {
 
     public XmlValue(String displayValue, String xmlValue, String tagName) {
         // Not all XmlValue arrays need a tagName, so we make it optional by overloading the constructor.
-        this(displayValue, xmlValue, tagName, null); 
+        this(displayValue, xmlValue, tagName, null);
     }
-    
+
     public XmlValue(String displayValue, String attributeValue, String tagName, String attributeName) {
         this.displayValue = displayValue;
         this.attributeValue = attributeValue;
@@ -95,7 +95,7 @@ public class XmlValue {
     }
 
     public static XmlValue findValue(String AttributeValueName) {
-        
+
         if (ALLVALUES.isEmpty()) {
             // Only fill if not filled yet.
             fillAllValues();
@@ -105,7 +105,6 @@ public class XmlValue {
             for (XmlValue current : array) {
                 if (current.toString().equals(AttributeValueName)
                     || current.getAttributeValue().equals(AttributeValueName)
-                    || current.toString().equals(AttributeValueName)
                     // Can't use this one since not every XmlValue has it
                     // || current.getAttributeName().equals(AttributeValueName)
                     || current.getTagName().equals(AttributeValueName)) {
@@ -130,7 +129,7 @@ public class XmlValue {
 
     @Override
     public String toString() {
-        return displayValue; 
+        return displayValue;
     }
 
     public String getAttributeValue() {

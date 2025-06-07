@@ -32,14 +32,13 @@ public class CustClrTool {
         presentation.changeExtension(newpres, 2);
     }
 
-    public static presentation createNewPresentation(String presentationPath,
-                                                    String presentationExtension,
-                                                    String presentationName) {
+    public static void createNewPresentation(String presentationPath,
+                                             String presentationExtension,
+                                             String presentationName) {
 
         newpres = new presentation();
         newpres.setFileExtension(presentationExtension);
         newpres.setFilePath(presentationPath);
         newpres.setFileName(presentationName);
-        return newpres;
     }
 }

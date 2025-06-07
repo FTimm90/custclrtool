@@ -230,12 +230,8 @@ public class mainWindow extends JFrame implements FocusListener {
     private void setTableElementsBoxVisibility(String tableName) {
 
         String boxName = tableName + "Box";
-        for (int i = 0; i < tableElementSelection.size(); i++) {
-            if (tableElementSelection.get(i).getName().equals(boxName)) {
-                tableElementSelection.get(i).setVisible(true);
-            } else {
-                tableElementSelection.get(i).setVisible(false);
-            }
+        for (JComboBox<String> stringJComboBox : tableElementSelection) {
+            stringJComboBox.setVisible(stringJComboBox.getName().equals(boxName));
         }
     }
 
@@ -246,20 +242,16 @@ public class mainWindow extends JFrame implements FocusListener {
 
         String selection = tableElements.getSelectedItem().toString();
         for (String settingsElement : tableObject.settingsFields.keySet()) {
-            if (settingsElement.equals(selection)) {
-                tableObject.settingsFields.get(settingsElement).showSettingsField(true);
-            } else {
-                tableObject.settingsFields.get(settingsElement).showSettingsField(false);
-            }
+            tableObject.settingsFields.get(settingsElement).showSettingsField(settingsElement.equals(selection));
         }
         tableVis.highlightElement(selection);
     }
 
     private JComboBox<String> getTableElementsBox(String boxName) {
-        for (int i = 0; i < tableElementSelection.size(); i++) {
-            String elementBoxName = tableElementSelection.get(i).getName();
+        for (JComboBox<String> stringJComboBox : tableElementSelection) {
+            String elementBoxName = stringJComboBox.getName();
             if (elementBoxName.equals(boxName)) {
-                return tableElementSelection.get(i);
+                return stringJComboBox;
             }
         }
         return null;
@@ -500,6 +492,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
         Node styleListNode = scr.presentation.presentation.findNode(tableStylesFile, "a:tblStyleLst");
         Node importedTemplate = tableStylesFile.importNode(filledTemplate, true);
+        assert styleListNode != null;
         styleListNode.appendChild(importedTemplate);
     }
 
@@ -573,7 +566,7 @@ public class mainWindow extends JFrame implements FocusListener {
             presentation.changeExtension(CustClrTool.newpres, 1);
             presentation.writeZipOutput(CustClrTool.newpres, selectThemeNumber, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite), customColors, tableStyles);
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
-            eventLog.setText("An error occured while trying to write changes to the file.");
+            eventLog.setText("An error occurred while trying to write changes to the file.");
         }
     }
 
@@ -615,7 +608,7 @@ public class mainWindow extends JFrame implements FocusListener {
     /**
      * Save current color fields in memory to apply to a different theme or file.
      */
-    private static colorfield[] eventCacheColorFields() {
+    private static void eventCacheColorFields() {
 
         colorfieldCache = new colorfield[50];
         for (int i = 0; i < colorfields.length; i++) {
@@ -629,7 +622,6 @@ public class mainWindow extends JFrame implements FocusListener {
             colorfieldCache[i] = colorCacheWidget;
         }
 
-        return colorfieldCache;
     }
 
     /**

@@ -120,9 +120,6 @@ public class presentation {
      * Processes the contents of the .zip version of the presentation file
      * to extract information about existing custom colors
      * @param zipFilePath   The path to the zipfile converted from the pptx.
-     * @return              Returns a nested list with the extracted
-     *                      theme Information.
-     *                      per theme: [[Theme#, Theme Name],[Color Name, Color Value], ...]
      */
     public void extractXMLData(String zipFilePath) {
 
@@ -191,13 +188,10 @@ public class presentation {
                         findColorElements.put("custClr", "name");
                         findColorElements.put("srgbClr", "val");
                         List<String> foundElements = gatherChildElements(reader, CUSTCLR_NODE, findColorElements);
-                        for (int i = 0; i < foundElements.size(); i++) {
-                            newTheme.customColors.add(foundElements.get(i));
-                        }
+                        newTheme.customColors.addAll(foundElements);
                     }
                     case "themeFamily" -> {
-                        String themeID = reader.getAttributeValue("", "id");
-                        newTheme.themeID = themeID;
+                        newTheme.themeID = reader.getAttributeValue("", "id");
                     }
                     default -> {
                     }
@@ -213,7 +207,6 @@ public class presentation {
      * @param parentElement Find child elements within the scope of this.
      * @param childKeyValue Tag : Value to be found.
      * @return A List of all the found child elements.
-     * @throws XMLStreamException
      */
     private static List<String> gatherChildElements(XMLStreamReader reader, String parentElement,
         HashMap<String, String> childKeyValue) throws XMLStreamException {
@@ -356,13 +349,6 @@ public class presentation {
 
     /**
      * Takes the inputStream, builds an XMLDOM from it, removes any existing customcolors and inserts the new ones.
-     * @param inputStream
-     * @param themeSelection
-     * @param zipWrite
-     * @throws IOException
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws TransformerException
      */
     public static void processTheme(InputStream inputStream, String themeSelection, ZipOutputStream zipWrite) throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
@@ -381,15 +367,12 @@ public class presentation {
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
 
-        Document document = builder.parse(inputStream);
-
-        return document;
+        return builder.parse(inputStream);
     }
 
     /**
      * Builds the XML structure for adding new custom colors and writes them into the XMl document
      * @param document  XML Document object.
-     * @throws IOException
      */
     private static void writeThemeXML(Document document, String themeSelection, ZipOutputStream zipWrite)
             throws ParserConfigurationException, TransformerException, IOException {
@@ -403,6 +386,7 @@ public class presentation {
             listElement.appendChild(newElement);
         }
 
+        assert extLstNode != null;
         extLstNode.getParentNode().insertBefore(listElement, extLstNode);
         String outputName = "ppt/theme/" + themeSelection + ".xml";
         writeZipEntry(document, outputName, zipWrite);
@@ -495,7 +479,6 @@ public class presentation {
      * to the ID of the selected theme.
      * @param presentation  the presentation object that should have its tableStyles ID matched to theme ID
      * @param selection     selected theme for comparison
-     * @return
      */
     public static Document matchIDs(presentation presentation, int selection) {
 
@@ -649,7 +632,7 @@ public class presentation {
         return CustClrTool.newpres.getThemeDataList().get(selectedTheme).themeColors;
     }
 
-    public class Themedata {
+    public static class Themedata {
 
         public String themeName = "";
         public String themeNumber = "";
