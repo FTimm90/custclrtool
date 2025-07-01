@@ -28,8 +28,6 @@ public class XmlValue {
         new XmlValue("last column", "lastCol", "a:lastCol"),
         new XmlValue("first row", "firstRow", "a:firstRow"),
         new XmlValue("last row", "lastRow", "a:lastRow"),
-        // TODO look into definition of textlevels
-        // new XmlValue("text levels", "")
     };
 
     public static final XmlValue[] LINETYPES = {
@@ -106,7 +104,7 @@ public class XmlValue {
                 if (current.toString().equals(AttributeValueName)
                     || current.getAttributeValue().equals(AttributeValueName)
                     // Can't use this one since not every XmlValue has it
-                    // || current.getAttributeName().equals(AttributeValueName)
+                    || current.getAttributeName().equals(AttributeValueName)
                     || current.getTagName().equals(AttributeValueName)) {
                     return current;
                 }

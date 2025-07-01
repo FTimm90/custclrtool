@@ -8,9 +8,10 @@ import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
 // TODO
-// Is "remove node" necessary?
-// Create a styleguide and match everything to it.
-// Storing custom colors in an array list, maybe not great. Maybe change to a HashMap
+// italic/bold as buttons?
+// removing doesn't work
+// same for writing...
+// remove parts completely?
 
 public class CustClrTool {
 

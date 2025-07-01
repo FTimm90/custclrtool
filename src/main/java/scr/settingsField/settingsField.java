@@ -135,6 +135,7 @@ public class settingsField {
         }
 
         JComboBox<XmlValue> lineSideSelection = new JComboBox<>(sides);
+        lineSideSelection.setToolTipText("Select a side to modify border lines");
         lineSideSelection.addActionListener(click -> {
             lineSideSelected(lineSideSelection);
         });
@@ -144,7 +145,6 @@ public class settingsField {
         widget.add(lineSideSelection, 0);
         widget.revalidate();
         widget.repaint();
-
 
     }
 

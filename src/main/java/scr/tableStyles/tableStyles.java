@@ -185,7 +185,7 @@ public class tableStyles {
             HashMap<String, HashMap<String, JComboBox<XmlValue>>> parts = elementField.getAllFields();
 
             for (String part : parts.keySet()) {
-                // Part = left, right, top, bottom, fill, insideV, insideH
+                // Part: left, right, top, bottom, fill, insideV, insideH
                 assert elementNode != null;
                 Node partNode = presentation.findNode(elementNode, "a:" + part);
                 HashMap<String, JComboBox<XmlValue>> element = parts.get(part);
@@ -207,13 +207,20 @@ public class tableStyles {
                         if (boxName.equals("text style")) {
                             // For "text style" we cannot use the AttributeValue,
                             // since that's always "on".
-                            foundAttribute = comboBoxSelection.toString();
+
+                            // TODO
+                            Node tctxstylenode = presentation.findNode(elementNode, "a:tcTxStyle");
+                            Element tctxstyleElement = (Element) tctxstylenode;
+                            NamedNodeMap attributes = tctxstyleElement.getAttributes();
+                            Node selectedAttribute = attributes.item(0);
+
+                            foundAttribute = selectedAttribute.getNodeName();
+
                         } else {
                             foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
                         }
                         attributeAsXmlValue = XmlValue.findValue(foundAttribute);
                     }
-
                     elementField.setComboBox(part, boxName, attributeAsXmlValue);
                 }
             }

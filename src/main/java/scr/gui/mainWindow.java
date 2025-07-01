@@ -211,10 +211,14 @@ public class mainWindow extends JFrame implements FocusListener {
         centerPanel.add(tableSelection);
     }
 
+    /**
+     * Generates ComboBox for selecting table element
+     */
     private void drawTableSettingsCombobox(tableStyles tableObject) {
 
         String name = tableObject.getTABLENAME() + "Box";
         JComboBox<String> tableElements = newComboBox(tableStyles.elementsArray);
+        tableElements.setToolTipText("Select one of the seven table elements to modify");
         tableElements.setBounds(30, 30, 240, 30);
         tableElements.setName(name);
         tableElements.addActionListener(select -> {
