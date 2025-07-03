@@ -292,7 +292,7 @@ public class mainWindow extends JFrame implements FocusListener {
             eventApplyAllChanges(true, false);
             presentationNameLabel.setText("");
             cacheButton.setEnabled(false);
-            eventLog.setText("Colors successfully modified.");
+            updateEventLog("Colors successfully modified.");
         });
         applyButton.setEnabled(false);
         custClrPanel.add(applyButton);
@@ -301,7 +301,7 @@ public class mainWindow extends JFrame implements FocusListener {
         cacheButton.addActionListener(click -> {
             eventCacheColorFields();
             loadCacheButton.setEnabled(true);
-            eventLog.setText("Current colors cached.");
+            updateEventLog("Current colors cached.");
         });
         cacheButton.setEnabled(false);
         custClrPanel.add(cacheButton);
@@ -309,7 +309,7 @@ public class mainWindow extends JFrame implements FocusListener {
         loadCacheButton = newButton(1175, 740, "Load cache", "Apply the stored custom colors to the current theme.");
         loadCacheButton.addActionListener(click -> {
             eventApplyCachedColors();
-            eventLog.setText("Current colors replaced with cached colors.");
+            updateEventLog("Current colors replaced with cached colors.");
         });
         loadCacheButton.setEnabled(false);
         custClrPanel.add(loadCacheButton);
@@ -370,7 +370,7 @@ public class mainWindow extends JFrame implements FocusListener {
             if (!presentation.validateID(CustClrTool.newpres.getThemeID(selection),
                     CustClrTool.newpres.getTableStylesID())) {
                 CustClrTool.newpres.setTableStylesXML(presentation.matchIDs(CustClrTool.newpres, selection));
-                eventLog.setText("IDs matched.");
+                updateEventLog("IDs matched.");
                 if (tableStyles.hasExistingStyles(CustClrTool.newpres.getTableStylesXML())) {
                     // If there are table styles, but the IDs do not match it's best to remove them.
                     Document tableStylesDoc = CustClrTool.newpres.getTableStylesXML();
@@ -379,7 +379,7 @@ public class mainWindow extends JFrame implements FocusListener {
                     // Flush <a:tblStyleLst>
                     removeTableStyles(tableStyleNodes);
 
-                    eventLog.setText("Existing table styles removed.");
+                    updateEventLog("Existing table styles removed.");
                 }
             }
 
@@ -390,7 +390,15 @@ public class mainWindow extends JFrame implements FocusListener {
                 tableStyles firstTable = tableObjects.get(0);
                 setTableSettingsVisibility(firstTable, getTableElementsBox(firstTable.getTABLENAME() + "Box"));
                 tableSelection.setSelectedIndex(0);
-                eventLog.setText("Existing table styles read.");
+
+                // If there were issues reading table styles, inform the user.
+                if (eventLog.getText().contains("Error")) {
+                    String errorMsg = eventLog.getText();
+                    String brokenStyle = errorMsg.substring(errorMsg.indexOf(":") + 1);
+                    updateEventLog("Error reading table style '" + brokenStyle + "'. Potentially inaccurate results.");
+                } else {
+                    updateEventLog("Existing table styles read.");
+                }
                 stylesHaveBeenExtracted = true;
             }
         }
@@ -428,7 +436,7 @@ public class mainWindow extends JFrame implements FocusListener {
         } else {
             removeTableButton.setEnabled(false);
         }
-        eventLog.setText("Removed table " + currentPanelName + ".");
+        updateEventLog("Removed table " + currentPanelName + ".");
     }
 
     /**
@@ -488,7 +496,7 @@ public class mainWindow extends JFrame implements FocusListener {
         for (Node node : nodesToRemove) {
             if (node.getParentNode() != null) {
                 node.getParentNode().removeChild(node);
-                eventLog.setText("Table style overwritten.");
+                updateEventLog("Table style overwritten.");
             }
         }
         presentationObject.setTableStylesXML(tableStylesFile);
@@ -535,7 +543,7 @@ public class mainWindow extends JFrame implements FocusListener {
 
         removeTableButton.setEnabled(true);
 
-        eventLog.setText("Created new table " + newTableName.getText() + ".");
+        updateEventLog("Created new table " + newTableName.getText() + ".");
     }
 
     /**
@@ -577,7 +585,7 @@ public class mainWindow extends JFrame implements FocusListener {
             presentation.changeExtension(CustClrTool.newpres, 1);
             presentation.writeZipOutput(CustClrTool.newpres, selectThemeNumber, (inputStream, destXML, zipWrite) -> presentation.processTheme(inputStream, destXML, zipWrite), customColors, tableStyles);
         } catch (FileNotFoundException | ParserConfigurationException | SAXException | TransformerException ex) {
-            eventLog.setText("An error occurred while trying to write changes to the file.");
+            updateEventLog("An error occurred while trying to write changes to the file.");
         }
     }
 
@@ -604,14 +612,14 @@ public class mainWindow extends JFrame implements FocusListener {
             String path = presentation.extractFilePath(newPresentation.getAbsolutePath());
             String name = presentation.extractFilename(newPresentation.getAbsolutePath());
             if (!"pptx".equals(extension) && !"potx".equals(extension)) {
-                eventLog.setText("Invalid file type! Please select .pptx or .potx file.");
+                updateEventLog("Invalid file type! Please select .pptx or .potx file.");
             } else {
                 CustClrTool.createNewPresentation(path, extension, name);
                 CustClrTool.readPresentation();
                 drawDropDown();
                 repaint();
                 presentationNameLabel.setText(name);
-                eventLog.setText("File read.");
+                updateEventLog("File read.");
             }
         }
     }
@@ -737,6 +745,10 @@ public class mainWindow extends JFrame implements FocusListener {
     }
 
 // Helper Methods
+
+    public void updateEventLog(String message) {
+        eventLog.setText(message);
+    }
 
     public int getSelectedTheme() {
         return themeSelection.getSelectedIndex();

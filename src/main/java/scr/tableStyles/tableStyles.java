@@ -3,6 +3,7 @@ package scr.tableStyles;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.UUID;
 
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -178,50 +179,59 @@ public class tableStyles {
      * @param currentTable table style object from the GUI.
      */
     private static void fillTableObject(Node tableStyleNode, tableStyles currentTable) {
+        try {
+            for (XmlValue tableElement : XmlValue.TABLEELEMENTS) {
+                Node elementNode = presentation.findNode(tableStyleNode, tableElement.getTagName());
+                settingsField elementField = currentTable.getSettingsField(tableElement.toString());
+                HashMap<String, HashMap<String, JComboBox<XmlValue>>> parts = elementField.getAllFields();
 
-        for (XmlValue tableElement : XmlValue.TABLEELEMENTS) {
-            Node elementNode = presentation.findNode(tableStyleNode, tableElement.getTagName());
-            settingsField elementField = currentTable.getSettingsField(tableElement.toString());
-            HashMap<String, HashMap<String, JComboBox<XmlValue>>> parts = elementField.getAllFields();
+                for (String part : parts.keySet()) {
+                    // Part: left, right, top, bottom, fill, insideV, insideH
+                    assert elementNode != null;
+                    Node partNode = presentation.findNode(elementNode, "a:" + part);
+                    HashMap<String, JComboBox<XmlValue>> element = parts.get(part);
 
-            for (String part : parts.keySet()) {
-                // Part: left, right, top, bottom, fill, insideV, insideH
-                assert elementNode != null;
-                Node partNode = presentation.findNode(elementNode, "a:" + part);
-                HashMap<String, JComboBox<XmlValue>> element = parts.get(part);
+                    for (String boxName : element.keySet()) {
+                        // Box names: cell color, line style, line width, line color, text style, text color, font
+                        JComboBox<XmlValue> comboBox = element.get(boxName);
+                        XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
+                        assert comboBoxSelection != null;
+                        Node valueNode = findNode(elementNode, partNode, comboBoxSelection.getTagName());
 
-                for (String boxName : element.keySet()) {
-                    // Box names: cell color, line style, line width, line color, text style, text color, font
-                    JComboBox<XmlValue> comboBox = element.get(boxName);
-                    XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
-                    assert comboBoxSelection != null;
-                    Node valueNode = findNode(elementNode, partNode, comboBoxSelection.getTagName());
-
-                    XmlValue attributeAsXmlValue;
-                    if (valueNode.getNodeName().equals("a:schemeClr") && !valueNode.hasAttributes()) {
-                        attributeAsXmlValue = XmlValue.findValue("No Color");
-                    } else {
-                        Element attribute = (Element) valueNode;
-                        String foundAttribute;
-
-                        if (boxName.equals("text style")) {
-                            // For "text style" we cannot use the AttributeValue,
-                            // since that's always "on".
-                            Node tctxstylenode = presentation.findNode(elementNode, "a:tcTxStyle");
-                            Element tctxstyleElement = (Element) tctxstylenode;
-                            NamedNodeMap attributes = tctxstyleElement.getAttributes();
-                            Node selectedAttribute = attributes.item(0);
-
-                            foundAttribute = selectedAttribute.getNodeName();
-
+                        XmlValue attributeAsXmlValue;
+                        if (valueNode.getNodeName().equals("a:schemeClr") && !valueNode.hasAttributes()) {
+                            attributeAsXmlValue = XmlValue.findValue("No Color");
                         } else {
-                            foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
+                            Element attribute = (Element) valueNode;
+                            String foundAttribute;
+
+                            if (boxName.equals("text style")) {
+                                // For "text style" we cannot use the AttributeValue,
+                                // since that's always "on".
+                                Node tctxstylenode = presentation.findNode(elementNode, "a:tcTxStyle");
+                                Element tctxstyleElement = (Element) tctxstylenode;
+                                NamedNodeMap attributes = tctxstyleElement.getAttributes();
+                                Node selectedAttribute = attributes.item(0);
+
+                                if (selectedAttribute == null) {
+                                    // If there is no attribute (no special text formatting) just go on.
+                                    continue;
+                                }
+
+                                foundAttribute = selectedAttribute.getNodeName();
+
+                            } else {
+                                foundAttribute = attribute.getAttribute(comboBoxSelection.getAttributeName());
+                            }
+                            attributeAsXmlValue = XmlValue.findValue(foundAttribute);
                         }
-                        attributeAsXmlValue = XmlValue.findValue(foundAttribute);
+                        elementField.setComboBox(part, boxName, attributeAsXmlValue);
                     }
-                    elementField.setComboBox(part, boxName, attributeAsXmlValue);
                 }
             }
+        } catch (NullPointerException e) {
+            System.err.println("A NullPointerException occurred: " + e.getMessage());
+            CustClrTool.mainGUI.updateEventLog("Error:" + currentTable.getTABLENAME());
         }
     }
 
@@ -266,9 +276,32 @@ public class tableStyles {
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
 
         Element templateRoot = XMLtemplate.getDocumentElement();
-        templateRoot.setAttribute("styleId", themeID);
+        // TODO We do not want to use the themeID, but a unique ID
+        // templateRoot.setAttribute("styleId", themeID);
+        templateRoot.setAttribute("styleId", generateUniqueID());
         templateRoot.setAttribute("styleName", tableObject.getTABLENAME());
         return templateRoot;
+    }
+
+    private static String generateUniqueID() {
+        UUID uuid = UUID.randomUUID();
+
+        // Get the two 64-bit long values
+        long mostSignificantBits = uuid.getMostSignificantBits();
+        long leastSignificantBits = uuid.getLeastSignificantBits();
+
+        // Extract the parts according to the UUID structure (8-4-4-4-12)
+        // Most significant bits: AAAAAAAA-BBBB-CCCC
+        long part1 = (mostSignificantBits >> 32) & 0xFFFFFFFFL; // First 8 hex digits
+        long part2 = (mostSignificantBits >> 16) & 0xFFFFL;     // Next 4 hex digits
+        long part3 = mostSignificantBits & 0xFFFFL;             // Next 4 hex digits
+
+        // Least significant bits: DDDD-EEEEEEEEEEEE
+        long part4 = (leastSignificantBits >> 48) & 0xFFFFL;    // Next 4 hex digits
+        long part5 = leastSignificantBits & 0xFFFFFFFFFFFFL;  // Last 12 hex digits
+
+        return String.format("{%08X-%04X-%04X-%04X-%012X}",
+                part1, part2, part3, part4, part5);
     }
 
     // TODO For debugging
