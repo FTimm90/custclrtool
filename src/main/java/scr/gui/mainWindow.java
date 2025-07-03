@@ -377,10 +377,7 @@ public class mainWindow extends JFrame implements FocusListener {
                     Element tableStyleNodes = tableStylesDoc.getDocumentElement();
 
                     // Flush <a:tblStyleLst>
-                    NodeList childNodes = tableStyleNodes.getChildNodes();
-                    while (childNodes.getLength() > 0) {
-                        tableStyleNodes.removeChild(childNodes.item(0));
-                    }
+                    removeTableStyles(tableStyleNodes);
 
                     eventLog.setText("Existing table styles removed.");
                 }
@@ -396,6 +393,13 @@ public class mainWindow extends JFrame implements FocusListener {
                 eventLog.setText("Existing table styles read.");
                 stylesHaveBeenExtracted = true;
             }
+        }
+    }
+
+    private static void removeTableStyles(Element tableStyleNodes) {
+        NodeList childNodes = tableStyleNodes.getChildNodes();
+        while (childNodes.getLength() > 0) {
+            tableStyleNodes.removeChild(childNodes.item(0));
         }
     }
 
@@ -436,6 +440,9 @@ public class mainWindow extends JFrame implements FocusListener {
 
         String themeID = CustClrTool.newpres.getThemeID(getSelectedTheme());
         org.w3c.dom.Document tableStylesFile = presentationObject.getTableStylesXML();
+
+        // Flushing table styles before writing the new ones in
+        removeTableStyles(tableStylesFile.getDocumentElement());
 
         for (tableStyles table : tableObjects) {
             Node filledTemplate = tableStyles.fillTableTemplate(table, themeID);

@@ -207,8 +207,6 @@ public class tableStyles {
                         if (boxName.equals("text style")) {
                             // For "text style" we cannot use the AttributeValue,
                             // since that's always "on".
-
-                            // TODO
                             Node tctxstylenode = presentation.findNode(elementNode, "a:tcTxStyle");
                             Element tctxstyleElement = (Element) tctxstylenode;
                             NamedNodeMap attributes = tctxstyleElement.getAttributes();

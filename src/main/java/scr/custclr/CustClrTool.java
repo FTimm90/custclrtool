@@ -9,8 +9,6 @@ import scr.presentation.presentation;
 
 // TODO
 // italic/bold as buttons?
-// removing doesn't work
-// same for writing...
 // remove parts completely?
 
 public class CustClrTool {
