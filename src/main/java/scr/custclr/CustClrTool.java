@@ -10,9 +10,7 @@ import scr.presentation.presentation;
 // TODO
 // italic/bold as buttons?
 // remove parts completely?
-// left/right/center? <a:lvl1pPr algn="l"> (l,r,ctr) in slideMaster1.xml -> can only be set for WHOLE TABLE, so probably not desirable?
 // check all warnings
-// something is a bit off. The seperate table styles influence each other upon saving (is it the "no color" option?)
 
 public class CustClrTool {
 

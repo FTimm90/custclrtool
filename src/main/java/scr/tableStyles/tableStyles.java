@@ -204,9 +204,10 @@ public class tableStyles {
                         XmlValue comboBoxSelection = (XmlValue) comboBox.getSelectedItem();
                         assert comboBoxSelection != null;
                         Node valueNode = findNode(elementNode, partNode, comboBoxSelection.getTagName());
-
                         XmlValue attributeAsXmlValue;
-                        if (valueNode.getNodeName().equals("a:schemeClr") && !valueNode.hasAttributes()) {
+
+                        if (comboBoxSelection.getTagName().equals("a:schemeClr") && valueNode == null) {
+                            // If the tag name is schemeClr, but no node could be found it means that there is no fill
                             attributeAsXmlValue = XmlValue.findValue("No Color");
                         } else {
                             Element attribute = (Element) valueNode;
