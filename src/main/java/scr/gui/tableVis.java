@@ -110,27 +110,13 @@ public class tableVis {
         setColorWholeTbl(BACKGROUNDCOLOR);
 
         switch (tableElement) {
-            case "whole table" -> {
-                setColorWholeTbl(HIGHLIGHTCOLOR);
-            }
-            case "banded rows (uneven)" -> {
-                highlightBandedRows();
-            }
-            case "banded columns (uneven)" -> {
-                highlightBandedColumns();
-            }
-            case "first column" -> {
-                highlightFirstColumn();
-            }
-            case "last column" -> {
-                highlightLastColumn();
-            }
-            case "first row" -> {
-                highlightFirstRow();
-            }
-            case "last row" -> {
-                highlightLastRow();
-            }
+            case "whole table" -> setColorWholeTbl(HIGHLIGHTCOLOR);
+            case "banded rows (uneven)" -> highlightBandedRows();
+            case "banded columns (uneven)" -> highlightBandedColumns();
+            case "first column" -> highlightFirstColumn();
+            case "last column" -> highlightLastColumn();
+            case "first row" -> highlightFirstRow();
+            case "last row" -> highlightLastRow();
         }
     }
 }

@@ -115,9 +115,6 @@ public class XmlValue {
 
     private static void fillAllValues() {
 
-        // Probably don't need these two as they are mostly just for building the UI
-        // ALLVALUES.add(lineSides);
-        // ALLVALUES.add(tableElements);
         ALLVALUES.add(THEMECOLORS);
         ALLVALUES.add(THEMEFONTS);
         ALLVALUES.add(TEXTSTYLE);

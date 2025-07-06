@@ -96,14 +96,6 @@ public class colorfield implements FocusListener {
         activateColorField.setEnabled(true);
     }
 
-    public void deactivateEntry() {
-
-        colorName.setEnabled(false);
-        colorValue.setEnabled(false);
-        activateColorField.setSelected(false);
-        activateColorField.setEnabled(false);
-    }
-
     public void changeColor(Color color) {
         colorPreview.setBackground(color);
     }

@@ -99,9 +99,9 @@ public class tableStyles {
     /**
      * Writes the finished table object into the XML template DOM
      */
-    public static Node fillTableTemplate(tableStyles tableObject, String themeID) {
+    public static Node fillTableTemplate(tableStyles tableObject) {
 
-        Node templateRoot = writeTableNameID(tableObject, themeID);
+        Node templateRoot = writeTableNameID(tableObject);
         for (XmlValue element : XmlValue.TABLEELEMENTS) {
             Node templateElementNode = presentation.findNode(templateRoot, "a:" + element.getAttributeValue());
 
@@ -218,7 +218,7 @@ public class tableStyles {
                                 // since that's always "on".
                                 Node tctxstylenode = presentation.findNode(elementNode, "a:tcTxStyle");
                                 Element tctxstyleElement = (Element) tctxstylenode;
-                                NamedNodeMap attributes = tctxstyleElement.getAttributes();
+                                NamedNodeMap attributes = Objects.requireNonNull(tctxstyleElement).getAttributes();
                                 Node selectedAttribute = attributes.item(0);
 
                                 if (selectedAttribute == null) {
@@ -247,7 +247,7 @@ public class tableStyles {
      * Special version of the findNode method to find the <a:fontRef> node in the correct place.
      * @param currentTablePart the node containing the special case
      * @param fontRefNode the node that should be searched in
-     * @param searchTag the tag that is beeing searched for
+     * @param searchTag the tag that is being searched for
      */
     private static Node findNode(Node currentTablePart, Node fontRefNode, String searchTag) {
 
@@ -281,7 +281,7 @@ public class tableStyles {
         };
     }
 
-    private static Node writeTableNameID(tableStyles tableObject, String themeID) {
+    private static Node writeTableNameID(tableStyles tableObject) {
 
         Element templateRoot = tableObject.XMLtemplate.getDocumentElement();
         templateRoot.setAttribute("styleId", generateUniqueID());
@@ -308,51 +308,5 @@ public class tableStyles {
 
         return String.format("{%08X-%04X-%04X-%04X-%012X}",
                 part1, part2, part3, part4, part5);
-    }
-
-    // TODO For debugging
-    public static void printXml(Node node, String indent) {
-
-        if (node == null) return;
-
-        // Print the current node with indentation
-        System.out.println(indent + "<" + node.getNodeName());
-
-        // Print attributes if any
-        printAttributes(node, indent);
-
-        // Add closing bracket for empty elements
-        if (node.getChildNodes().getLength() == 0) {
-            System.out.println(indent + "/>");
-        } else {
-            System.out.println(indent + ">");
-        }
-
-        // Recursively print child nodes with increased indentation
-        NodeList childNodes = node.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            Node childNode = childNodes.item(i);
-            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-                printXml(childNode, indent + "  ");
-            } else if (childNode.getNodeType() == Node.TEXT_NODE && !childNode.getNodeValue().trim().isEmpty()) {
-                System.out.println(indent + "  " + childNode.getNodeValue().trim());
-            }
-        }
-
-        // Print closing tag for non-empty elements
-        if (node.getChildNodes().getLength() > 0) {
-            System.out.println(indent + "</" + node.getNodeName() + ">");
-        }
-    }
-
-    private static void printAttributes(Node node, String indent) {
-
-        NamedNodeMap attributes = node.getAttributes();
-        if (attributes != null) {
-            for (int i = 0; i < attributes.getLength(); i++) {
-                Node attribute = attributes.item(i);
-                System.out.println(indent + "  " + attribute.getNodeName() + "=\"" + attribute.getNodeValue() + "\"");
-            }
-        }
     }
 }

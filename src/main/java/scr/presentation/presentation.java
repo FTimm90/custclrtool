@@ -24,7 +24,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -148,7 +147,7 @@ public class presentation {
                 }
             }
         } catch (IOException | XMLStreamException | SAXException | ParserConfigurationException ex) {
-            System.err.println(ex);
+            ex.printStackTrace();
             CustClrTool.mainGUI.eventLog.setText("Failed to extract themes from file.");
         }
     }
@@ -168,7 +167,6 @@ public class presentation {
             throws XMLStreamException {
 
         themeNumber = themeNumber.substring(themeNumber.lastIndexOf('/') + 1, themeNumber.lastIndexOf('.'));
-        List<String> themeColors = new ArrayList<>();
 
         newTheme.themeNumber = themeNumber;
 
@@ -177,9 +175,7 @@ public class presentation {
             int eventType = reader.next();
             if (eventType == XMLStreamReader.START_ELEMENT) {
                 switch (reader.getLocalName()) {
-                    case "theme" -> {
-                        newTheme.themeName = reader.getAttributeValue("", "name");
-                    }
+                    case "theme" -> newTheme.themeName = reader.getAttributeValue("", "name");
                     case "clrScheme" -> {
                         try {
                             gatherThemeColors(reader, newTheme.themeColors);
@@ -191,12 +187,10 @@ public class presentation {
                         HashMap<String, String> findColorElements = new HashMap<>();
                         findColorElements.put("custClr", "name");
                         findColorElements.put("srgbClr", "val");
-                        List<String> foundElements = gatherChildElements(reader, CUSTCLR_NODE, findColorElements);
+                        List<String> foundElements = gatherChildElements(reader, findColorElements);
                         newTheme.customColors.addAll(foundElements);
                     }
-                    case "themeFamily" -> {
-                        newTheme.themeID = reader.getAttributeValue("", "id");
-                    }
+                    case "themeFamily" -> newTheme.themeID = reader.getAttributeValue("", "id");
                     default -> {
                     }
                 }
@@ -207,18 +201,17 @@ public class presentation {
     }
 
     /**
-     * @param reader Opened XML file.
-     * @param parentElement Find child elements within the scope of this.
+     * @param reader        Opened XML file.
      * @param childKeyValue Tag : Value to be found.
      * @return A List of all the found child elements.
      */
-    private static List<String> gatherChildElements(XMLStreamReader reader, String parentElement,
-        HashMap<String, String> childKeyValue) throws XMLStreamException {
+    private static List<String> gatherChildElements(XMLStreamReader reader,
+                                                    HashMap<String, String> childKeyValue) throws XMLStreamException {
 
         List<String> foundElements = new ArrayList<>();
         while (reader.hasNext()) {
             int eventType = reader.next();
-            if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(parentElement)) {
+            if (eventType == XMLStreamReader.END_ELEMENT && reader.getLocalName().equals(presentation.CUSTCLR_NODE)) {
                 return foundElements;
             } else {
                 for (String i : childKeyValue.keySet()) {
@@ -270,8 +263,6 @@ public class presentation {
     /**
      * If the ID of the selected theme is equal to the ID in the tableStyles.xml
      * it is very likely, that potentially existing table styles are custom.
-     * @param themeID
-     * @param tableStyleID
      */
     public static boolean validateID(String themeID, String tableStyleID) {
         return themeID.equals(tableStyleID);
@@ -326,7 +317,7 @@ public class presentation {
             }
             zipWrite.close();
         } catch (IOException ex) {
-            System.err.println(ex);
+            ex.printStackTrace();
             CustClrTool.mainGUI.eventLog.setText("Failed to create new Zipfile.");
         }
         replaceOldFile(fileName, filePath, presentationExtension);
@@ -379,7 +370,7 @@ public class presentation {
      * @param document  XML Document object.
      */
     private static void writeThemeXML(Document document, String themeSelection, ZipOutputStream zipWrite)
-            throws ParserConfigurationException, TransformerException, IOException {
+            throws TransformerException, IOException {
 
         Node extLstNode = findNode(document, "a:extLst");
 
@@ -397,7 +388,7 @@ public class presentation {
     }
 
     private static void writeZipEntry(Document document, String outputName, ZipOutputStream zipWrite)
-            throws TransformerFactoryConfigurationError, TransformerConfigurationException, TransformerException,
+            throws TransformerFactoryConfigurationError, TransformerException,
             IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -504,8 +495,6 @@ public class presentation {
 
     /**
      * Remove a specific node + all children
-     * @param rootElement
-     * @param nodeName
      */
     public static void removeNode(Element rootElement, String nodeName) {
         NodeList rootNode = rootElement.getChildNodes();
@@ -600,11 +589,17 @@ public class presentation {
 
         String oldFilePath = filePath + osPathSymbol() + oldFile + ".zip";
         File oldZip = new File(oldFilePath);
-        oldZip.delete();
+        boolean deleteZip = oldZip.delete();
+        if (deleteZip) {
+            CustClrTool.mainGUI.updateEventLog("Zip file removed.");
+        }
 
         String newFilePath = filePath + osPathSymbol() + oldFile + extension;
         File newZip = new File(oldFile + "_tmp.zip");
-        newZip.renameTo(new File(newFilePath));
+        boolean renamedZip = newZip.renameTo(new File(newFilePath));
+        if (renamedZip) {
+            CustClrTool.mainGUI.updateEventLog("Zip file successfully renamed.");
+        }
     }
 
     public static char osPathSymbol() {
@@ -655,19 +650,5 @@ public class presentation {
             }
         }
 
-        // TODO for Debugging
-        public void printThemeData() {
-            System.out.println("Theme name: " + themeName);
-            System.out.println("Theme number: " + themeNumber);
-            System.out.println("Theme ID: " + themeID);
-            System.out.println("Theme colors: ");
-            for (String i : themeColors.keySet()) {
-                System.out.println("key: " + i + " value: " + themeColors.get(i));
-            }
-            System.out.println("Custom colors:");
-            for (String color : customColors) {
-                System.out.println(color);
-            }
-        }
     }
 }

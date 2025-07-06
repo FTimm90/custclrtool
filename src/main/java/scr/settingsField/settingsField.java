@@ -65,7 +65,7 @@ public class settingsField {
         widget.add(dividerLine);
 
         // a:solidFill
-        JPanel cellColor = colorWidget(0, 0, "cell color", fill);
+        JPanel cellColor = colorWidget("cell color", fill);
         allFields.put("fill", fill);
         widget.add(cellColor);
 
@@ -84,10 +84,10 @@ public class settingsField {
 
     public JPanel FontWidget() {
         JPanel parent = mainWindow.newPanel(0, 0, 0, 0, 230, 120);
-        JPanel fontSelection = fontWidget(0, 0, "font", fontRef);
+        JPanel fontSelection = fontWidget(fontRef);
         parent.add(fontSelection);
 
-        JPanel fontColor = colorWidget(0, 0, "text color", fontRef);
+        JPanel fontColor = colorWidget("text color", fontRef);
         allFields.put("fontRef", fontRef);
         parent.add(fontColor);
         return parent;
@@ -118,7 +118,7 @@ public class settingsField {
             XmlValue side = XmlValue.LINESIDES[i];
             String sideName = side.getAttributeValue();
             HashMap<String, JComboBox<XmlValue>> sideMap = allFields.get(sideName);
-            JPanel border = lineWidget(0, 0, sideMap);
+            JPanel border = lineWidget(sideMap);
 
             border.setName(side + " Border");
             border.setVisible(false);
@@ -136,9 +136,7 @@ public class settingsField {
 
         JComboBox<XmlValue> lineSideSelection = new JComboBox<>(sides);
         lineSideSelection.setToolTipText("Select a side to modify border lines");
-        lineSideSelection.addActionListener(click -> {
-            lineSideSelected(lineSideSelection);
-        });
+        lineSideSelection.addActionListener(click -> lineSideSelected(lineSideSelection));
 
         // Replace the placeholder with the actual JComboBox
         widget.remove(placeholder);
@@ -148,9 +146,9 @@ public class settingsField {
 
     }
 
-    private JPanel lineWidget(int posX, int posY, HashMap<String, JComboBox<XmlValue>> targetMap) {
+    private JPanel lineWidget(HashMap<String, JComboBox<XmlValue>> targetMap) {
 
-        linePanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 110);
+        linePanel = mainWindow.newPanel(0, 0, 0, 0, PANELWIDTH, 110);
 
         JLabel leftBorder = mainWindow.newLabel(0, 0, "");
         leftBorder.setText("Line width: ");
@@ -165,26 +163,26 @@ public class settingsField {
         targetMap.put("line style", lineStyle);
         linePanel.add(lineStyle);
 
-        JPanel lineColor = colorWidget(0, 0, "line color", targetMap);
+        JPanel lineColor = colorWidget("line color", targetMap);
         linePanel.add(lineColor);
 
         return linePanel;
     }
 
-    private JPanel fontWidget(int posX, int posY, String lineText, HashMap<String, JComboBox<XmlValue>> targetMap) {
+    private JPanel fontWidget(HashMap<String, JComboBox<XmlValue>> targetMap) {
 
-        fontPanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 50);
+        fontPanel = mainWindow.newPanel(0, 0, 0, 0, PANELWIDTH, 50);
 
         JPanel dividerLine = divider();
         fontPanel.add(dividerLine);
 
         JLabel fontLabel = mainWindow.newLabel(0, 0, "");
-        fontLabel.setText(lineText);
+        fontLabel.setText("font");
         fontLabel.setBounds(0, 0, 100, 30);
         fontPanel.add(fontLabel);
 
         JComboBox<XmlValue> fontSelectBox = fontSelection();
-        targetMap.put(lineText, fontSelectBox);
+        targetMap.put("font", fontSelectBox);
         fontPanel.add(fontSelectBox);
 
         JComboBox<XmlValue> textStyleBox = textStyleSelection();
@@ -194,9 +192,9 @@ public class settingsField {
         return fontPanel;
     }
 
-    private JPanel colorWidget(int posX, int posY, String lineText, HashMap<String, JComboBox<XmlValue>> targetMap) {
+    private JPanel colorWidget(String lineText, HashMap<String, JComboBox<XmlValue>> targetMap) {
 
-        JPanel colorPanel = mainWindow.newPanel(posX, posY, 0, 0, PANELWIDTH, 30);
+        JPanel colorPanel = mainWindow.newPanel(0, 0, 0, 0, PANELWIDTH, 30);
 
         JLabel colorLabel = mainWindow.newLabel(0, 0, "");
         colorLabel.setText(lineText);
@@ -268,20 +266,5 @@ public class settingsField {
 
     public HashMap<String, HashMap<String, JComboBox<XmlValue>>> getCollectedValues() {
         return allFields;
-    }
-
-    // TODO for debugging
-    public void printAllValues() {
-        for (String name : allFields.keySet()) {
-            System.out.println("----------- " + name + " -----------");
-            HashMap<String, JComboBox<XmlValue>> currentfield = allFields.get(name);
-            for (String field : currentfield.keySet()) {
-                JComboBox<XmlValue> comboBox = currentfield.get(field);
-                XmlValue current = (XmlValue) comboBox.getSelectedItem();
-                assert current != null;
-                System.out.printf("%s: %s\n", field, current.getAttributeValue());
-            }
-
-        }
     }
 }
