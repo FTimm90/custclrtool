@@ -100,6 +100,9 @@ public class presentation {
         tableStylesXML = tableStyles;
     }
 
+    /**
+     * The actual slideMaster.xml file, used to set text levels.
+     */
     private Document slideMaster;
     public Document getSlideMaster() { return slideMaster; }
     public void setSlideMaster(Document newSlideMaster) {
@@ -131,6 +134,7 @@ public class presentation {
                 String name = entry.getName();
                 String type = entry.isDirectory() ? "DIR" : "FILE";
 
+                // Extract the three xml files needed for modification
                 if (type.equals("FILE") && name.contains("theme")) {
                     Themedata newTheme = new Themedata();
                     extractThemeData(zipFile.getInputStream(entry), name, newTheme);
@@ -452,17 +456,7 @@ public class presentation {
             throw new IllegalStateException("otherStyle node not found");
         }
 
-        NodeList childNodes = otherStyles.getChildNodes();
-        // Collect nodes to be removed
-        List<Node> nodesToRemove = new ArrayList<>();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            nodesToRemove.add(childNodes.item(i));
-        }
-
-        // Remove collected nodes
-        for (Node node : nodesToRemove) {
-            otherStyles.removeChild(node);
-        }
+        removeAllChildNodes(otherStyles);
 
         // Append cloned text levels to otherStyles
         for (int j = 0; j < bodyStyle.getChildNodes().getLength(); j++) {
@@ -471,6 +465,20 @@ public class presentation {
         }
 
         return slideMaster;
+    }
+
+    public static void removeAllChildNodes(Node ParentNode) {
+        NodeList childNodes = ParentNode.getChildNodes();
+        // Collect nodes to be removed
+        List<Node> nodesToRemove = new ArrayList<>();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            nodesToRemove.add(childNodes.item(i));
+        }
+
+        // Remove collected nodes
+        for (Node node : nodesToRemove) {
+            ParentNode.removeChild(node);
+        }
     }
 
     /**

@@ -23,7 +23,7 @@ import scr.settingsField.settingsField;
 
 public class tableStyles {
 
-    private static Document XMLtemplate;
+    private Document XMLtemplate;
     private final String TABLENAME;
     public static String[] elementsArray = new String[XmlValue.TABLEELEMENTS.length];
     public HashMap<String, settingsField> settingsFields = new HashMap<>();
@@ -135,7 +135,14 @@ public class tableStyles {
 
                     // Handle case if the color is set to "No Color".
                     if (boxElement.getAttributeValue().equals("none") && boxElement.getTagName().equals("a:schemeClr")) {
-                        templateNode.removeAttribute(attributeName);
+                        // Remove all the color fill nodes
+                        Node solidFill = templateNode.getParentNode();
+                        Node fill = solidFill.getParentNode();
+                        presentation.removeAllChildNodes(fill);
+                        // Append noFill node
+                        Document tableDoc = tableObject.XMLtemplate;
+                        Element emptyColor = tableDoc.createElementNS(NAMESPACE, "a:noFill");
+                        fill.appendChild(emptyColor);
                     } else {
                         templateNode.setAttribute(attributeName, attributeValue);
                     }
@@ -275,9 +282,7 @@ public class tableStyles {
 
     private static Node writeTableNameID(tableStyles tableObject, String themeID) {
 
-        Element templateRoot = XMLtemplate.getDocumentElement();
-        // TODO We do not want to use the themeID, but a unique ID
-        // templateRoot.setAttribute("styleId", themeID);
+        Element templateRoot = tableObject.XMLtemplate.getDocumentElement();
         templateRoot.setAttribute("styleId", generateUniqueID());
         templateRoot.setAttribute("styleName", tableObject.getTABLENAME());
         return templateRoot;
