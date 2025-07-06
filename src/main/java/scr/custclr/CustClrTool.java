@@ -7,11 +7,6 @@ import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
 import scr.gui.mainWindow;
 import scr.presentation.presentation;
 
-// TODO
-// italic/bold as buttons?
-// remove parts completely?
-// check all warnings
-
 public class CustClrTool {
 
     public static presentation newpres;
